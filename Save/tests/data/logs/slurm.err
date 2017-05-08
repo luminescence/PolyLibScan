@@ -1,0 +1,13 @@
+[2016/11/02-14:35:00] Starting Job..
+[2016/11/02-14:35:00] Finished reading in configuration.
+[2016/11/02-14:35:00] Finished setting up environment.
+[2016/11/02-14:35:00] Created Protein.
+[2016/11/02-14:35:00] Found existing meta file; using it for polymer creation.
+[2016/11/02-14:35:01] Finished creating polymers.
+[2016/11/02-14:35:01] Finished placing polymers randomly.
+[2016/11/02-14:35:01] Finished writing meta file.
+[2016/11/02-14:35:01] Starting loop.
+[2016/11/02-14:35:02] Finished LAMMPS simulations.
+[2016/11/02-14:35:02] Starting writing to h5 database.
+[2016/11/02-14:36:41] Cleaning up...
+[2016/11/02-14:37:32] Finished Job!

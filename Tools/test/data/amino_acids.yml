@@ -1,0 +1,22 @@
+# config made for test_protein_maker.py
+Atoms:
+  ALA: {charge: 0, mass: 89.0, radius: 2.0}
+  ARG: {charge: 1, mass: 174.0, radius: 2.0}
+  ASN: {charge: 0, mass: 132.0, radius: 2.0}
+  ASP: {charge: -1, mass: 133.0, radius: 2.0}
+  CYS: {charge: 0, mass: 121.0, radius: 2.0}
+  GLN: {charge: 0, mass: 147.0, radius: 2.0}
+  GLU: {charge: -1, mass: 147.0, radius: 2.0}
+  GLY: {charge: 0, mass: 75.0, radius: 2.0}
+  HIS: {charge: 0, mass: 155.0, radius: 2.0}
+  ILE: {charge: 0, mass: 131.0, radius: 2.0}
+  LEU: {charge: 0, mass: 131.0, radius: 2.0}
+  LYS: {charge: 1, mass: 146.0, radius: 2.0}
+  MET: {charge: 0, mass: 149.0, radius: 2.0}
+  PHE: {charge: 0, mass: 165.0, radius: 2.0}
+  PRO: {charge: 0, mass: 115.0, radius: 2.0}
+  SER: {charge: 0, mass: 105.0, radius: 2.0}
+  THR: {charge: 0, mass: 119.0, radius: 2.0}
+  TRP: {charge: 0, mass: 204.0, radius: 2.0}
+  TYR: {charge: 0, mass: 181.0, radius: 2.0}
+  VAL: {charge: 0, mass: 117.0, radius: 2.0}

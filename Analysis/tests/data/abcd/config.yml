@@ -1,0 +1,25 @@
+fifo:
+  distance_fifo: {out: distance_as_polymer, path: distance.fifo, script: /home/nfs_data/ohl/projects/BenchmarkCoulLowPhob/1a2c/static/fifo_processor.py,
+    stepsize: 2000}
+  traj_compression: {out: full_trajectory, path: traj.fifo, script: /home/nfs_data/ohl/projects/BenchmarkCoulLowPhob/1a2c/static/fifo_traj_compression.py,
+    stepsize: 2000}
+lammps_parameter: {dielectric_par: 78, time_steps: 200000, timestep: 17}
+lammps_path: {config: /home/nfs_data/ohl/projects/BenchmarkCoulLowPhob/1a2c/jobs/abcd/config.yml,
+  input: /home/nfs_data/ohl/projects/BenchmarkCoulLowPhob/1a2c/jobs/abcd/input, logs: /home/nfs_data/ohl/projects/BenchmarkCoulLowPhob/1a2c/jobs/abcd/logs,
+  output: /home/nfs_data/ohl/projects/BenchmarkCoulLowPhob/1a2c/jobs/abcd/output,
+  root: /home/nfs_data/ohl/projects/BenchmarkCoulLowPhob/1a2c/jobs/abcd, script: /home/nfs_data/ohl/projects/BenchmarkCoulLowPhob/1a2c/static/clusterRunCoulHphob.in}
+sim_parameter:
+  id: abcd
+  local: 1
+  monomers: [NTA, BP, Glu]
+  poly_length: 20
+  polymer_name: PIS2
+  protein: 1a2c
+  protein_name: Thrombin
+  sampling_rate: 100
+  weights: [3.0, 1.0, 1.0]
+sim_path: {active_site: /home/nfs_data/ohl/projects/BenchmarkCoulLowPhob/1a2c/static/active_sites.h5,
+  config: /home/nfs_data/ohl/projects/BenchmarkCoulLowPhob/1a2c/static/parameters_hp.yml,
+  lmp_script: /home/nfs_data/ohl/projects/BenchmarkCoulLowPhob/1a2c/static/clusterRunCoulHphob.in,
+  project: /home/nfs_data/ohl/projects/BenchmarkCoulLowPhob/1a2c, protein: /home/nfs_data/ohl/projects/BenchmarkCoulLowPhob/1a2c/static/1A2C.pdb,
+  root: /home/nfs_data/ohl/projects/BenchmarkCoulLowPhob/1a2c/jobs/abcd, script: /home/nfs_data/ohl/projects/BenchmarkCoulLowPhob/1a2c/static/sampling2.py}

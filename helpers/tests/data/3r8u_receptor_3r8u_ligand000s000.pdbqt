@@ -1,0 +1,1140 @@
+MODEL 1
+REMARK VINA RESULT:      -7.1      0.000      0.000
+REMARK  7 active torsions:
+REMARK  status: ('A' for Active; 'I' for Inactive)
+REMARK    1  A    between atoms: C1A_2  and  C2A_3 
+REMARK    2  A    between atoms: C2A_3  and  N0A_4 
+REMARK    3  A    between atoms: N0A_4  and  C3A_5 
+REMARK    4  A    between atoms: C4A_7  and  C6A_12 
+REMARK    5  A    between atoms: C5A_8  and  N2A_11 
+REMARK    6  A    between atoms: C6A_12  and  C7A_13 
+REMARK    7  A    between atoms: C6A_12  and  O0A_23 
+ROOT
+ATOM      1  C3A Z31 A   1     -66.750-116.471 -47.722  1.00  0.00     0.146 A 
+ATOM      2  S0A Z31 A   1     -65.195-116.464 -47.022  1.00  0.00    -0.052 SA
+ATOM      3  C4A Z31 A   1     -64.607-117.374 -48.343  1.00  0.00     0.062 A 
+ATOM      4  C5A Z31 A   1     -65.644-117.622 -49.263  1.00  0.00     0.117 A 
+ATOM      5  N1A Z31 A   1     -66.835-117.109 -48.890  1.00  0.00    -0.322 N 
+ATOM      6  H1A Z31 A   1     -67.693-117.197 -49.434  1.00  0.00     0.169 HD
+ENDROOT
+BRANCH   3   7
+ATOM      7  C6A Z31 A   1     -63.297-117.776 -48.405  1.00  0.00     0.195 C 
+BRANCH   7   8
+ATOM      8  C7A Z31 A   1     -62.699-118.693 -47.370  1.00  0.00    -0.024 A 
+ATOM      9  C2B Z31 A   1     -61.507-118.292 -46.694  1.00  0.00     0.011 A 
+ATOM     10  C1B Z31 A   1     -60.897-119.146 -45.726  1.00  0.00     0.013 A 
+ATOM     11  C0B Z31 A   1     -61.464-120.413 -45.422  1.00  0.00    -0.026 A 
+ATOM     12  C9A Z31 A   1     -62.679-120.840 -46.098  1.00  0.00    -0.025 A 
+ATOM     13  C6B Z31 A   1     -60.849-121.280 -44.458  1.00  0.00     0.012 A 
+ATOM     14  C8A Z31 A   1     -63.284-119.976 -47.062  1.00  0.00     0.022 A 
+ATOM     15  C3B Z31 A   1     -63.251-122.123 -45.791  1.00  0.00     0.012 A 
+ATOM     16  C4B Z31 A   1     -62.622-122.969 -44.828  1.00  0.00     0.001 A 
+ATOM     17  C5B Z31 A   1     -61.430-122.549 -44.168  1.00  0.00     0.001 A 
+ENDBRANCH   7   8
+BRANCH   7  18
+ATOM     18  O0A Z31 A   1     -62.490-117.381 -49.425  1.00  0.00    -0.386 OA
+ATOM     19  H8B Z31 A   1     -61.709-117.921 -49.437  1.00  0.00     0.210 HD
+ENDBRANCH   7  18
+ENDBRANCH   3   7
+BRANCH   4  20
+ATOM     20  N2A Z31 A   1     -65.532-118.306 -50.413  1.00  0.00    -0.384 N 
+ATOM     21  H8A Z31 A   1     -66.347-118.404 -51.036  1.00  0.00     0.157 HD
+ATOM     22  H9A Z31 A   1     -64.631-118.734 -50.673  1.00  0.00     0.157 HD
+ENDBRANCH   4  20
+BRANCH   1  23
+ATOM     23  N0A Z31 A   1     -67.848-115.884 -47.148  1.00  0.00    -0.370 N 
+ATOM     24  H7A Z31 A   1     -68.578-115.461 -47.738  1.00  0.00     0.161 HD
+BRANCH  23  25
+ATOM     25  C2A Z31 A   1     -67.975-115.861 -45.691  1.00  0.00     0.121 C 
+BRANCH  25  26
+ATOM     26  C1A Z31 A   1     -68.390-114.635 -45.266  1.00  0.00     0.015 C 
+ATOM     27  C0A Z31 A   1     -69.521-113.937 -45.903  1.00  0.00     0.006 C 
+ENDBRANCH  25  26
+ENDBRANCH  23  25
+ENDBRANCH   1  23
+TORSDOF 7
+
+ENDMDL
+MODEL 2
+REMARK VINA RESULT:      -7.1     11.451     13.394
+REMARK  7 active torsions:
+REMARK  status: ('A' for Active; 'I' for Inactive)
+REMARK    1  A    between atoms: C1A_2  and  C2A_3 
+REMARK    2  A    between atoms: C2A_3  and  N0A_4 
+REMARK    3  A    between atoms: N0A_4  and  C3A_5 
+REMARK    4  A    between atoms: C4A_7  and  C6A_12 
+REMARK    5  A    between atoms: C5A_8  and  N2A_11 
+REMARK    6  A    between atoms: C6A_12  and  C7A_13 
+REMARK    7  A    between atoms: C6A_12  and  O0A_23 
+ROOT
+ATOM      1  C3A Z31 A   1     -69.081-111.607 -37.540  1.00  0.00     0.146 A 
+ATOM      2  S0A Z31 A   1     -68.301-110.128 -37.204  1.00  0.00    -0.052 SA
+ATOM      3  C4A Z31 A   1     -68.548-109.640 -38.824  1.00  0.00     0.062 A 
+ATOM      4  C5A Z31 A   1     -69.236-110.644 -39.533  1.00  0.00     0.117 A 
+ATOM      5  N1A Z31 A   1     -69.519-111.736 -38.793  1.00  0.00    -0.322 N 
+ATOM      6  H1A Z31 A   1     -70.008-112.558 -39.147  1.00  0.00     0.169 HD
+ENDROOT
+BRANCH   3   7
+ATOM      7  C6A Z31 A   1     -68.094-108.430 -39.282  1.00  0.00     0.195 C 
+BRANCH   7   8
+ATOM      8  C7A Z31 A   1     -66.634-108.061 -39.229  1.00  0.00    -0.024 A 
+ATOM      9  C2B Z31 A   1     -66.041-107.757 -37.967  1.00  0.00     0.011 A 
+ATOM     10  C1B Z31 A   1     -64.667-107.378 -37.880  1.00  0.00     0.013 A 
+ATOM     11  C0B Z31 A   1     -63.866-107.291 -39.051  1.00  0.00    -0.026 A 
+ATOM     12  C9A Z31 A   1     -64.451-107.599 -40.348  1.00  0.00    -0.025 A 
+ATOM     13  C6B Z31 A   1     -62.489-106.900 -38.971  1.00  0.00     0.012 A 
+ATOM     14  C8A Z31 A   1     -65.826-107.982 -40.423  1.00  0.00     0.022 A 
+ATOM     15  C3B Z31 A   1     -63.641-107.509 -41.532  1.00  0.00     0.012 A 
+ATOM     16  C4B Z31 A   1     -62.271-107.118 -41.429  1.00  0.00     0.001 A 
+ATOM     17  C5B Z31 A   1     -61.702-106.815 -40.157  1.00  0.00     0.001 A 
+ENDBRANCH   7   8
+BRANCH   7  18
+ATOM     18  O0A Z31 A   1     -68.944-107.523 -39.831  1.00  0.00    -0.386 OA
+ATOM     19  H8B Z31 A   1     -68.505-107.068 -40.540  1.00  0.00     0.210 HD
+ENDBRANCH   7  18
+ENDBRANCH   3   7
+BRANCH   4  20
+ATOM     20  N2A Z31 A   1     -69.596-110.591 -40.826  1.00  0.00    -0.384 N 
+ATOM     21  H8A Z31 A   1     -69.449-111.409 -41.436  1.00  0.00     0.157 HD
+ATOM     22  H9A Z31 A   1     -70.018-109.733 -41.209  1.00  0.00     0.157 HD
+ENDBRANCH   4  20
+BRANCH   1  23
+ATOM     23  N0A Z31 A   1     -69.250-112.606 -36.617  1.00  0.00    -0.370 N 
+ATOM     24  H7A Z31 A   1     -70.029-112.564 -35.945  1.00  0.00     0.161 HD
+BRANCH  23  25
+ATOM     25  C2A Z31 A   1     -68.318-113.732 -36.593  1.00  0.00     0.121 C 
+BRANCH  25  26
+ATOM     26  C1A Z31 A   1     -68.994-114.913 -36.533  1.00  0.00     0.015 C 
+ATOM     27  C0A Z31 A   1     -68.341-116.196 -36.853  1.00  0.00     0.006 C 
+ENDBRANCH  25  26
+ENDBRANCH  23  25
+ENDBRANCH   1  23
+TORSDOF 7
+
+ENDMDL
+MODEL 3
+REMARK VINA RESULT:      -6.7      3.997      7.046
+REMARK  7 active torsions:
+REMARK  status: ('A' for Active; 'I' for Inactive)
+REMARK    1  A    between atoms: C1A_2  and  C2A_3 
+REMARK    2  A    between atoms: C2A_3  and  N0A_4 
+REMARK    3  A    between atoms: N0A_4  and  C3A_5 
+REMARK    4  A    between atoms: C4A_7  and  C6A_12 
+REMARK    5  A    between atoms: C5A_8  and  N2A_11 
+REMARK    6  A    between atoms: C6A_12  and  C7A_13 
+REMARK    7  A    between atoms: C6A_12  and  O0A_23 
+ROOT
+ATOM      1  C3A Z31 A   1     -61.417-120.848 -43.217  1.00  0.00     0.146 A 
+ATOM      2  S0A Z31 A   1     -62.678-120.640 -44.346  1.00  0.00    -0.052 SA
+ATOM      3  C4A Z31 A   1     -61.534-120.163 -45.522  1.00  0.00     0.062 A 
+ATOM      4  C5A Z31 A   1     -60.234-120.205 -44.981  1.00  0.00     0.117 A 
+ATOM      5  N1A Z31 A   1     -60.197-120.589 -43.688  1.00  0.00    -0.322 N 
+ATOM      6  H1A Z31 A   1     -59.342-120.670 -43.139  1.00  0.00     0.169 HD
+ENDROOT
+BRANCH   3   7
+ATOM      7  C6A Z31 A   1     -61.921-119.793 -46.785  1.00  0.00     0.195 C 
+BRANCH   7   8
+ATOM      8  C7A Z31 A   1     -62.910-118.681 -47.017  1.00  0.00    -0.024 A 
+ATOM      9  C2B Z31 A   1     -62.706-117.425 -46.371  1.00  0.00     0.011 A 
+ATOM     10  C1B Z31 A   1     -63.636-116.355 -46.546  1.00  0.00     0.013 A 
+ATOM     11  C0B Z31 A   1     -64.786-116.526 -47.364  1.00  0.00    -0.026 A 
+ATOM     12  C9A Z31 A   1     -65.012-117.797 -48.033  1.00  0.00    -0.025 A 
+ATOM     13  C6B Z31 A   1     -65.729-115.459 -47.534  1.00  0.00     0.012 A 
+ATOM     14  C8A Z31 A   1     -64.073-118.860 -47.855  1.00  0.00     0.022 A 
+ATOM     15  C3B Z31 A   1     -66.176-117.969 -48.859  1.00  0.00     0.012 A 
+ATOM     16  C4B Z31 A   1     -67.102-116.893 -49.015  1.00  0.00     0.001 A 
+ATOM     17  C5B Z31 A   1     -66.879-115.648 -48.356  1.00  0.00     0.001 A 
+ENDBRANCH   7   8
+BRANCH   7  18
+ATOM     18  O0A Z31 A   1     -61.403-120.401 -47.884  1.00  0.00    -0.386 OA
+ATOM     19  H8B Z31 A   1     -60.922-121.177 -47.618  1.00  0.00     0.210 HD
+ENDBRANCH   7  18
+ENDBRANCH   3   7
+BRANCH   4  20
+ATOM     20  N2A Z31 A   1     -59.099-119.895 -45.628  1.00  0.00    -0.384 N 
+ATOM     21  H8A Z31 A   1     -58.916-118.921 -45.908  1.00  0.00     0.157 HD
+ATOM     22  H9A Z31 A   1     -58.412-120.631 -45.844  1.00  0.00     0.157 HD
+ENDBRANCH   4  20
+BRANCH   1  23
+ATOM     23  N0A Z31 A   1     -61.613-121.242 -41.919  1.00  0.00    -0.370 N 
+ATOM     24  H7A Z31 A   1     -60.956-121.897 -41.471  1.00  0.00     0.161 HD
+BRANCH  23  25
+ATOM     25  C2A Z31 A   1     -62.762-120.728 -41.174  1.00  0.00     0.121 C 
+BRANCH  25  26
+ATOM     26  C1A Z31 A   1     -63.481-121.751 -40.635  1.00  0.00     0.015 C 
+ATOM     27  C0A Z31 A   1     -63.597-123.056 -41.311  1.00  0.00     0.006 C 
+ENDBRANCH  25  26
+ENDBRANCH  23  25
+ENDBRANCH   1  23
+TORSDOF 7
+
+ENDMDL
+MODEL 4
+REMARK VINA RESULT:      -6.7      4.703      6.734
+REMARK  7 active torsions:
+REMARK  status: ('A' for Active; 'I' for Inactive)
+REMARK    1  A    between atoms: C1A_2  and  C2A_3 
+REMARK    2  A    between atoms: C2A_3  and  N0A_4 
+REMARK    3  A    between atoms: N0A_4  and  C3A_5 
+REMARK    4  A    between atoms: C4A_7  and  C6A_12 
+REMARK    5  A    between atoms: C5A_8  and  N2A_11 
+REMARK    6  A    between atoms: C6A_12  and  C7A_13 
+REMARK    7  A    between atoms: C6A_12  and  O0A_23 
+ROOT
+ATOM      1  C3A Z31 A   1     -65.471-115.804 -41.722  1.00  0.00     0.146 A 
+ATOM      2  S0A Z31 A   1     -64.827-115.683 -43.297  1.00  0.00    -0.052 SA
+ATOM      3  C4A Z31 A   1     -66.252-114.891 -43.808  1.00  0.00     0.062 A 
+ATOM      4  C5A Z31 A   1     -67.144-114.749 -42.727  1.00  0.00     0.117 A 
+ATOM      5  N1A Z31 A   1     -66.684-115.272 -41.572  1.00  0.00    -0.322 N 
+ATOM      6  H1A Z31 A   1     -67.200-115.262 -40.692  1.00  0.00     0.169 HD
+ENDROOT
+BRANCH   3   7
+ATOM      7  C6A Z31 A   1     -66.421-114.498 -45.111  1.00  0.00     0.195 C 
+BRANCH   7   8
+ATOM      8  C7A Z31 A   1     -66.337-115.478 -46.252  1.00  0.00    -0.024 A 
+ATOM      9  C2B Z31 A   1     -67.541-116.025 -46.787  1.00  0.00     0.011 A 
+ATOM     10  C1B Z31 A   1     -67.500-116.977 -47.851  1.00  0.00     0.013 A 
+ATOM     11  C0B Z31 A   1     -66.255-117.399 -48.393  1.00  0.00    -0.026 A 
+ATOM     12  C9A Z31 A   1     -65.015-116.852 -47.864  1.00  0.00    -0.025 A 
+ATOM     13  C6B Z31 A   1     -66.206-118.363 -49.454  1.00  0.00     0.012 A 
+ATOM     14  C8A Z31 A   1     -65.069-115.897 -46.801  1.00  0.00     0.022 A 
+ATOM     15  C3B Z31 A   1     -63.757-117.282 -48.411  1.00  0.00     0.012 A 
+ATOM     16  C4B Z31 A   1     -63.733-118.242 -49.468  1.00  0.00     0.001 A 
+ATOM     17  C5B Z31 A   1     -64.949-118.778 -49.984  1.00  0.00     0.001 A 
+ENDBRANCH   7   8
+BRANCH   7  18
+ATOM     18  O0A Z31 A   1     -66.701-113.205 -45.423  1.00  0.00    -0.386 OA
+ATOM     19  H8B Z31 A   1     -66.212-112.954 -46.198  1.00  0.00     0.210 HD
+ENDBRANCH   7  18
+ENDBRANCH   3   7
+BRANCH   4  20
+ATOM     20  N2A Z31 A   1     -68.356-114.172 -42.774  1.00  0.00    -0.384 N 
+ATOM     21  H8A Z31 A   1     -69.094-114.469 -42.119  1.00  0.00     0.157 HD
+ATOM     22  H9A Z31 A   1     -68.548-113.432 -43.465  1.00  0.00     0.157 HD
+ENDBRANCH   4  20
+BRANCH   1  23
+ATOM     23  N0A Z31 A   1     -64.819-116.404 -40.676  1.00  0.00    -0.370 N 
+ATOM     24  H7A Z31 A   1     -65.353-116.903 -39.950  1.00  0.00     0.161 HD
+BRANCH  23  25
+ATOM     25  C2A Z31 A   1     -63.360-116.330 -40.596  1.00  0.00     0.121 C 
+BRANCH  25  26
+ATOM     26  C1A Z31 A   1     -62.969-115.139 -40.064  1.00  0.00     0.015 C 
+ATOM     27  C0A Z31 A   1     -62.091-114.213 -40.802  1.00  0.00     0.006 C 
+ENDBRANCH  25  26
+ENDBRANCH  23  25
+ENDBRANCH   1  23
+TORSDOF 7
+
+ENDMDL
+MODEL 5
+REMARK VINA RESULT:      -6.6      3.845      7.432
+REMARK  7 active torsions:
+REMARK  status: ('A' for Active; 'I' for Inactive)
+REMARK    1  A    between atoms: C1A_2  and  C2A_3 
+REMARK    2  A    between atoms: C2A_3  and  N0A_4 
+REMARK    3  A    between atoms: N0A_4  and  C3A_5 
+REMARK    4  A    between atoms: C4A_7  and  C6A_12 
+REMARK    5  A    between atoms: C5A_8  and  N2A_11 
+REMARK    6  A    between atoms: C6A_12  and  C7A_13 
+REMARK    7  A    between atoms: C6A_12  and  O0A_23 
+ROOT
+ATOM      1  C3A Z31 A   1     -62.712-120.202 -42.358  1.00  0.00     0.146 A 
+ATOM      2  S0A Z31 A   1     -62.216-120.335 -43.984  1.00  0.00    -0.052 SA
+ATOM      3  C4A Z31 A   1     -62.419-118.649 -44.174  1.00  0.00     0.062 A 
+ATOM      4  C5A Z31 A   1     -62.845-118.071 -42.962  1.00  0.00     0.117 A 
+ATOM      5  N1A Z31 A   1     -63.005-118.963 -41.963  1.00  0.00    -0.322 N 
+ATOM      6  H1A Z31 A   1     -63.312-118.719 -41.021  1.00  0.00     0.169 HD
+ENDROOT
+BRANCH   3   7
+ATOM      7  C6A Z31 A   1     -62.189-118.034 -45.379  1.00  0.00     0.195 C 
+BRANCH   7   8
+ATOM      8  C7A Z31 A   1     -63.277-117.877 -46.408  1.00  0.00    -0.024 A 
+ATOM      9  C2B Z31 A   1     -63.500-118.928 -47.348  1.00  0.00     0.011 A 
+ATOM     10  C1B Z31 A   1     -64.505-118.805 -48.355  1.00  0.00     0.013 A 
+ATOM     11  C0B Z31 A   1     -65.299-117.629 -48.442  1.00  0.00    -0.026 A 
+ATOM     12  C9A Z31 A   1     -65.090-116.547 -47.492  1.00  0.00    -0.025 A 
+ATOM     13  C6B Z31 A   1     -66.302-117.495 -49.458  1.00  0.00     0.012 A 
+ATOM     14  C8A Z31 A   1     -64.085-116.682 -46.486  1.00  0.00     0.022 A 
+ATOM     15  C3B Z31 A   1     -65.893-115.357 -47.582  1.00  0.00     0.012 A 
+ATOM     16  C4B Z31 A   1     -66.886-115.246 -48.602  1.00  0.00     0.001 A 
+ATOM     17  C5B Z31 A   1     -67.088-116.307 -49.532  1.00  0.00     0.001 A 
+ENDBRANCH   7   8
+BRANCH   7  18
+ATOM     18  O0A Z31 A   1     -60.970-117.514 -45.680  1.00  0.00    -0.386 OA
+ATOM     19  H8B Z31 A   1     -60.408-118.202 -46.017  1.00  0.00     0.210 HD
+ENDBRANCH   7  18
+ENDBRANCH   3   7
+BRANCH   4  20
+ATOM     20  N2A Z31 A   1     -63.099-116.769 -42.755  1.00  0.00    -0.384 N 
+ATOM     21  H8A Z31 A   1     -62.436-116.194 -42.215  1.00  0.00     0.157 HD
+ATOM     22  H9A Z31 A   1     -63.958-116.344 -43.137  1.00  0.00     0.157 HD
+ENDBRANCH   4  20
+BRANCH   1  23
+ATOM     23  N0A Z31 A   1     -62.819-121.269 -41.504  1.00  0.00    -0.370 N 
+ATOM     24  H7A Z31 A   1     -63.462-121.227 -40.700  1.00  0.00     0.161 HD
+BRANCH  23  25
+ATOM     25  C2A Z31 A   1     -62.013-122.466 -41.740  1.00  0.00     0.121 C 
+BRANCH  25  26
+ATOM     26  C1A Z31 A   1     -62.258-123.405 -40.784  1.00  0.00     0.015 C 
+ATOM     27  C0A Z31 A   1     -63.624-123.882 -40.500  1.00  0.00     0.006 C 
+ENDBRANCH  25  26
+ENDBRANCH  23  25
+ENDBRANCH   1  23
+TORSDOF 7
+
+ENDMDL
+MODEL 6
+REMARK VINA RESULT:      -6.6      2.512      7.610
+REMARK  7 active torsions:
+REMARK  status: ('A' for Active; 'I' for Inactive)
+REMARK    1  A    between atoms: C1A_2  and  C2A_3 
+REMARK    2  A    between atoms: C2A_3  and  N0A_4 
+REMARK    3  A    between atoms: N0A_4  and  C3A_5 
+REMARK    4  A    between atoms: C4A_7  and  C6A_12 
+REMARK    5  A    between atoms: C5A_8  and  N2A_11 
+REMARK    6  A    between atoms: C6A_12  and  C7A_13 
+REMARK    7  A    between atoms: C6A_12  and  O0A_23 
+ROOT
+ATOM      1  C3A Z31 A   1     -62.585-118.729 -47.463  1.00  0.00     0.146 A 
+ATOM      2  S0A Z31 A   1     -64.035-118.985 -48.324  1.00  0.00    -0.052 SA
+ATOM      3  C4A Z31 A   1     -64.622-117.481 -47.764  1.00  0.00     0.062 A 
+ATOM      4  C5A Z31 A   1     -63.656-116.854 -46.952  1.00  0.00     0.117 A 
+ATOM      5  N1A Z31 A   1     -62.526-117.575 -46.797  1.00  0.00    -0.322 N 
+ATOM      6  H1A Z31 A   1     -61.727-117.275 -46.240  1.00  0.00     0.169 HD
+ENDROOT
+BRANCH   3   7
+ATOM      7  C6A Z31 A   1     -65.875-117.035 -48.098  1.00  0.00     0.195 C 
+BRANCH   7   8
+ATOM      8  C7A Z31 A   1     -66.447-115.769 -47.515  1.00  0.00    -0.024 A 
+ATOM      9  C2B Z31 A   1     -66.439-114.578 -48.301  1.00  0.00     0.011 A 
+ATOM     10  C1B Z31 A   1     -66.948-113.353 -47.773  1.00  0.00     0.013 A 
+ATOM     11  C0B Z31 A   1     -67.468-113.297 -46.451  1.00  0.00    -0.026 A 
+ATOM     12  C9A Z31 A   1     -67.488-114.501 -45.633  1.00  0.00    -0.025 A 
+ATOM     13  C6B Z31 A   1     -67.971-112.068 -45.911  1.00  0.00     0.012 A 
+ATOM     14  C8A Z31 A   1     -66.980-115.723 -46.173  1.00  0.00     0.022 A 
+ATOM     15  C3B Z31 A   1     -68.013-114.444 -44.296  1.00  0.00     0.012 A 
+ATOM     16  C4B Z31 A   1     -68.509-113.208 -43.780  1.00  0.00     0.001 A 
+ATOM     17  C5B Z31 A   1     -68.486-112.029 -44.582  1.00  0.00     0.001 A 
+ENDBRANCH   7   8
+BRANCH   7  18
+ATOM     18  O0A Z31 A   1     -66.644-117.708 -48.994  1.00  0.00    -0.386 OA
+ATOM     19  H8B Z31 A   1     -66.671-117.226 -49.812  1.00  0.00     0.210 HD
+ENDBRANCH   7  18
+ENDBRANCH   3   7
+BRANCH   4  20
+ATOM     20  N2A Z31 A   1     -63.786-115.661 -46.350  1.00  0.00    -0.384 N 
+ATOM     21  H8A Z31 A   1     -63.236-115.448 -45.505  1.00  0.00     0.157 HD
+ATOM     22  H9A Z31 A   1     -64.435-114.958 -46.733  1.00  0.00     0.157 HD
+ENDBRANCH   4  20
+BRANCH   1  23
+ATOM     23  N0A Z31 A   1     -61.548-119.625 -47.433  1.00  0.00    -0.370 N 
+ATOM     24  H7A Z31 A   1     -61.008-119.822 -48.288  1.00  0.00     0.161 HD
+BRANCH  23  25
+ATOM     25  C2A Z31 A   1     -61.213-120.300 -46.180  1.00  0.00     0.121 C 
+BRANCH  25  26
+ATOM     26  C1A Z31 A   1     -61.619-121.599 -46.212  1.00  0.00     0.015 C 
+ATOM     27  C0A Z31 A   1     -62.968-122.000 -45.772  1.00  0.00     0.006 C 
+ENDBRANCH  25  26
+ENDBRANCH  23  25
+ENDBRANCH   1  23
+TORSDOF 7
+
+ENDMDL
+MODEL 7
+REMARK VINA RESULT:      -6.5     27.369     29.440
+REMARK  7 active torsions:
+REMARK  status: ('A' for Active; 'I' for Inactive)
+REMARK    1  A    between atoms: C1A_2  and  C2A_3 
+REMARK    2  A    between atoms: C2A_3  and  N0A_4 
+REMARK    3  A    between atoms: N0A_4  and  C3A_5 
+REMARK    4  A    between atoms: C4A_7  and  C6A_12 
+REMARK    5  A    between atoms: C5A_8  and  N2A_11 
+REMARK    6  A    between atoms: C6A_12  and  C7A_13 
+REMARK    7  A    between atoms: C6A_12  and  O0A_23 
+ROOT
+ATOM      1  C3A Z31 A   1     -50.520 -97.233 -37.610  1.00  0.00     0.146 A 
+ATOM      2  S0A Z31 A   1     -51.292 -96.064 -36.637  1.00  0.00    -0.052 SA
+ATOM      3  C4A Z31 A   1     -52.687 -96.183 -37.619  1.00  0.00     0.062 A 
+ATOM      4  C5A Z31 A   1     -52.483 -97.134 -38.638  1.00  0.00     0.117 A 
+ATOM      5  N1A Z31 A   1     -51.261 -97.704 -38.613  1.00  0.00    -0.322 N 
+ATOM      6  H1A Z31 A   1     -50.943 -98.409 -39.278  1.00  0.00     0.169 HD
+ENDROOT
+BRANCH   3   7
+ATOM      7  C6A Z31 A   1     -53.795 -95.412 -37.380  1.00  0.00     0.195 C 
+BRANCH   7   8
+ATOM      8  C7A Z31 A   1     -53.736 -93.907 -37.422  1.00  0.00    -0.024 A 
+ATOM      9  C2B Z31 A   1     -53.073 -93.268 -38.512  1.00  0.00     0.011 A 
+ATOM     10  C1B Z31 A   1     -52.974 -91.845 -38.572  1.00  0.00     0.013 A 
+ATOM     11  C0B Z31 A   1     -53.532 -91.039 -37.543  1.00  0.00    -0.026 A 
+ATOM     12  C9A Z31 A   1     -54.215 -91.669 -36.424  1.00  0.00    -0.025 A 
+ATOM     13  C6B Z31 A   1     -53.427 -89.609 -37.592  1.00  0.00     0.012 A 
+ATOM     14  C8A Z31 A   1     -54.312 -93.095 -36.375  1.00  0.00     0.022 A 
+ATOM     15  C3B Z31 A   1     -54.777 -90.853 -35.382  1.00  0.00     0.012 A 
+ATOM     16  C4B Z31 A   1     -54.661 -89.431 -35.452  1.00  0.00     0.001 A 
+ATOM     17  C5B Z31 A   1     -53.989 -88.816 -36.549  1.00  0.00     0.001 A 
+ENDBRANCH   7   8
+BRANCH   7  18
+ATOM     18  O0A Z31 A   1     -55.003 -95.979 -37.123  1.00  0.00    -0.386 OA
+ATOM     19  H8B Z31 A   1     -55.660 -95.591 -37.689  1.00  0.00     0.210 HD
+ENDBRANCH   7  18
+ENDBRANCH   3   7
+BRANCH   4  20
+ATOM     20  N2A Z31 A   1     -53.372 -97.479 -39.584  1.00  0.00    -0.384 N 
+ATOM     21  H8A Z31 A   1     -53.044 -97.817 -40.501  1.00  0.00     0.157 HD
+ATOM     22  H9A Z31 A   1     -54.382 -97.406 -39.393  1.00  0.00     0.157 HD
+ENDBRANCH   4  20
+BRANCH   1  23
+ATOM     23  N0A Z31 A   1     -49.235 -97.666 -37.405  1.00  0.00    -0.370 N 
+ATOM     24  H7A Z31 A   1     -49.022 -98.307 -36.628  1.00  0.00     0.161 HD
+BRANCH  23  25
+ATOM     25  C2A Z31 A   1     -48.169 -97.212 -38.297  1.00  0.00     0.121 C 
+BRANCH  25  26
+ATOM     26  C1A Z31 A   1     -48.360 -95.910 -38.647  1.00  0.00     0.015 C 
+ATOM     27  C0A Z31 A   1     -47.587 -94.820 -38.023  1.00  0.00     0.006 C 
+ENDBRANCH  25  26
+ENDBRANCH  23  25
+ENDBRANCH   1  23
+TORSDOF 7
+
+ENDMDL
+MODEL 8
+REMARK VINA RESULT:      -6.4      4.684      8.159
+REMARK  7 active torsions:
+REMARK  status: ('A' for Active; 'I' for Inactive)
+REMARK    1  A    between atoms: C1A_2  and  C2A_3 
+REMARK    2  A    between atoms: C2A_3  and  N0A_4 
+REMARK    3  A    between atoms: N0A_4  and  C3A_5 
+REMARK    4  A    between atoms: C4A_7  and  C6A_12 
+REMARK    5  A    between atoms: C5A_8  and  N2A_11 
+REMARK    6  A    between atoms: C6A_12  and  C7A_13 
+REMARK    7  A    between atoms: C6A_12  and  O0A_23 
+ROOT
+ATOM      1  C3A Z31 A   1     -59.475-122.966 -46.513  1.00  0.00     0.146 A 
+ATOM      2  S0A Z31 A   1     -61.096-122.834 -46.001  1.00  0.00    -0.052 SA
+ATOM      3  C4A Z31 A   1     -60.781-121.248 -45.447  1.00  0.00     0.062 A 
+ATOM      4  C5A Z31 A   1     -59.440-120.901 -45.703  1.00  0.00     0.117 A 
+ATOM      5  N1A Z31 A   1     -58.729-121.882 -46.297  1.00  0.00    -0.322 N 
+ATOM      6  H1A Z31 A   1     -57.744-121.804 -46.550  1.00  0.00     0.169 HD
+ENDROOT
+BRANCH   3   7
+ATOM      7  C6A Z31 A   1     -61.755-120.498 -44.838  1.00  0.00     0.195 C 
+BRANCH   7   8
+ATOM      8  C7A Z31 A   1     -62.564-119.482 -45.601  1.00  0.00    -0.024 A 
+ATOM      9  C2B Z31 A   1     -62.707-118.166 -45.065  1.00  0.00     0.011 A 
+ATOM     10  C1B Z31 A   1     -63.488-117.183 -45.746  1.00  0.00     0.013 A 
+ATOM     11  C0B Z31 A   1     -64.142-117.500 -46.968  1.00  0.00    -0.026 A 
+ATOM     12  C9A Z31 A   1     -64.008-118.835 -47.532  1.00  0.00    -0.025 A 
+ATOM     13  C6B Z31 A   1     -64.937-116.521 -47.650  1.00  0.00     0.012 A 
+ATOM     14  C8A Z31 A   1     -63.220-119.810 -46.845  1.00  0.00     0.022 A 
+ATOM     15  C3B Z31 A   1     -64.670-119.155 -48.767  1.00  0.00     0.012 A 
+ATOM     16  C4B Z31 A   1     -65.456-118.164 -49.430  1.00  0.00     0.001 A 
+ATOM     17  C5B Z31 A   1     -65.588-116.857 -48.873  1.00  0.00     0.001 A 
+ENDBRANCH   7   8
+BRANCH   7  18
+ATOM     18  O0A Z31 A   1     -62.048-120.664 -43.522  1.00  0.00    -0.386 OA
+ATOM     19  H8B Z31 A   1     -61.360-121.172 -43.107  1.00  0.00     0.210 HD
+ENDBRANCH   7  18
+ENDBRANCH   3   7
+BRANCH   4  20
+ATOM     20  N2A Z31 A   1     -58.856-119.730 -45.400  1.00  0.00    -0.384 N 
+ATOM     21  H8A Z31 A   1     -58.338-119.626 -44.516  1.00  0.00     0.157 HD
+ATOM     22  H9A Z31 A   1     -58.925-118.936 -46.053  1.00  0.00     0.157 HD
+ENDBRANCH   4  20
+BRANCH   1  23
+ATOM     23  N0A Z31 A   1     -58.949-124.090 -47.096  1.00  0.00    -0.370 N 
+ATOM     24  H7A Z31 A   1     -58.302-124.693 -46.568  1.00  0.00     0.161 HD
+BRANCH  23  25
+ATOM     25  C2A Z31 A   1     -59.311-124.427 -48.472  1.00  0.00     0.121 C 
+BRANCH  25  26
+ATOM     26  C1A Z31 A   1     -58.832-123.491 -49.337  1.00  0.00     0.015 C 
+ATOM     27  C0A Z31 A   1     -58.282-123.863 -50.653  1.00  0.00     0.006 C 
+ENDBRANCH  25  26
+ENDBRANCH  23  25
+ENDBRANCH   1  23
+TORSDOF 7
+
+ENDMDL
+MODEL 9
+REMARK VINA RESULT:      -6.2      3.159      7.313
+REMARK  7 active torsions:
+REMARK  status: ('A' for Active; 'I' for Inactive)
+REMARK    1  A    between atoms: C1A_2  and  C2A_3 
+REMARK    2  A    between atoms: C2A_3  and  N0A_4 
+REMARK    3  A    between atoms: N0A_4  and  C3A_5 
+REMARK    4  A    between atoms: C4A_7  and  C6A_12 
+REMARK    5  A    between atoms: C5A_8  and  N2A_11 
+REMARK    6  A    between atoms: C6A_12  and  C7A_13 
+REMARK    7  A    between atoms: C6A_12  and  O0A_23 
+ROOT
+ATOM      1  C3A Z31 A   1     -60.774-119.152 -44.703  1.00  0.00     0.146 A 
+ATOM      2  S0A Z31 A   1     -61.639-117.764 -45.187  1.00  0.00    -0.052 SA
+ATOM      3  C4A Z31 A   1     -61.943-118.493 -46.702  1.00  0.00     0.062 A 
+ATOM      4  C5A Z31 A   1     -61.371-119.780 -46.745  1.00  0.00     0.117 A 
+ATOM      5  N1A Z31 A   1     -60.720-120.123 -45.615  1.00  0.00    -0.322 N 
+ATOM      6  H1A Z31 A   1     -60.244-121.014 -45.475  1.00  0.00     0.169 HD
+ENDROOT
+BRANCH   3   7
+ATOM      7  C6A Z31 A   1     -62.642-117.836 -47.682  1.00  0.00     0.195 C 
+BRANCH   7   8
+ATOM      8  C7A Z31 A   1     -64.050-117.350 -47.461  1.00  0.00    -0.024 A 
+ATOM      9  C2B Z31 A   1     -65.128-118.031 -48.104  1.00  0.00     0.011 A 
+ATOM     10  C1B Z31 A   1     -66.474-117.584 -47.938  1.00  0.00     0.013 A 
+ATOM     11  C0B Z31 A   1     -66.764-116.449 -47.133  1.00  0.00    -0.026 A 
+ATOM     12  C9A Z31 A   1     -65.680-115.742 -46.467  1.00  0.00    -0.025 A 
+ATOM     13  C6B Z31 A   1     -68.112-115.989 -46.972  1.00  0.00     0.012 A 
+ATOM     14  C8A Z31 A   1     -64.337-116.200 -46.636  1.00  0.00     0.022 A 
+ATOM     15  C3B Z31 A   1     -65.974-114.593 -45.654  1.00  0.00     0.012 A 
+ATOM     16  C4B Z31 A   1     -67.325-114.153 -45.508  1.00  0.00     0.001 A 
+ATOM     17  C5B Z31 A   1     -68.385-114.846 -46.164  1.00  0.00     0.001 A 
+ENDBRANCH   7   8
+BRANCH   7  18
+ATOM     18  O0A Z31 A   1     -62.077-117.572 -48.890  1.00  0.00    -0.386 OA
+ATOM     19  H8B Z31 A   1     -61.187-117.263 -48.762  1.00  0.00     0.210 HD
+ENDBRANCH   7  18
+ENDBRANCH   3   7
+BRANCH   4  20
+ATOM     20  N2A Z31 A   1     -61.420-120.630 -47.784  1.00  0.00    -0.384 N 
+ATOM     21  H8A Z31 A   1     -60.547-120.997 -48.191  1.00  0.00     0.157 HD
+ATOM     22  H9A Z31 A   1     -62.330-120.917 -48.173  1.00  0.00     0.157 HD
+ENDBRANCH   4  20
+BRANCH   1  23
+ATOM     23  N0A Z31 A   1     -60.166-119.284 -43.481  1.00  0.00    -0.370 N 
+ATOM     24  H7A Z31 A   1     -59.211-118.926 -43.337  1.00  0.00     0.161 HD
+BRANCH  23  25
+ATOM     25  C2A Z31 A   1     -60.881-119.937 -42.385  1.00  0.00     0.121 C 
+BRANCH  25  26
+ATOM     26  C1A Z31 A   1     -60.205-121.042 -41.964  1.00  0.00     0.015 C 
+ATOM     27  C0A Z31 A   1     -58.896-121.412 -42.532  1.00  0.00     0.006 C 
+ENDBRANCH  25  26
+ENDBRANCH  23  25
+ENDBRANCH   1  23
+TORSDOF 7
+
+ENDMDL
+MODEL 10
+REMARK VINA RESULT:      -6.2      3.950      7.306
+REMARK  7 active torsions:
+REMARK  status: ('A' for Active; 'I' for Inactive)
+REMARK    1  A    between atoms: C1A_2  and  C2A_3 
+REMARK    2  A    between atoms: C2A_3  and  N0A_4 
+REMARK    3  A    between atoms: N0A_4  and  C3A_5 
+REMARK    4  A    between atoms: C4A_7  and  C6A_12 
+REMARK    5  A    between atoms: C5A_8  and  N2A_11 
+REMARK    6  A    between atoms: C6A_12  and  C7A_13 
+REMARK    7  A    between atoms: C6A_12  and  O0A_23 
+ROOT
+ATOM      1  C3A Z31 A   1     -61.166-121.115 -43.410  1.00  0.00     0.146 A 
+ATOM      2  S0A Z31 A   1     -60.798-119.846 -44.489  1.00  0.00    -0.052 SA
+ATOM      3  C4A Z31 A   1     -61.888-120.509 -45.626  1.00  0.00     0.062 A 
+ATOM      4  C5A Z31 A   1     -62.491-121.670 -45.102  1.00  0.00     0.117 A 
+ATOM      5  N1A Z31 A   1     -62.066-121.989 -43.862  1.00  0.00    -0.322 N 
+ATOM      6  H1A Z31 A   1     -62.394-122.798 -43.334  1.00  0.00     0.169 HD
+ENDROOT
+BRANCH   3   7
+ATOM      7  C6A Z31 A   1     -62.075-119.932 -46.856  1.00  0.00     0.195 C 
+BRANCH   7   8
+ATOM      8  C7A Z31 A   1     -63.017-118.773 -47.052  1.00  0.00    -0.024 A 
+ATOM      9  C2B Z31 A   1     -62.744-117.538 -46.390  1.00  0.00     0.011 A 
+ATOM     10  C1B Z31 A   1     -63.628-116.425 -46.532  1.00  0.00     0.013 A 
+ATOM     11  C0B Z31 A   1     -64.798-116.530 -47.331  1.00  0.00    -0.026 A 
+ATOM     12  C9A Z31 A   1     -65.093-117.779 -48.017  1.00  0.00    -0.025 A 
+ATOM     13  C6B Z31 A   1     -65.695-115.419 -47.468  1.00  0.00     0.012 A 
+ATOM     14  C8A Z31 A   1     -64.200-118.885 -47.872  1.00  0.00     0.022 A 
+ATOM     15  C3B Z31 A   1     -66.278-117.884 -48.824  1.00  0.00     0.012 A 
+ATOM     16  C4B Z31 A   1     -67.157-116.765 -48.946  1.00  0.00     0.001 A 
+ATOM     17  C5B Z31 A   1     -66.866-115.543 -48.272  1.00  0.00     0.001 A 
+ENDBRANCH   7   8
+BRANCH   7  18
+ATOM     18  O0A Z31 A   1     -61.392-120.369 -47.947  1.00  0.00    -0.386 OA
+ATOM     19  H8B Z31 A   1     -60.467-120.426 -47.738  1.00  0.00     0.210 HD
+ENDBRANCH   7  18
+ENDBRANCH   3   7
+BRANCH   4  20
+ATOM     20  N2A Z31 A   1     -63.397-122.439 -45.726  1.00  0.00    -0.384 N 
+ATOM     21  H8A Z31 A   1     -63.595-123.388 -45.378  1.00  0.00     0.157 HD
+ATOM     22  H9A Z31 A   1     -63.895-122.080 -46.554  1.00  0.00     0.157 HD
+ENDBRANCH   4  20
+BRANCH   1  23
+ATOM     23  N0A Z31 A   1     -60.591-121.255 -42.174  1.00  0.00    -0.370 N 
+ATOM     24  H7A Z31 A   1     -60.945-121.963 -41.515  1.00  0.00     0.161 HD
+BRANCH  23  25
+ATOM     25  C2A Z31 A   1     -59.472-120.393 -41.796  1.00  0.00     0.121 C 
+BRANCH  25  26
+ATOM     26  C1A Z31 A   1     -59.807-119.613 -40.731  1.00  0.00     0.015 C 
+ATOM     27  C0A Z31 A   1     -58.993-119.592 -39.501  1.00  0.00     0.006 C 
+ENDBRANCH  25  26
+ENDBRANCH  23  25
+ENDBRANCH   1  23
+TORSDOF 7
+
+ENDMDL
+MODEL 11
+REMARK VINA RESULT:      -6.2     23.842     26.120
+REMARK  7 active torsions:
+REMARK  status: ('A' for Active; 'I' for Inactive)
+REMARK    1  A    between atoms: C1A_2  and  C2A_3 
+REMARK    2  A    between atoms: C2A_3  and  N0A_4 
+REMARK    3  A    between atoms: N0A_4  and  C3A_5 
+REMARK    4  A    between atoms: C4A_7  and  C6A_12 
+REMARK    5  A    between atoms: C5A_8  and  N2A_11 
+REMARK    6  A    between atoms: C6A_12  and  C7A_13 
+REMARK    7  A    between atoms: C6A_12  and  O0A_23 
+ROOT
+ATOM      1  C3A Z31 A   1     -81.626 -98.144 -46.458  1.00  0.00     0.146 A 
+ATOM      2  S0A Z31 A   1     -82.167 -98.796 -47.938  1.00  0.00    -0.052 SA
+ATOM      3  C4A Z31 A   1     -80.646 -99.547 -48.151  1.00  0.00     0.062 A 
+ATOM      4  C5A Z31 A   1     -79.807 -99.264 -47.055  1.00  0.00     0.117 A 
+ATOM      5  N1A Z31 A   1     -80.378 -98.474 -46.123  1.00  0.00    -0.322 N 
+ATOM      6  H1A Z31 A   1     -79.913 -98.167 -45.269  1.00  0.00     0.169 HD
+ENDROOT
+BRANCH   3   7
+ATOM      7  C6A Z31 A   1     -80.368-100.290 -49.270  1.00  0.00     0.195 C 
+BRANCH   7   8
+ATOM      8  C7A Z31 A   1     -79.561 -99.730 -50.412  1.00  0.00    -0.024 A 
+ATOM      9  C2B Z31 A   1     -78.199-100.129 -50.561  1.00  0.00     0.011 A 
+ATOM     10  C1B Z31 A   1     -77.396 -99.600 -51.616  1.00  0.00     0.013 A 
+ATOM     11  C0B Z31 A   1     -77.938 -98.660 -52.534  1.00  0.00    -0.026 A 
+ATOM     12  C9A Z31 A   1     -79.325 -98.241 -52.402  1.00  0.00    -0.025 A 
+ATOM     13  C6B Z31 A   1     -77.133 -98.116 -53.589  1.00  0.00     0.012 A 
+ATOM     14  C8A Z31 A   1     -80.122 -98.781 -51.345  1.00  0.00     0.022 A 
+ATOM     15  C3B Z31 A   1     -79.872 -97.290 -53.330  1.00  0.00     0.012 A 
+ATOM     16  C4B Z31 A   1     -79.052 -96.761 -54.373  1.00  0.00     0.001 A 
+ATOM     17  C5B Z31 A   1     -77.692 -97.172 -54.499  1.00  0.00     0.001 A 
+ENDBRANCH   7   8
+BRANCH   7  18
+ATOM     18  O0A Z31 A   1     -80.789-101.577 -49.380  1.00  0.00    -0.386 OA
+ATOM     19  H8B Z31 A   1     -81.134-101.869 -48.544  1.00  0.00     0.210 HD
+ENDBRANCH   7  18
+ENDBRANCH   3   7
+BRANCH   4  20
+ATOM     20  N2A Z31 A   1     -78.545 -99.696 -46.896  1.00  0.00    -0.384 N 
+ATOM     21  H8A Z31 A   1     -78.154-100.396 -47.543  1.00  0.00     0.157 HD
+ATOM     22  H9A Z31 A   1     -77.968 -99.327 -46.125  1.00  0.00     0.157 HD
+ENDBRANCH   4  20
+BRANCH   1  23
+ATOM     23  N0A Z31 A   1     -82.390 -97.333 -45.658  1.00  0.00    -0.370 N 
+ATOM     24  H7A Z31 A   1     -83.262 -97.689 -45.242  1.00  0.00     0.161 HD
+BRANCH  23  25
+ATOM     25  C2A Z31 A   1     -81.957 -95.960 -45.399  1.00  0.00     0.121 C 
+BRANCH  25  26
+ATOM     26  C1A Z31 A   1     -81.710 -95.307 -46.568  1.00  0.00     0.015 C 
+ATOM     27  C0A Z31 A   1     -82.803 -94.817 -47.427  1.00  0.00     0.006 C 
+ENDBRANCH  25  26
+ENDBRANCH  23  25
+ENDBRANCH   1  23
+TORSDOF 7
+
+ENDMDL
+MODEL 12
+REMARK VINA RESULT:      -6.2     19.794     22.811
+REMARK  7 active torsions:
+REMARK  status: ('A' for Active; 'I' for Inactive)
+REMARK    1  A    between atoms: C1A_2  and  C2A_3 
+REMARK    2  A    between atoms: C2A_3  and  N0A_4 
+REMARK    3  A    between atoms: N0A_4  and  C3A_5 
+REMARK    4  A    between atoms: C4A_7  and  C6A_12 
+REMARK    5  A    between atoms: C5A_8  and  N2A_11 
+REMARK    6  A    between atoms: C6A_12  and  C7A_13 
+REMARK    7  A    between atoms: C6A_12  and  O0A_23 
+ROOT
+ATOM      1  C3A Z31 A   1     -85.026-104.579 -48.388  1.00  0.00     0.146 A 
+ATOM      2  S0A Z31 A   1     -85.247-105.181 -46.807  1.00  0.00    -0.052 SA
+ATOM      3  C4A Z31 A   1     -85.261-106.774 -47.426  1.00  0.00     0.062 A 
+ATOM      4  C5A Z31 A   1     -85.078-106.754 -48.823  1.00  0.00     0.117 A 
+ATOM      5  N1A Z31 A   1     -84.953-105.513 -49.337  1.00  0.00    -0.322 N 
+ATOM      6  H1A Z31 A   1     -84.818-105.313 -50.328  1.00  0.00     0.169 HD
+ENDROOT
+BRANCH   3   7
+ATOM      7  C6A Z31 A   1     -85.445-107.857 -46.605  1.00  0.00     0.195 C 
+BRANCH   7   8
+ATOM      8  C7A Z31 A   1     -84.283-108.654 -46.074  1.00  0.00    -0.024 A 
+ATOM      9  C2B Z31 A   1     -83.866-109.825 -46.775  1.00  0.00     0.011 A 
+ATOM     10  C1B Z31 A   1     -82.785-110.621 -46.288  1.00  0.00     0.013 A 
+ATOM     11  C0B Z31 A   1     -82.108-110.262 -45.091  1.00  0.00    -0.026 A 
+ATOM     12  C9A Z31 A   1     -82.515-109.071 -44.361  1.00  0.00    -0.025 A 
+ATOM     13  C6B Z31 A   1     -81.029-111.064 -44.590  1.00  0.00     0.012 A 
+ATOM     14  C8A Z31 A   1     -83.595-108.279 -44.861  1.00  0.00     0.022 A 
+ATOM     15  C3B Z31 A   1     -81.830-108.710 -43.150  1.00  0.00     0.012 A 
+ATOM     16  C4B Z31 A   1     -80.758-109.522 -42.670  1.00  0.00     0.001 A 
+ATOM     17  C5B Z31 A   1     -80.362-110.691 -43.386  1.00  0.00     0.001 A 
+ENDBRANCH   7   8
+BRANCH   7  18
+ATOM     18  O0A Z31 A   1     -86.689-108.238 -46.215  1.00  0.00    -0.386 OA
+ATOM     19  H8B Z31 A   1     -87.085-107.545 -45.700  1.00  0.00     0.210 HD
+ENDBRANCH   7  18
+ENDBRANCH   3   7
+BRANCH   4  20
+ATOM     20  N2A Z31 A   1     -85.035-107.828 -49.629  1.00  0.00    -0.384 N 
+ATOM     21  H8A Z31 A   1     -85.331-108.749 -49.276  1.00  0.00     0.157 HD
+ATOM     22  H9A Z31 A   1     -84.706-107.729 -50.601  1.00  0.00     0.157 HD
+ENDBRANCH   4  20
+BRANCH   1  23
+ATOM     23  N0A Z31 A   1     -84.937-103.245 -48.689  1.00  0.00    -0.370 N 
+ATOM     24  H7A Z31 A   1     -84.517-102.588 -48.016  1.00  0.00     0.161 HD
+BRANCH  23  25
+ATOM     25  C2A Z31 A   1     -85.442-102.759 -49.973  1.00  0.00     0.121 C 
+BRANCH  25  26
+ATOM     26  C1A Z31 A   1     -84.510-101.983 -50.592  1.00  0.00     0.015 C 
+ATOM     27  C0A Z31 A   1     -84.596-101.669 -52.030  1.00  0.00     0.006 C 
+ENDBRANCH  25  26
+ENDBRANCH  23  25
+ENDBRANCH   1  23
+TORSDOF 7
+
+ENDMDL
+MODEL 13
+REMARK VINA RESULT:      -6.2      3.802      6.993
+REMARK  7 active torsions:
+REMARK  status: ('A' for Active; 'I' for Inactive)
+REMARK    1  A    between atoms: C1A_2  and  C2A_3 
+REMARK    2  A    between atoms: C2A_3  and  N0A_4 
+REMARK    3  A    between atoms: N0A_4  and  C3A_5 
+REMARK    4  A    between atoms: C4A_7  and  C6A_12 
+REMARK    5  A    between atoms: C5A_8  and  N2A_11 
+REMARK    6  A    between atoms: C6A_12  and  C7A_13 
+REMARK    7  A    between atoms: C6A_12  and  O0A_23 
+ROOT
+ATOM      1  C3A Z31 A   1     -62.697-120.171 -42.938  1.00  0.00     0.146 A 
+ATOM      2  S0A Z31 A   1     -62.367-118.812 -43.914  1.00  0.00    -0.052 SA
+ATOM      3  C4A Z31 A   1     -62.606-119.768 -45.310  1.00  0.00     0.062 A 
+ATOM      4  C5A Z31 A   1     -62.945-121.086 -44.944  1.00  0.00     0.117 A 
+ATOM      5  N1A Z31 A   1     -62.985-121.286 -43.611  1.00  0.00    -0.322 N 
+ATOM      6  H1A Z31 A   1     -63.208-122.179 -43.171  1.00  0.00     0.169 HD
+ENDROOT
+BRANCH   3   7
+ATOM      7  C6A Z31 A   1     -62.455-119.244 -46.568  1.00  0.00     0.195 C 
+BRANCH   7   8
+ATOM      8  C7A Z31 A   1     -63.577-118.521 -47.266  1.00  0.00    -0.024 A 
+ATOM      9  C2B Z31 A   1     -64.240-119.159 -48.358  1.00  0.00     0.011 A 
+ATOM     10  C1B Z31 A   1     -65.291-118.495 -49.060  1.00  0.00     0.013 A 
+ATOM     11  C0B Z31 A   1     -65.692-117.183 -48.686  1.00  0.00    -0.026 A 
+ATOM     12  C9A Z31 A   1     -65.032-116.516 -47.575  1.00  0.00    -0.025 A 
+ATOM     13  C6B Z31 A   1     -66.740-116.506 -49.395  1.00  0.00     0.012 A 
+ATOM     14  C8A Z31 A   1     -63.984-117.192 -46.876  1.00  0.00     0.022 A 
+ATOM     15  C3B Z31 A   1     -65.437-115.189 -47.199  1.00  0.00     0.012 A 
+ATOM     16  C4B Z31 A   1     -66.483-114.535 -47.918  1.00  0.00     0.001 A 
+ATOM     17  C5B Z31 A   1     -67.127-115.190 -49.009  1.00  0.00     0.001 A 
+ENDBRANCH   7   8
+BRANCH   7  18
+ATOM     18  O0A Z31 A   1     -61.270-119.334 -47.227  1.00  0.00    -0.386 OA
+ATOM     19  H8B Z31 A   1     -61.175-118.588 -47.809  1.00  0.00     0.210 HD
+ENDBRANCH   7  18
+ENDBRANCH   3   7
+BRANCH   4  20
+ATOM     20  N2A Z31 A   1     -63.202-122.098 -45.789  1.00  0.00    -0.384 N 
+ATOM     21  H8A Z31 A   1     -62.437-122.711 -46.107  1.00  0.00     0.157 HD
+ATOM     22  H9A Z31 A   1     -64.164-122.262 -46.118  1.00  0.00     0.157 HD
+ENDBRANCH   4  20
+BRANCH   1  23
+ATOM     23  N0A Z31 A   1     -62.668-120.151 -41.568  1.00  0.00    -0.370 N 
+ATOM     24  H7A Z31 A   1     -63.545-120.187 -41.030  1.00  0.00     0.161 HD
+BRANCH  23  25
+ATOM     25  C2A Z31 A   1     -61.382-120.077 -40.874  1.00  0.00     0.121 C 
+BRANCH  25  26
+ATOM     26  C1A Z31 A   1     -61.190-118.834 -40.353  1.00  0.00     0.015 C 
+ATOM     27  C0A Z31 A   1     -62.210-118.181 -39.512  1.00  0.00     0.006 C 
+ENDBRANCH  25  26
+ENDBRANCH  23  25
+ENDBRANCH   1  23
+TORSDOF 7
+
+ENDMDL
+MODEL 14
+REMARK VINA RESULT:      -6.2      4.422      6.296
+REMARK  7 active torsions:
+REMARK  status: ('A' for Active; 'I' for Inactive)
+REMARK    1  A    between atoms: C1A_2  and  C2A_3 
+REMARK    2  A    between atoms: C2A_3  and  N0A_4 
+REMARK    3  A    between atoms: N0A_4  and  C3A_5 
+REMARK    4  A    between atoms: C4A_7  and  C6A_12 
+REMARK    5  A    between atoms: C5A_8  and  N2A_11 
+REMARK    6  A    between atoms: C6A_12  and  C7A_13 
+REMARK    7  A    between atoms: C6A_12  and  O0A_23 
+ROOT
+ATOM      1  C3A Z31 A   1     -65.491-116.369 -40.978  1.00  0.00     0.146 A 
+ATOM      2  S0A Z31 A   1     -64.090-116.130 -41.921  1.00  0.00    -0.052 SA
+ATOM      3  C4A Z31 A   1     -65.066-115.608 -43.223  1.00  0.00     0.062 A 
+ATOM      4  C5A Z31 A   1     -66.425-115.632 -42.851  1.00  0.00     0.117 A 
+ATOM      5  N1A Z31 A   1     -66.635-116.065 -41.591  1.00  0.00    -0.322 N 
+ATOM      6  H1A Z31 A   1     -67.556-116.150 -41.160  1.00  0.00     0.169 HD
+ENDROOT
+BRANCH   3   7
+ATOM      7  C6A Z31 A   1     -64.518-115.249 -44.427  1.00  0.00     0.195 C 
+BRANCH   7   8
+ATOM      8  C7A Z31 A   1     -64.500-116.191 -45.602  1.00  0.00    -0.024 A 
+ATOM      9  C2B Z31 A   1     -63.496-117.204 -45.664  1.00  0.00     0.011 A 
+ATOM     10  C1B Z31 A   1     -63.432-118.099 -46.775  1.00  0.00     0.013 A 
+ATOM     11  C0B Z31 A   1     -64.366-117.994 -47.842  1.00  0.00    -0.026 A 
+ATOM     12  C9A Z31 A   1     -65.399-116.970 -47.797  1.00  0.00    -0.025 A 
+ATOM     13  C6B Z31 A   1     -64.300-118.883 -48.965  1.00  0.00     0.012 A 
+ATOM     14  C8A Z31 A   1     -65.457-116.082 -46.679  1.00  0.00     0.022 A 
+ATOM     15  C3B Z31 A   1     -66.341-116.864 -48.877  1.00  0.00     0.012 A 
+ATOM     16  C4B Z31 A   1     -66.257-117.760 -49.986  1.00  0.00     0.001 A 
+ATOM     17  C5B Z31 A   1     -65.242-118.761 -50.028  1.00  0.00     0.001 A 
+ENDBRANCH   7   8
+BRANCH   7  18
+ATOM     18  O0A Z31 A   1     -63.990-114.011 -44.617  1.00  0.00    -0.386 OA
+ATOM     19  H8B Z31 A   1     -63.061-114.088 -44.801  1.00  0.00     0.210 HD
+ENDBRANCH   7  18
+ENDBRANCH   3   7
+BRANCH   4  20
+ATOM     20  N2A Z31 A   1     -67.463-115.283 -43.629  1.00  0.00    -0.384 N 
+ATOM     21  H8A Z31 A   1     -68.388-115.710 -43.476  1.00  0.00     0.157 HD
+ATOM     22  H9A Z31 A   1     -67.333-114.588 -44.379  1.00  0.00     0.157 HD
+ENDBRANCH   4  20
+BRANCH   1  23
+ATOM     23  N0A Z31 A   1     -65.472-116.844 -39.692  1.00  0.00    -0.370 N 
+ATOM     24  H7A Z31 A   1     -65.387-117.854 -39.514  1.00  0.00     0.161 HD
+BRANCH  23  25
+ATOM     25  C2A Z31 A   1     -65.575-115.906 -38.575  1.00  0.00     0.121 C 
+BRANCH  25  26
+ATOM     26  C1A Z31 A   1     -66.809-115.972 -38.005  1.00  0.00     0.015 C 
+ATOM     27  C0A Z31 A   1     -67.749-114.837 -38.059  1.00  0.00     0.006 C 
+ENDBRANCH  25  26
+ENDBRANCH  23  25
+ENDBRANCH   1  23
+TORSDOF 7
+
+ENDMDL
+MODEL 15
+REMARK VINA RESULT:      -6.2     26.660     27.429
+REMARK  7 active torsions:
+REMARK  status: ('A' for Active; 'I' for Inactive)
+REMARK    1  A    between atoms: C1A_2  and  C2A_3 
+REMARK    2  A    between atoms: C2A_3  and  N0A_4 
+REMARK    3  A    between atoms: N0A_4  and  C3A_5 
+REMARK    4  A    between atoms: C4A_7  and  C6A_12 
+REMARK    5  A    between atoms: C5A_8  and  N2A_11 
+REMARK    6  A    between atoms: C6A_12  and  C7A_13 
+REMARK    7  A    between atoms: C6A_12  and  O0A_23 
+ROOT
+ATOM      1  C3A Z31 A   1     -54.248 -95.375 -37.218  1.00  0.00     0.146 A 
+ATOM      2  S0A Z31 A   1     -52.738 -94.803 -36.667  1.00  0.00    -0.052 SA
+ATOM      3  C4A Z31 A   1     -52.021 -95.315 -38.132  1.00  0.00     0.062 A 
+ATOM      4  C5A Z31 A   1     -52.994 -95.888 -38.975  1.00  0.00     0.117 A 
+ATOM      5  N1A Z31 A   1     -54.231 -95.912 -38.438  1.00  0.00    -0.322 N 
+ATOM      6  H1A Z31 A   1     -55.052 -96.294 -38.907  1.00  0.00     0.169 HD
+ENDROOT
+BRANCH   3   7
+ATOM      7  C6A Z31 A   1     -50.677 -95.162 -38.360  1.00  0.00     0.195 C 
+BRANCH   7   8
+ATOM      8  C7A Z31 A   1     -49.724 -96.326 -38.285  1.00  0.00    -0.024 A 
+ATOM      9  C2B Z31 A   1     -50.089 -97.474 -37.519  1.00  0.00     0.011 A 
+ATOM     10  C1B Z31 A   1     -49.200 -98.586 -37.404  1.00  0.00     0.013 A 
+ATOM     11  C0B Z31 A   1     -47.933 -98.567 -38.047  1.00  0.00    -0.026 A 
+ATOM     12  C9A Z31 A   1     -47.542 -97.408 -38.836  1.00  0.00    -0.025 A 
+ATOM     13  C6B Z31 A   1     -47.032 -99.675 -37.926  1.00  0.00     0.012 A 
+ATOM     14  C8A Z31 A   1     -48.441 -96.302 -38.948  1.00  0.00     0.022 A 
+ATOM     15  C3B Z31 A   1     -46.260 -97.389 -39.485  1.00  0.00     0.012 A 
+ATOM     16  C4B Z31 A   1     -45.379 -98.504 -39.351  1.00  0.00     0.001 A 
+ATOM     17  C5B Z31 A   1     -45.763 -99.638 -38.576  1.00  0.00     0.001 A 
+ENDBRANCH   7   8
+BRANCH   7  18
+ATOM     18  O0A Z31 A   1     -50.155 -93.953 -38.691  1.00  0.00    -0.386 OA
+ATOM     19  H8B Z31 A   1     -49.697 -93.591 -37.942  1.00  0.00     0.210 HD
+ENDBRANCH   7  18
+ENDBRANCH   3   7
+BRANCH   4  20
+ATOM     20  N2A Z31 A   1     -52.778 -96.392 -40.201  1.00  0.00    -0.384 N 
+ATOM     21  H8A Z31 A   1     -52.262 -95.839 -40.901  1.00  0.00     0.157 HD
+ATOM     22  H9A Z31 A   1     -53.127 -97.331 -40.441  1.00  0.00     0.157 HD
+ENDBRANCH   4  20
+BRANCH   1  23
+ATOM     23  N0A Z31 A   1     -55.403 -95.308 -36.482  1.00  0.00    -0.370 N 
+ATOM     24  H7A Z31 A   1     -56.117 -96.045 -36.571  1.00  0.00     0.161 HD
+BRANCH  23  25
+ATOM     25  C2A Z31 A   1     -55.614 -94.185 -35.570  1.00  0.00     0.121 C 
+BRANCH  25  26
+ATOM     26  C1A Z31 A   1     -56.284 -93.178 -36.197  1.00  0.00     0.015 C 
+ATOM     27  C0A Z31 A   1     -57.739 -93.001 -36.038  1.00  0.00     0.006 C 
+ENDBRANCH  25  26
+ENDBRANCH  23  25
+ENDBRANCH   1  23
+TORSDOF 7
+
+ENDMDL
+MODEL 16
+REMARK VINA RESULT:      -6.0     13.243     16.375
+REMARK  7 active torsions:
+REMARK  status: ('A' for Active; 'I' for Inactive)
+REMARK    1  A    between atoms: C1A_2  and  C2A_3 
+REMARK    2  A    between atoms: C2A_3  and  N0A_4 
+REMARK    3  A    between atoms: N0A_4  and  C3A_5 
+REMARK    4  A    between atoms: C4A_7  and  C6A_12 
+REMARK    5  A    between atoms: C5A_8  and  N2A_11 
+REMARK    6  A    between atoms: C6A_12  and  C7A_13 
+REMARK    7  A    between atoms: C6A_12  and  O0A_23 
+ROOT
+ATOM      1  C3A Z31 A   1     -66.171-108.581 -39.170  1.00  0.00     0.146 A 
+ATOM      2  S0A Z31 A   1     -65.577-108.074 -37.654  1.00  0.00    -0.052 SA
+ATOM      3  C4A Z31 A   1     -64.296-107.258 -38.439  1.00  0.00     0.062 A 
+ATOM      4  C5A Z31 A   1     -64.407-107.410 -39.835  1.00  0.00     0.117 A 
+ATOM      5  N1A Z31 A   1     -65.462-108.158 -40.218  1.00  0.00    -0.322 N 
+ATOM      6  H1A Z31 A   1     -65.690-108.373 -41.188  1.00  0.00     0.169 HD
+ENDROOT
+BRANCH   3   7
+ATOM      7  C6A Z31 A   1     -63.334-106.589 -37.727  1.00  0.00     0.195 C 
+BRANCH   7   8
+ATOM      8  C7A Z31 A   1     -63.624-105.984 -36.378  1.00  0.00    -0.024 A 
+ATOM      9  C2B Z31 A   1     -62.916-106.464 -35.236  1.00  0.00     0.011 A 
+ATOM     10  C1B Z31 A   1     -63.182-105.933 -33.937  1.00  0.00     0.013 A 
+ATOM     11  C0B Z31 A   1     -64.163-104.920 -33.758  1.00  0.00    -0.026 A 
+ATOM     12  C9A Z31 A   1     -64.895-104.414 -34.910  1.00  0.00    -0.025 A 
+ATOM     13  C6B Z31 A   1     -64.443-104.391 -32.455  1.00  0.00     0.012 A 
+ATOM     14  C8A Z31 A   1     -64.617-104.949 -36.206  1.00  0.00     0.022 A 
+ATOM     15  C3B Z31 A   1     -65.887-103.390 -34.729  1.00  0.00     0.012 A 
+ATOM     16  C4B Z31 A   1     -66.149-102.878 -33.421  1.00  0.00     0.001 A 
+ATOM     17  C5B Z31 A   1     -65.432-103.376 -32.294  1.00  0.00     0.001 A 
+ENDBRANCH   7   8
+BRANCH   7  18
+ATOM     18  O0A Z31 A   1     -62.067-106.468 -38.201  1.00  0.00    -0.386 OA
+ATOM     19  H8B Z31 A   1     -62.067-106.602 -39.142  1.00  0.00     0.210 HD
+ENDBRANCH   7  18
+ENDBRANCH   3   7
+BRANCH   4  20
+ATOM     20  N2A Z31 A   1     -63.570-106.899 -40.753  1.00  0.00    -0.384 N 
+ATOM     21  H8A Z31 A   1     -62.908-107.515 -41.247  1.00  0.00     0.157 HD
+ATOM     22  H9A Z31 A   1     -63.591-105.891 -40.964  1.00  0.00     0.157 HD
+ENDBRANCH   4  20
+BRANCH   1  23
+ATOM     23  N0A Z31 A   1     -67.281-109.369 -39.330  1.00  0.00    -0.370 N 
+ATOM     24  H7A Z31 A   1     -67.486-109.796 -40.244  1.00  0.00     0.161 HD
+BRANCH  23  25
+ATOM     25  C2A Z31 A   1     -68.173-109.598 -38.193  1.00  0.00     0.121 C 
+BRANCH  25  26
+ATOM     26  C1A Z31 A   1     -69.474-109.586 -38.595  1.00  0.00     0.015 C 
+ATOM     27  C0A Z31 A   1     -70.038-108.457 -39.357  1.00  0.00     0.006 C 
+ENDBRANCH  25  26
+ENDBRANCH  23  25
+ENDBRANCH   1  23
+TORSDOF 7
+
+ENDMDL
+MODEL 17
+REMARK VINA RESULT:      -6.0     21.397     22.589
+REMARK  7 active torsions:
+REMARK  status: ('A' for Active; 'I' for Inactive)
+REMARK    1  A    between atoms: C1A_2  and  C2A_3 
+REMARK    2  A    between atoms: C2A_3  and  N0A_4 
+REMARK    3  A    between atoms: N0A_4  and  C3A_5 
+REMARK    4  A    between atoms: C4A_7  and  C6A_12 
+REMARK    5  A    between atoms: C5A_8  and  N2A_11 
+REMARK    6  A    between atoms: C6A_12  and  C7A_13 
+REMARK    7  A    between atoms: C6A_12  and  O0A_23 
+ROOT
+ATOM      1  C3A Z31 A   1     -82.807-105.515 -42.581  1.00  0.00     0.146 A 
+ATOM      2  S0A Z31 A   1     -84.211-105.528 -43.549  1.00  0.00    -0.052 SA
+ATOM      3  C4A Z31 A   1     -83.501-106.721 -44.546  1.00  0.00     0.062 A 
+ATOM      4  C5A Z31 A   1     -82.220-107.056 -44.065  1.00  0.00     0.117 A 
+ATOM      5  N1A Z31 A   1     -81.854-106.364 -42.967  1.00  0.00    -0.322 N 
+ATOM      6  H1A Z31 A   1     -80.960-106.476 -42.490  1.00  0.00     0.169 HD
+ENDROOT
+BRANCH   3   7
+ATOM      7  C6A Z31 A   1     -84.155-107.214 -45.646  1.00  0.00     0.195 C 
+BRANCH   7   8
+ATOM      8  C7A Z31 A   1     -84.518-108.671 -45.765  1.00  0.00    -0.024 A 
+ATOM      9  C2B Z31 A   1     -85.230-109.298 -44.699  1.00  0.00     0.011 A 
+ATOM     10  C1B Z31 A   1     -85.569-110.683 -44.764  1.00  0.00     0.013 A 
+ATOM     11  C0B Z31 A   1     -85.198-111.465 -45.892  1.00  0.00    -0.026 A 
+ATOM     12  C9A Z31 A   1     -84.473-110.845 -46.991  1.00  0.00    -0.025 A 
+ATOM     13  C6B Z31 A   1     -85.525-112.859 -45.959  1.00  0.00     0.012 A 
+ATOM     14  C8A Z31 A   1     -84.143-109.456 -46.917  1.00  0.00     0.022 A 
+ATOM     15  C3B Z31 A   1     -84.096-111.636 -48.131  1.00  0.00     0.012 A 
+ATOM     16  C4B Z31 A   1     -84.433-113.023 -48.176  1.00  0.00     0.001 A 
+ATOM     17  C5B Z31 A   1     -85.142-113.629 -47.096  1.00  0.00     0.001 A 
+ENDBRANCH   7   8
+BRANCH   7  18
+ATOM     18  O0A Z31 A   1     -84.528-106.396 -46.665  1.00  0.00    -0.386 OA
+ATOM     19  H8B Z31 A   1     -85.339-106.714 -47.045  1.00  0.00     0.210 HD
+ENDBRANCH   7  18
+ENDBRANCH   3   7
+BRANCH   4  20
+ATOM     20  N2A Z31 A   1     -81.384-107.958 -44.606  1.00  0.00    -0.384 N 
+ATOM     21  H8A Z31 A   1     -81.549-108.964 -44.462  1.00  0.00     0.157 HD
+ATOM     22  H9A Z31 A   1     -80.579-107.643 -45.167  1.00  0.00     0.157 HD
+ENDBRANCH   4  20
+BRANCH   1  23
+ATOM     23  N0A Z31 A   1     -82.640-104.699 -41.492  1.00  0.00    -0.370 N 
+ATOM     24  H7A Z31 A   1     -81.986-103.905 -41.534  1.00  0.00     0.161 HD
+BRANCH  23  25
+ATOM     25  C2A Z31 A   1     -83.397-104.965 -40.269  1.00  0.00     0.121 C 
+BRANCH  25  26
+ATOM     26  C1A Z31 A   1     -82.562-105.042 -39.196  1.00  0.00     0.015 C 
+ATOM     27  C0A Z31 A   1     -81.873-106.297 -38.841  1.00  0.00     0.006 C 
+ENDBRANCH  25  26
+ENDBRANCH  23  25
+ENDBRANCH   1  23
+TORSDOF 7
+
+ENDMDL
+MODEL 18
+REMARK VINA RESULT:      -5.9      4.327      7.544
+REMARK  7 active torsions:
+REMARK  status: ('A' for Active; 'I' for Inactive)
+REMARK    1  A    between atoms: C1A_2  and  C2A_3 
+REMARK    2  A    between atoms: C2A_3  and  N0A_4 
+REMARK    3  A    between atoms: N0A_4  and  C3A_5 
+REMARK    4  A    between atoms: C4A_7  and  C6A_12 
+REMARK    5  A    between atoms: C5A_8  and  N2A_11 
+REMARK    6  A    between atoms: C6A_12  and  C7A_13 
+REMARK    7  A    between atoms: C6A_12  and  O0A_23 
+ROOT
+ATOM      1  C3A Z31 A   1     -61.631-122.410 -42.831  1.00  0.00     0.146 A 
+ATOM      2  S0A Z31 A   1     -60.889-121.135 -43.686  1.00  0.00    -0.052 SA
+ATOM      3  C4A Z31 A   1     -61.859-121.494 -45.046  1.00  0.00     0.062 A 
+ATOM      4  C5A Z31 A   1     -62.718-122.574 -44.759  1.00  0.00     0.117 A 
+ATOM      5  N1A Z31 A   1     -62.567-123.070 -43.514  1.00  0.00    -0.322 N 
+ATOM      6  H1A Z31 A   1     -63.103-123.854 -43.141  1.00  0.00     0.169 HD
+ENDROOT
+BRANCH   3   7
+ATOM      7  C6A Z31 A   1     -61.740-120.787 -46.215  1.00  0.00     0.195 C 
+BRANCH   7   8
+ATOM      8  C7A Z31 A   1     -62.613-119.596 -46.513  1.00  0.00    -0.024 A 
+ATOM      9  C2B Z31 A   1     -62.497-118.429 -45.699  1.00  0.00     0.011 A 
+ATOM     10  C1B Z31 A   1     -63.325-117.290 -45.935  1.00  0.00     0.013 A 
+ATOM     11  C0B Z31 A   1     -64.286-117.301 -46.982  1.00  0.00    -0.026 A 
+ATOM     12  C9A Z31 A   1     -64.420-118.480 -47.826  1.00  0.00    -0.025 A 
+ATOM     13  C6B Z31 A   1     -65.129-116.165 -47.217  1.00  0.00     0.012 A 
+ATOM     14  C8A Z31 A   1     -63.582-119.612 -47.584  1.00  0.00     0.022 A 
+ATOM     15  C3B Z31 A   1     -65.392-118.490 -48.884  1.00  0.00     0.012 A 
+ATOM     16  C4B Z31 A   1     -66.221-117.347 -49.099  1.00  0.00     0.001 A 
+ATOM     17  C5B Z31 A   1     -66.089-116.194 -48.270  1.00  0.00     0.001 A 
+ENDBRANCH   7   8
+BRANCH   7  18
+ATOM     18  O0A Z31 A   1     -60.805-121.118 -47.143  1.00  0.00    -0.386 OA
+ATOM     19  H8B Z31 A   1     -60.638-120.369 -47.704  1.00  0.00     0.210 HD
+ENDBRANCH   7  18
+ENDBRANCH   3   7
+BRANCH   4  20
+ATOM     20  N2A Z31 A   1     -63.614-123.115 -45.600  1.00  0.00    -0.384 N 
+ATOM     21  H8A Z31 A   1     -64.015-124.042 -45.399  1.00  0.00     0.157 HD
+ATOM     22  H9A Z31 A   1     -63.900-122.603 -46.448  1.00  0.00     0.157 HD
+ENDBRANCH   4  20
+BRANCH   1  23
+ATOM     23  N0A Z31 A   1     -61.305-122.758 -41.546  1.00  0.00    -0.370 N 
+ATOM     24  H7A Z31 A   1     -60.479-122.344 -41.091  1.00  0.00     0.161 HD
+BRANCH  23  25
+ATOM     25  C2A Z31 A   1     -62.138-123.719 -40.825  1.00  0.00     0.121 C 
+BRANCH  25  26
+ATOM     26  C1A Z31 A   1     -61.925-123.626 -39.483  1.00  0.00     0.015 C 
+ATOM     27  C0A Z31 A   1     -63.035-123.708 -38.516  1.00  0.00     0.006 C 
+ENDBRANCH  25  26
+ENDBRANCH  23  25
+ENDBRANCH   1  23
+TORSDOF 7
+
+ENDMDL
+MODEL 19
+REMARK VINA RESULT:      -5.9     27.712     30.098
+REMARK  7 active torsions:
+REMARK  status: ('A' for Active; 'I' for Inactive)
+REMARK    1  A    between atoms: C1A_2  and  C2A_3 
+REMARK    2  A    between atoms: C2A_3  and  N0A_4 
+REMARK    3  A    between atoms: N0A_4  and  C3A_5 
+REMARK    4  A    between atoms: C4A_7  and  C6A_12 
+REMARK    5  A    between atoms: C5A_8  and  N2A_11 
+REMARK    6  A    between atoms: C6A_12  and  C7A_13 
+REMARK    7  A    between atoms: C6A_12  and  O0A_23 
+ROOT
+ATOM      1  C3A Z31 A   1     -66.136 -89.479 -59.238  1.00  0.00     0.146 A 
+ATOM      2  S0A Z31 A   1     -67.072 -89.962 -60.578  1.00  0.00    -0.052 SA
+ATOM      3  C4A Z31 A   1     -67.444 -91.427 -59.779  1.00  0.00     0.062 A 
+ATOM      4  C5A Z31 A   1     -66.834 -91.455 -58.509  1.00  0.00     0.117 A 
+ATOM      5  N1A Z31 A   1     -66.105 -90.355 -58.232  1.00  0.00    -0.322 N 
+ATOM      6  H1A Z31 A   1     -65.593 -90.210 -57.362  1.00  0.00     0.169 HD
+ENDROOT
+BRANCH   3   7
+ATOM      7  C6A Z31 A   1     -68.222 -92.387 -60.374  1.00  0.00     0.195 C 
+BRANCH   7   8
+ATOM      8  C7A Z31 A   1     -67.617 -93.540 -61.131  1.00  0.00    -0.024 A 
+ATOM      9  C2B Z31 A   1     -67.010 -94.606 -60.403  1.00  0.00     0.011 A 
+ATOM     10  C1B Z31 A   1     -66.403 -95.703 -61.086  1.00  0.00     0.013 A 
+ATOM     11  C0B Z31 A   1     -66.388 -95.749 -62.507  1.00  0.00    -0.026 A 
+ATOM     12  C9A Z31 A   1     -67.004 -94.673 -63.269  1.00  0.00    -0.025 A 
+ATOM     13  C6B Z31 A   1     -65.771 -96.843 -63.199  1.00  0.00     0.012 A 
+ATOM     14  C8A Z31 A   1     -67.612 -93.582 -62.575  1.00  0.00     0.022 A 
+ATOM     15  C3B Z31 A   1     -66.987 -94.720 -64.706  1.00  0.00     0.012 A 
+ATOM     16  C4B Z31 A   1     -66.366 -95.819 -65.374  1.00  0.00     0.001 A 
+ATOM     17  C5B Z31 A   1     -65.762 -96.871 -64.625  1.00  0.00     0.001 A 
+ENDBRANCH   7   8
+BRANCH   7  18
+ATOM     18  O0A Z31 A   1     -69.577 -92.350 -60.279  1.00  0.00    -0.386 OA
+ATOM     19  H8B Z31 A   1     -69.934 -91.889 -61.029  1.00  0.00     0.210 HD
+ENDBRANCH   7  18
+ENDBRANCH   3   7
+BRANCH   4  20
+ATOM     20  N2A Z31 A   1     -66.919 -92.455 -57.616  1.00  0.00    -0.384 N 
+ATOM     21  H8A Z31 A   1     -66.073 -92.977 -57.346  1.00  0.00     0.157 HD
+ATOM     22  H9A Z31 A   1     -67.830 -92.698 -57.200  1.00  0.00     0.157 HD
+ENDBRANCH   4  20
+BRANCH   1  23
+ATOM     23  N0A Z31 A   1     -65.450 -88.294 -59.174  1.00  0.00    -0.370 N 
+ATOM     24  H7A Z31 A   1     -65.583 -87.660 -58.373  1.00  0.00     0.161 HD
+BRANCH  23  25
+ATOM     25  C2A Z31 A   1     -64.529 -87.934 -60.251  1.00  0.00     0.121 C 
+BRANCH  25  26
+ATOM     26  C1A Z31 A   1     -63.248 -87.886 -59.791  1.00  0.00     0.015 C 
+ATOM     27  C0A Z31 A   1     -62.155 -88.605 -60.470  1.00  0.00     0.006 C 
+ENDBRANCH  25  26
+ENDBRANCH  23  25
+ENDBRANCH   1  23
+TORSDOF 7
+
+ENDMDL
+MODEL 20
+REMARK VINA RESULT:      -5.8     37.211     39.675
+REMARK  7 active torsions:
+REMARK  status: ('A' for Active; 'I' for Inactive)
+REMARK    1  A    between atoms: C1A_2  and  C2A_3 
+REMARK    2  A    between atoms: C2A_3  and  N0A_4 
+REMARK    3  A    between atoms: N0A_4  and  C3A_5 
+REMARK    4  A    between atoms: C4A_7  and  C6A_12 
+REMARK    5  A    between atoms: C5A_8  and  N2A_11 
+REMARK    6  A    between atoms: C6A_12  and  C7A_13 
+REMARK    7  A    between atoms: C6A_12  and  O0A_23 
+ROOT
+ATOM      1  C3A Z31 A   1     -60.674 -78.042 -40.112  1.00  0.00     0.146 A 
+ATOM      2  S0A Z31 A   1     -59.184 -78.803 -40.442  1.00  0.00    -0.052 SA
+ATOM      3  C4A Z31 A   1     -59.461 -78.599 -42.116  1.00  0.00     0.062 A 
+ATOM      4  C5A Z31 A   1     -60.687 -77.937 -42.329  1.00  0.00     0.117 A 
+ATOM      5  N1A Z31 A   1     -61.347 -77.640 -41.191  1.00  0.00    -0.322 N 
+ATOM      6  H1A Z31 A   1     -62.250 -77.166 -41.159  1.00  0.00     0.169 HD
+ENDROOT
+BRANCH   3   7
+ATOM      7  C6A Z31 A   1     -58.568 -79.060 -43.049  1.00  0.00     0.195 C 
+BRANCH   7   8
+ATOM      8  C7A Z31 A   1     -58.983 -80.010 -44.142  1.00  0.00    -0.024 A 
+ATOM      9  C2B Z31 A   1     -60.063 -80.912 -43.904  1.00  0.00     0.011 A 
+ATOM     10  C1B Z31 A   1     -60.468 -81.845 -44.906  1.00  0.00     0.013 A 
+ATOM     11  C0B Z31 A   1     -59.798 -81.895 -46.158  1.00  0.00    -0.026 A 
+ATOM     12  C9A Z31 A   1     -58.695 -80.984 -46.423  1.00  0.00    -0.025 A 
+ATOM     13  C6B Z31 A   1     -60.192 -82.838 -47.165  1.00  0.00     0.012 A 
+ATOM     14  C8A Z31 A   1     -58.301 -80.051 -45.414  1.00  0.00     0.022 A 
+ATOM     15  C3B Z31 A   1     -58.016 -81.036 -47.689  1.00  0.00     0.012 A 
+ATOM     16  C4B Z31 A   1     -58.427 -81.983 -48.676  1.00  0.00     0.001 A 
+ATOM     17  C5B Z31 A   1     -59.507 -82.877 -48.414  1.00  0.00     0.001 A 
+ENDBRANCH   7   8
+BRANCH   7  18
+ATOM     18  O0A Z31 A   1     -57.271 -78.653 -43.040  1.00  0.00    -0.386 OA
+ATOM     19  H8B Z31 A   1     -56.705 -79.397 -43.205  1.00  0.00     0.210 HD
+ENDBRANCH   7  18
+ENDBRANCH   3   7
+BRANCH   4  20
+ATOM     20  N2A Z31 A   1     -61.213 -77.615 -43.521  1.00  0.00    -0.384 N 
+ATOM     21  H8A Z31 A   1     -60.772 -76.885 -44.099  1.00  0.00     0.157 HD
+ATOM     22  H9A Z31 A   1     -62.059 -78.098 -43.859  1.00  0.00     0.157 HD
+ENDBRANCH   4  20
+BRANCH   1  23
+ATOM     23  N0A Z31 A   1     -61.169 -77.852 -38.848  1.00  0.00    -0.370 N 
+ATOM     24  H7A Z31 A   1     -61.877 -78.495 -38.467  1.00  0.00     0.161 HD
+BRANCH  23  25
+ATOM     25  C2A Z31 A   1     -60.686 -76.729 -38.045  1.00  0.00     0.121 C 
+BRANCH  25  26
+ATOM     26  C1A Z31 A   1     -60.278 -77.158 -36.819  1.00  0.00     0.015 C 
+ATOM     27  C0A Z31 A   1     -58.879 -77.015 -36.375  1.00  0.00     0.006 C 
+ENDBRANCH  25  26
+ENDBRANCH  23  25
+ENDBRANCH   1  23
+TORSDOF 7
+
+ENDMDL

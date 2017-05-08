@@ -1,0 +1,40 @@
+fifo:
+  distance_fifo: {out: distance_as_polymer, path: distance.fifo, script: /home/nfs_data/ohl/projects/BenchmarkCoulLowPhob/1a2c/static/fifo_processor.py,
+    stepsize: 2000}
+  traj_compression: {out: full_trajectory, path: traj.fifo, script: /home/nfs_data/ohl/projects/BenchmarkCoulLowPhob/1a2c/static/fifo_traj_compression.py,
+    stepsize: 2000}
+lammps_parameter:
+  active_site_ids: &id001 [43, 99, 212]
+  dielectric_par: 78
+  monomer_ids: [23, 24, 25]
+  time_steps: 200000
+  timestep: 17
+lammps_path: {config: /home/nfs_data/ohl/projects/BenchmarkCoulLowPhob/1a2c/jobs/abcd/config.yml,
+  fifo: /data/ohl/1a2c-abcd/fifo, input: /data/ohl/1a2c-abcd/input, local_root: /data/ohl/1a2c-abcd,
+  logs: /home/nfs_data/ohl/projects/BenchmarkCoulLowPhob/1a2c/jobs/abcd/logs, output: /data/ohl/1a2c-abcd/output,
+  root: /home/nfs_data/ohl/projects/BenchmarkCoulLowPhob/1a2c/jobs/abcd, script: /home/nfs_data/ohl/projects/BenchmarkCoulLowPhob/1a2c/static/clusterRunCoulHphob.in}
+sim_parameter:
+  active_site:
+    chain: [A, A, A]
+    iCode: [' ', ' ', ' ']
+    pdb_id: [43, 99, 212]
+    xyz: *id001
+  id: abcd
+  id_sequence: [23, 23, 24, 23, 23, 23, 25, 23, 23, 23, 24, 23, 23, 25, 23, 24, 24,
+    23, 23, 23]
+  local: 1
+  monomers: [NTA, BP, Glu]
+  named_sequence: [NTA, NTA, Glu, NTA, NTA, NTA, BP, NTA, NTA, NTA, Glu, NTA, NTA,
+    BP, NTA, Glu, Glu, NTA, NTA, NTA]
+  poly_length: 20
+  polymer_name: PIS2
+  protein: 1a2c
+  protein_name: Thrombin
+  sampling_rate: 100
+  weights: [3.0, 1.0, 1.0]
+sim_path: {active_site: /home/nfs_data/ohl/projects/BenchmarkCoulLowPhob/1a2c/static/active_sites.h5,
+  config: /home/nfs_data/ohl/projects/BenchmarkCoulLowPhob/1a2c/static/parameters_hp.yml,
+  lmp_script: /home/nfs_data/ohl/projects/BenchmarkCoulLowPhob/1a2c/static/clusterRunCoulHphob.in,
+  project: /home/nfs_data/ohl/projects/BenchmarkCoulLowPhob/1a2c, protein: /home/nfs_data/ohl/projects/BenchmarkCoulLowPhob/1a2c/static/1A2C.pdb,
+  root: /home/nfs_data/ohl/projects/BenchmarkCoulLowPhob/1a2c/jobs/abcd, script: /home/nfs_data/ohl/projects/BenchmarkCoulLowPhob/1a2c/static/sampling2.py,
+  sim_list: /home/nfs_data/ohl/projects/BenchmarkCoulLowPhob/1a2c/jobs/abcd/sim.list}

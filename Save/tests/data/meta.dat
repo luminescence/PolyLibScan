@@ -1,0 +1,13 @@
+[meta_data]
+polymer_name = PPG17
+rate = 200
+active_site = 43-A-43- |99-A-99- |212-A-212- 
+monomers = ['Dan', 'BP', 'NTA-Glu', 'Glu']
+poly_length = 20
+weights = [0.5, 3.0, 1.0, 1.0]
+run_time = 1.43
+id_sequence = 3|4|4|5|3|5|5|3|5|3|5|3|4|5|4|3|5|5|5|5
+time = 2016-11-02T14:35:00
+protein = 1a2c
+named_sequence = NTA-Glu|Glu|Glu|BP|NTA-Glu|BP|BP|NTA-Glu|BP|NTA-Glu|BP|NTA-Glu|Glu|BP|Glu|NTA-Glu|BP|BP|BP|BP
+

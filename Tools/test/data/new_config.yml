@@ -1,0 +1,58 @@
+# AminoAcid Masses: https://www.promega.com/-/media/files/resources/technical-references/amino-acid-abbreviations-and-molecular-weights.pdf
+# Monomer Charges/Weights : http://doi.wiley.com/10.1002/chem.201402399 (calculated by pybel)
+Angles:
+  peptide: {coef1: 50.0, coef2: 121.0, kind: harmonic}
+  polymer: {coef1: 40.0, coef2: 109.5, kind: harmonic}
+Atoms:
+  CA: {charge: 0.0, mass: 10.0, radius: 2.0}
+  CA_ghost: {charge: 0.0, interacting: 'False', mass: 150.0, radius: 1.0}
+  Ani: {charge: 0, mass: 274.0, radius: 3.0}
+  BA: {charge: 1, mass: 204.0, radius: 3.0}
+  BP: {charge: -2, mass: 375.0, radius: 2.0}
+  Bor: {charge: 0, mass: 262.0, radius: 2.0}
+  C5-BP: {charge: -2, mass: 474.0, radius: 2.0}
+  C6-BP: {charge: -2, mass: 488.0, radius: 2.0}
+  C6-CyH: {charge: 0, mass: 294.0, radius: 2.0}
+  C6-Sp: {charge: -1, mass: 198.0, radius: 2.0}
+  CBS: {charge: 1, mass: 307.0, radius: 2.0}
+  CBS-Boc: {charge: 0, mass: 406.0, radius: 2.0}
+  Dan: {charge: 0, mass: 361.0, radius: 2.0}
+  Dod: {charge: 0, mass: 253.0, radius: 2.0}
+  ED: {charge: 1, mass: 129.0, radius: 2.0}
+  Glu: {charge: 0, mass: 247.0, radius: 2.0}
+  Iso: {charge: 0, mass: 143.0, radius: 2.0}
+  NTA: {charge: -3, mass: 327.0, radius: 2.0}
+  NTA-Glu: {charge: -3, mass: 370.0, radius: 2.0}
+  ALA: {charge: 0, mass: 89.0, radius: 2.0}
+  ARG: {charge: 1, mass: 174.0, radius: 2.0}
+  ASN: {charge: 0, mass: 132.0, radius: 2.0}
+  ASP: {charge: -1, mass: 133.0, radius: 2.0}
+  CYS: {charge: 0, mass: 121.0, radius: 2.0}
+  GLN: {charge: 0, mass: 147.0, radius: 2.0}
+  GLU: {charge: -1, mass: 147.0, radius: 2.0}
+  GLY: {charge: 0, mass: 75.0, radius: 2.0}
+  HIS: {charge: 0, mass: 155.0, radius: 2.0}
+  ILE: {charge: 0, mass: 131.0, radius: 2.0}
+  LEU: {charge: 0, mass: 131.0, radius: 2.0}
+  LYS: {charge: 1, mass: 146.0, radius: 2.0}
+  MET: {charge: 0, mass: 149.0, radius: 2.0}
+  PHE: {charge: 0, mass: 165.0, radius: 2.0}
+  PRO: {charge: 0, mass: 115.0, radius: 2.0}
+  SER: {charge: 0, mass: 105.0, radius: 2.0}
+  THR: {charge: 0, mass: 119.0, radius: 2.0}
+  TRP: {charge: 0, mass: 204.0, radius: 2.0}
+  TYR: {charge: 0, mass: 181.0, radius: 2.0}
+  VAL: {charge: 0, mass: 117.0, radius: 2.0}
+Bonds:
+  bond1: {coef1: 120, coef2: 4.0, kind: harmonic}
+  ghost: {coef1: 10, coef2: 0.0, kind: harmonic}
+  peptide: {coef1: 337, coef2: 3.7, kind: harmonic}
+  polymer: {coef1: 310, coef2: 6, kind: harmonic}
+Dihedrals:
+  peptide: {coef1: 0.1, coef2: 0.5, coef3: 1.5, coef4: 120, kind: harmonic}
+Pairs:
+  affinity: {coef1: 0.0, coef2: 0.4, cutoff: 45, kind: morse, repulsive_only: 0, single_type_parametrised: True}
+  lj: {coef1: 1.0, cutoff: 12.0, kind: lj/cut, repulsive_only: 1, single_type_parametrised: True}
+  coulomb: {coef1: 78.0, coef2: 1.375, coef3: 0.112, cutoff: 45, kind: coul/diel, repulsive_only: 0, single_type_parametrised: False}
+globals: {affinity_file: ../data/affinities_Originals2.h5, angle_style: harmonic, atom_style: angle,
+  bond_style: harmonic, box_margin: 20, pair_style: hybrid}
