@@ -14,12 +14,12 @@ class TestCombine_Maker(ut.TestCase):
 
 	def __init__(self, *args, **kwargs):
 		super(TestCombine_Maker, self).__init__(*args, **kwargs)
-		env = Environment(local_path.joinpath('data', 'new_config.yml').as_posix())
+		env = Environment(local_path.joinpath('data', 'parameters_hp.yml').as_posix())
 		self.protein = ProteinCreator(env, local_path.joinpath('data/1LYA.pdb').as_posix())
 		self.polymer = PolymerCreator(env, ['ED', 'BP', 'CBS'], length=20, mode='random')
 
 	def test_random_start_position(self):
-		env = Environment(local_path.joinpath('data', 'new_config.yml').as_posix())
+		env = Environment(local_path.joinpath('data', 'parameters_hp.yml').as_posix())
 		self.protein.env = env
 		self.polymer.env = env
 		self.protein.create()
@@ -37,7 +37,7 @@ class TestCombine_Maker(ut.TestCase):
 
 	def test_overlap(self):
 		# Setup system
-		env = Environment(local_path.joinpath('data', 'new_config.yml').as_posix())
+		env = Environment(local_path.joinpath('data', 'parameters_hp.yml').as_posix())
 		self.protein.env = env
 		self.polymer.env = env
 		self.protein.create()
@@ -66,7 +66,7 @@ class TestCombine_Maker(ut.TestCase):
 												 env.molecules[keys[1]].data['particles']))
 
 	def test_random_start_position_distance(self):
-		env = Environment(local_path.joinpath('data', 'new_config.yml').as_posix())
+		env = Environment(local_path.joinpath('data', 'parameters_hp.yml').as_posix())
 		self.protein.env = env
 		self.polymer.env = env
 		self.protein.create()
@@ -85,7 +85,7 @@ class TestCombine_Maker(ut.TestCase):
 		self.assertLess(distance, polymer_radius+protein_radius)
 
 	def test_affinities(self):
-		env = Environment(local_path.joinpath('data', 'new_config.yml').as_posix())
+		env = Environment(local_path.joinpath('data', 'parameters_hp.yml').as_posix())
 		self.protein.env = env
 		self.polymer.env = env
 		self.protein.create()
@@ -107,7 +107,7 @@ class TestCombine_Maker(ut.TestCase):
 				self.assertTrue((a_type1, a_type2) in affinities)
 
 	def test_make_particle_unique(self):
-		env = Environment(local_path.joinpath('data', 'new_config.yml').as_posix())
+		env = Environment(local_path.joinpath('data', 'parameters_hp.yml').as_posix())
 		self.protein.env = env
 		self.polymer.env = env
 		self.protein.create()
