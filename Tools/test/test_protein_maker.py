@@ -24,10 +24,10 @@ class TestProtein_Maker(ut.TestCase):
         self.cfg_data['Dihedrals'] = {'peptide': {'kind': 'harmonic',
                                                     'coef1': 120,
                                                     'coef2': 4.0}}
-        self.cfg_data['Atoms'] = {'CA': {
+        self.cfg_data['Atoms'] = {'BB': {
                                     'mass': 10.0,
                                     'radius': 2.0},
-                                  'CA_ghost': {
+                                  'BB_ghost': {
                                     'mass': 10.0,
                                     'radius': 2.0},
                                   'BP': {
@@ -67,7 +67,12 @@ class TestProtein_Maker(ut.TestCase):
     def test_Create_default_Protein(self):
         protein = ProteinCreator(self.env, local_path.joinpath('data/1LYA.pdb').as_posix()).create()
         self.isProtein(protein)
-        self.assertTrue(len(protein.data['particles'])== 2*(338))
+        self.assertEqual(len(protein.data['particles']), 2*(338))
+
+    def test_Create_Protein_with_Ions(self):
+        protein = ProteinCreator(self.env, local_path.joinpath('data/1LYA.pdb').as_posix(), with_ions=True).create()
+        self.isProtein(protein)
+        self.assertEqual(len(protein.data['particles']), 2*(338+28))
 
     def test_ghost_option_non_valid(self):
         p_creator = ProteinCreator(self.env, local_path.joinpath('data/1LYA.pdb').as_posix(), 
@@ -78,11 +83,11 @@ class TestProtein_Maker(ut.TestCase):
         protein = ProteinCreator(self.env, local_path.joinpath('data/1LYA.pdb').as_posix(), 
                                 with_ghosts=True).create()
         self.isProtein(protein)     
-        self.assertTrue(len(protein.data['particles'])== 2*(338))
+        self.assertEqual(len(protein.data['particles']), 2*(338))
         protein = ProteinCreator(self.env, local_path.joinpath('data/1LYA.pdb').as_posix(), 
                                     with_ghosts=False).create()
         self.isProtein(protein)
-        self.assertTrue(len(protein.data['particles'])== 338)
+        self.assertEqual(len(protein.data['particles']), 338)
 
     def test_move_with_ghosts(self):
         pass
@@ -100,8 +105,8 @@ class TestProtein_Maker(ut.TestCase):
 
         self.isProtein(protein)
         self.assertEqual(protein.data['particles'][0].residue[0], protein.data['particles'][0].type_.name)
-        self.assertIn('CA', protein.env.atom_type)
-        self.assertIn('CA_ghost', protein.env.atom_type)
+        self.assertIn('BB', protein.env.atom_type)
+        self.assertIn('BB_ghost', protein.env.atom_type)
         self.assertIn('BP', protein.env.atom_type)
         self.assertEqual(len(protein.env.atom_type._defined_types), 23)
         # BP was never used
@@ -121,7 +126,7 @@ class TestProtein_Maker(ut.TestCase):
         self.assertAlmostEqual(first_particle.position[0],  9.93185711)
         self.assertAlmostEqual(first_particle.position[1],  81.30843353)
         self.assertAlmostEqual(first_particle.position[2],  34.65929031)
-    '''    
+    '''
     def test_cg_lvl_bbsc(self):
         
         protein = ProteinCreator(self.env, local_path.joinpath('data/1LYA.pdb').as_posix(), 
@@ -138,17 +143,26 @@ class TestProtein_Maker(ut.TestCase):
         protein = ProteinCreator(self.env, local_path.joinpath('data/1LYA.pdb').as_posix(), 
                                   add_protein_binding=True, with_ghosts=False).create()
         self.isProtein(protein)
-        self.assertTrue(len(protein.data['bonds'])== 338-1)
-        self.assertTrue(len(protein.data['angles'])== 338-2)
-        self.assertTrue(len(protein.data['dihedrals'])== 338-3)
+        self.assertEqual(len(protein.data['bonds']), 338-1)
+        self.assertEqual(len(protein.data['angles']), 338-2)
+        self.assertEqual(len(protein.data['dihedrals']), 338-3)
 
     def test_Without_add_protein_properties(self):
         protein = ProteinCreator(self.env, local_path.joinpath('data/1LYA.pdb').as_posix(), 
                                   add_protein_binding=False, with_ghosts=False).create()
         self.isProtein(protein)
-        self.assertTrue(len(protein.data['bonds'])== 0)
-        self.assertTrue(len(protein.data['angles'])== 0)
-        self.assertTrue(len(protein.data['dihedrals'])== 0)
+        self.assertEqual(len(protein.data['bonds']), 0)
+        self.assertEqual(len(protein.data['angles']), 0)
+        self.assertEqual(len(protein.data['dihedrals']), 0)
+
+    def test_ion_bonds(self):
+        protein = ProteinCreator(self.env, local_path.joinpath('data/1LYA.pdb').as_posix(), 
+                                  add_protein_binding=True, with_ghosts=True, with_ions=True).create()
+        bonds = [bond for bond in protein.data['bonds'] if bond.members[1].residue[2][0]=='H_NAG']
+        self.assertEqual(len(bonds), 28)
+        bond_types = set([bond.type_ for bond in bonds])
+        self.assertEqual(len(bond_types), 1)
+        self.assertEqual(list(bond_types)[0].name, 'ghost')
 
 if __name__ == '__main__':
     ut.main(verbosity=2)

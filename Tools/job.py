@@ -39,7 +39,8 @@ class Job(object):
     def setup_env(self):
         self.env = lmp.Environment(self.config.sim_path['config'])
         # Protein
-        self.protein_creator = lmp.ProteinCreator(self.env, self.config.sim_path['protein'])
+        self.protein_creator = lmp.ProteinCreator(self.env, self.config.sim_path['protein'], 
+                                                  with_ions=True)
         self.protein = self.protein_creator.create()
         self.protein_creator.change_to_res_based(self.protein)
         # Polymer

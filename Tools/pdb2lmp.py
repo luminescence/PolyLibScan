@@ -1,4 +1,5 @@
 import numpy as np
+import itertools as itt
 import Bio.PDB as PDB
 import yaml
 from lmp_types import *
@@ -9,18 +10,20 @@ from lmp_creator import LmpCreator
 class ProteinCreator(LmpCreator):
     '''
     input:
-        pdb_path:           string  | path to pdb file 
-                                      make sure the filename contains the pdb id.
-        config:             string  | path to config file
-        mol_id:             int     | id of the molecule
-        cg_lvl:             string  | specifies the level of coarse graining
-                                      options: full, bb+side, backbone, geometric_center
-        with_ghosts:        bool    | if true, ghost particles are added to hold real 
-                                      ones in place.
-        add_protein_binding:bool    | if true, particles are bound together as 
-                                      a polypeptide string
+        pdb_path:            string  | path to pdb file 
+                                       make sure the filename contains the pdb id.
+        config:              string  | path to config file
+        mol_id:              int     | id of the molecule
+        cg_lvl:              string  | specifies the level of coarse graining
+                                       options: full, bb+side, backbone, geometric_center
+        with_ions:           bool    | if true, ions are added to the protein and kept in 
+                                       place like all protein particles.
+        with_ghosts:         bool    | if true, ghost particles are added to hold real 
+                                       ones in place.
+        add_protein_binding: bool    | if true, particles are bound together as 
+                                       a polypeptide string
     '''
-    def __init__(self, environment, pdb_path, cg_lvl='backbone', with_ghosts=True, add_protein_binding=True):
+    def __init__(self, environment, pdb_path, cg_lvl='backbone', with_ions=False, with_ghosts=True, add_protein_binding=True):
         super(ProteinCreator, self).__init__(environment)
         self.mol_type = 'protein'
         self.pdb_path = pdb_path
@@ -28,6 +31,7 @@ class ProteinCreator(LmpCreator):
         self.options = {}
         self._cg_lvl = cg_lvl
         self._add_protein_binding = add_protein_binding
+        self._with_ions = with_ions
         self._with_ghosts = with_ghosts
 
     def __str__(self):
@@ -70,37 +74,55 @@ class ProteinCreator(LmpCreator):
             cg_lvl: string | options: full, bb+side, backbone
         '''
         if self.cg_lvl == 'backbone':
-            particles = self._extract_Calphas(lmp_obj)
+            particle_data_gen = self._extract_Calphas()
         elif self.cg_lvl == 'geometric_center':
-            particles = self._extract_resi_centered(lmp_obj)
+            particle_data_gen = self._extract_resi_centered()
         else:
             raise ValueError('%s-option is not implemented yet.' % self.cg_lvl)
+        particles = self._add_particles_to_molecule(lmp_obj, particle_data_gen)
+        
+        if self._with_ions:
+            ions_gen = self._extract_ions()
+            ions = self._add_particles_to_molecule(lmp_obj, ions_gen)
+            particles = np.concatenate((particles, ions))
+
         return particles
 
+    def _extract_ions(self):
+        filter_non_aa = lambda x: x.get_full_id()[3][0]!=' '
+        filter_out_water = lambda x: x.get_full_id()[3][0]!='W'
+        ions = filter(lambda x: filter_non_aa(x) and filter_out_water(x), 
+                      self.pdb_structure.get_atoms())
+
+        for i, atom in enumerate(ions):
+            yield atom.coord.copy(), atom.id, atom.parent.parent.id , atom.parent.id
+            
     def _read_pdb(self, filename):
         parser = PDB.PDBParser()
         return parser.get_structure('receptor', filename)
 
-    def _extract_resi_centered(self, lmp_obj):
+    def _extract_resi_centered(self):
         '''Extract the geometrical centers of all residues
         and places particles in those positions
         '''
         # filter out HETATM
-        residues = filter(lambda x:x.get_full_id()[3][0] == ' ', 
-                       [resi for resi in self.pdb_structure.get_residues()])
+        filter_out_non_aa = lambda x: x.id[0]==' '
+        residues = filter(filter_out_non_aa, self.pdb_structure.get_residues())
         resi_centers = np.zeros((len(residues),3), dtype=np.dtype('Float64'))
         for i, resi in enumerate(residues):
             atom_coords = np.array([atom.coord for atom in resi.child_list])
             center = atom_coords.mean(axis=0)
             resi_centers[i] = center
-        particles = np.empty(len(residues), dtype=object)
+            yield center, residues[i].resname, residues[i].parent.id , residues[i].id
 
-        for i, resi in enumerate(residues,0):
-            particles[i] = Particle(lmp_obj, self.env.new_id['particle'], lmp_obj.env.atom_type['CA'], 
-                                    resi_centers[i].copy())
-            particles[i].residue = (residues[i].resname, residues[i].parent.id , residues[i].id)
+    def _add_particles_to_molecule(self, lmp_obj, particle_data):
+        particles = []
+        for i, p in enumerate(particle_data):
+            particles.append(Particle(lmp_obj, self.env.new_id['particle'], lmp_obj.env.atom_type['BB'], 
+                                    p[0].copy()))
+            particles[-1].residue = (p[1], p[2], p[3])
 
-        return particles
+        return particles        
 
     def _get_config(self, res_type_config):
         with open(res_type_config) as f:
@@ -110,17 +132,13 @@ class ProteinCreator(LmpCreator):
         else:
             return type_data
 
-    def _extract_Calphas(self, lmp_obj):
-        atoms = filter(lambda x:'CA' in x.fullname, 
-                       [atom for atom in self.pdb_structure.get_atoms()])
+    def _extract_Calphas(self):
+        filter_c_alphas = lambda x: x.id=='CA' and x.element=='C'
+        atoms = filter(filter_c_alphas, self.pdb_structure.get_atoms())
         particles = np.empty(len(atoms), dtype=object)
 
         for i, atom in enumerate(atoms,0):
-            particles[i] = Particle(lmp_obj, self.env.new_id['particle'], lmp_obj.env.atom_type['CA'], 
-                                    atom.coord.copy())
-            particles[i].residue = (atom.get_parent().resname, atom.parent.parent.id , atom.parent.id)
-
-        return particles
+            yield atom.coord.copy(), atom.get_parent().resname, atom.parent.parent.id , atom.parent.id
 
     def add_ghost_particles(self, lmp_obj):
         '''Adds the same particle to the system but with a different atom type 
@@ -134,8 +152,9 @@ class ProteinCreator(LmpCreator):
         g_bonds = []
         for i, real_particle in enumerate(lmp_obj.data['particles']):
             g_particles[i] = Particle(lmp_obj, self.env.new_id['particle'],
-                                    lmp_obj.env.atom_type['CA_ghost'],
+                                    lmp_obj.env.atom_type['BB_ghost'],
                                     real_particle.position.copy())
+            g_particles[i].residue = ('ghost', real_particle.residue[1], ('ghost', ' ',  ' '))
         
             # create bonds
             if 'ghost' not in lmp_obj.env.bond_type:
@@ -149,26 +168,27 @@ class ProteinCreator(LmpCreator):
 
     def add_protein_properties(self, protein):
         '''Adds the bonds, angles and dihedrals to the particles that
-        are typical for the protein, i.e. its a chain.
+        are typical for the protein, i.e. it's a chain.
         '''
         particle_no = len(protein.data['particles'])
         bonds = []
-        angles = []    
+        angles = []
         dihedrals = []
-        for i, particle in enumerate(protein.data['particles']):
-            if i+1 < particle_no:
-                if particle.mol_id == protein.data['particles'][i+1].mol_id:
+        filter_non_aa = lambda x: x.residue[2][0]==' '
+        amino_acids = filter(filter_non_aa, protein.data['particles'])
+
+        for particle1,particle2 in itt.izip(amino_acids[:-1], amino_acids[1:]):
+                if particle1.mol_id == particle2.mol_id:
                     bonds.append(Bond(self.env.new_id['bond'], protein.env.bond_type['peptide'], 
-                                    [particle, protein.data['particles'][i+1]] ) )
-                    
-            if i+2 < particle_no:
-                if particle.mol_id == protein.data['particles'][i+1].mol_id and particle.mol_id == protein.data['particles'][i+2].mol_id:
-                    angles.append( Angle( self.env.new_id['angle'], protein.env.angle_type['peptide'], 
-                                        [ particle, protein.data['particles'][i+1], protein.data['particles'][i+2]] ) )
-            if i+3 < particle_no:
-                if particle.mol_id == protein.data['particles'][i+1].mol_id and particle.mol_id == protein.data['particles'][i+2].mol_id and particle.mol_id == protein.data['particles'][i+3].mol_id:
+                                 [particle1, particle2]))
+        for particle1,particle2,particle3 in itt.izip(amino_acids[:-2], amino_acids[1:-1], amino_acids[2:]):
+                if particle1.mol_id == particle2.mol_id and particle2.mol_id == particle3.mol_id:
+                    angles.append(Angle(self.env.new_id['angle'], protein.env.angle_type['peptide'], 
+                                         [particle1, particle2, particle3]))
+        for particle1,particle2,particle3,particle4 in itt.izip(amino_acids[:-3], amino_acids[1:-2], amino_acids[2:-1], amino_acids[3:]):
+                if particle1.mol_id == particle2.mol_id and particle1.mol_id == particle3.mol_id and particle1.mol_id == particle4.mol_id:
                     dihedrals.append(Dihedral(self.env.new_id['dihedral'], protein.env.dihedral_type['peptide'], 
-                                            [ particle, protein.data['particles'][i+1], protein.data['particles'][i+2], protein.data['particles'][i+3]]))
+                                            [particle1, particle2, particle3, particle4]))
         
         protein.data['bonds']     += bonds
         protein.data['angles']    +=  angles
@@ -185,7 +205,7 @@ class ProteinCreator(LmpCreator):
         #get max id
         max_id = max([a_type.Id for a_type in self.types['particles'].values()])
 
-        real_particle = np.extract([x.type_.name !='CA_ghost' for x in self.data['particles']], self.data['particles'])
+        real_particle = np.extract([x.type_.name !='BB_ghost' for x in self.data['particles']], self.data['particles'])
         for i, particle in enumerate(real_particle):
             type_id = max_id + 1 + i
             #print type_id
@@ -204,7 +224,7 @@ class ProteinCreator(LmpCreator):
             for name, config_type in type_data.items():
                 molecule.env.atom_type.define_type(name, AtomType(name, config_type))
         ## read particle res and change restype
-        real_particle = np.extract([x.type_.name !='CA_ghost' for x in molecule.data['particles']], molecule.data['particles'])
+        real_particle = np.extract([x.type_.name !='BB_ghost' for x in molecule.data['particles']], molecule.data['particles'])
         for i, particle in enumerate(real_particle):
             if particle.residue[0] in molecule.env.atom_type:
                 particle.type_ = molecule.env.atom_type[particle.residue[0]]

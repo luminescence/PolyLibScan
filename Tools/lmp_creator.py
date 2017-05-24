@@ -21,6 +21,15 @@ class LmpCreator(object):
         return '\n'.join(string)
 
     def create(self):
+        '''Creates the molecule in the default order that is identical for
+        proteins and polymers. The internal methods
+        - _create_config
+        - _create_particles_and_interactions
+        - _create_custom 
+        are different for protein and polymers.
+        The molecule in embedded into the environment of the creator and 
+        also returned at the end.
+        '''
         molecule = LmpObj(self.env)
         self._create_config(molecule)
         self._create_particles_and_interactions(molecule)
