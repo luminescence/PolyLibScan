@@ -4,15 +4,20 @@ import itertools as it
 import epitopsy.DXFile as dx
 import PolyLibScan.helpers.pymol as pym
 import numerics as numerics
+import os as _os
+import jinja2 as ji
 
 class PymolVisualisation(object):
-    
+    atom_names = ['C', 'N', 'O', 'S', 'H']
+
     def __init__(self, job, protein_path=None):
         self.sim = job
+        self._module_folder = _os.path.dirname(__file__)
+        self.db_folder = self.sim.db_path.parent.absolute().resolve()
         if protein_path:
             self.protein_path = protein_path
         else:
-            potential_pdb_location = list(self.sim.db_path.parent.parent.parent.joinpath('static').glob('*.pdb'))
+            potential_pdb_location = list(self.db_folder.parent.parent.joinpath('static').glob('*.pdb'))
             if len(potential_pdb_location) == 1:
                 self.protein_path = potential_pdb_location[0].absolute().resolve()
             else:
@@ -67,7 +72,6 @@ class PymolVisualisation(object):
     
     def _map_path(self, monomer_id, margin, resolution):
         prefix = 'map_'
-        root = self.sim.db_path.parent
         if not (isinstance(monomer_id, list) or isinstance(monomer_id, np.ndarray)):
             monomer_id = [monomer_id]
         mono_str = 'ID-%s_' % 'X'.join(map(str, monomer_id))
@@ -75,7 +79,7 @@ class PymolVisualisation(object):
         resolution_str = 'R-%.02f_' % (round(resolution,2))
         suffix = '.dx'
         name = ''.join([prefix, mono_str, margin_str, resolution_str, suffix])
-        return root.joinpath(name).absolute().resolve()
+        return self.db_folder.joinpath(name).absolute().resolve()
     
     def save_density_maps(self, margin=20, resolution=1.0):
         complete_box = None
@@ -95,6 +99,20 @@ class PymolVisualisation(object):
             complete_box_size = complete_box[1] - complete_box[0]
             dx_obj = dx.DXBox(box=complete_map, meshsize=complete_box_size/complete_map.shape, offset=complete_box[0])
             dx_obj.write(complete_path.as_posix())
+
+    def _poly_end_poses(self):
+        elements = {id_: name for id_, name in zip(self.sim._particle_ids['polymer'], self.atom_names)}
+        mask = np.in1d(self.sim._parse.load_traj_type_order(), self.sim._particle_ids['polymer'])
+        pose_list_type = [('id', '>i2'), ('ele', '|S1'), ('x', np.float), ('y', np.float), ('z', np.float)]
+        pose_data = np.zeros(mask.sum(), dtype=pose_list_type)
+        pose_data['id'] = np.arange(1, mask.sum()+1)
+        pose_data['ele'] = map(lambda x:elements[x], self.sim[0].coordinates()['end'][mask]['atom_type'])
+        for run in self.sim:
+            coords = run.coordinates()['end'][mask]
+            pose_data['x'] = coords['x']
+            pose_data['y'] = coords['y']
+            pose_data['z'] = coords['z']
+            yield pose_data
 
     def setup(self):
         self.pymol_handle.delete('all')
@@ -126,3 +144,18 @@ class PymolVisualisation(object):
         self.pymol_handle.do('cmd.isosurface("%s", "%s", level=%f)' % (surface_name, pymol_name, 
                                                                                level))
         self.pymol_handle.do('color blue, %s' % surface_name)
+
+    def _create_polymer_pdb(self):
+        gen = self._poly_end_poses()
+        output_path = self.db_folder.joinpath('polymer_.pdb').as_posix()
+        with open('%s/pymol_polymer.tpl' % self._module_folder) as f:
+            template = ji.Template(f.read())
+        with open(output_path, 'w') as f2:
+            f2.write(template.render(pymol=self))
+        return output_path
+
+    def add_polymers(self):
+        polymer_pdb_path = self._create_polymer_pdb()
+        self.pymol_handle.load(polymer_pdb_path)
+        self.pymol_handle.show_as('sphere', 'polymer_')
+        self.pymol_handle.do('cmd.set("sphere_scale", 2.0, "all")')

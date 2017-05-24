@@ -71,17 +71,24 @@ class Parser(PolyLibScan.helpers.db.Database):
             self.open()
         return self._load_ctable('/trajectories', 'traj_%d' % Id, as_iterator=True)
 
-    def save_hist_data(self, frequency, energy):
+    def save_hist_data(self, distance, energy):
+        '''Save the observables of distance and energy to the database.
+
+        Since this involves writing to the database, it opens the 
+        database in write mode and writes to the /histogram table.
+        The timestep information is in the distance argument.
+        '''
         if self.is_open():
             self.close()
         self.open(mode='a')
         results_dtype = [('distance', np.float), ('frequency', np.int),
                          ('energy', np.float)]
-        data = np.empty(frequency.shape[0], results_dtype)
-        data['distance'] = frequency['distance']
-        data['frequency'] = frequency['frequency']
+        data = np.empty(distance.shape[0], results_dtype)
+        data['distance'] = distance['distance']
+        data['frequency'] = distance['frequency']
         data['energy'] = energy['energy']
         self._save_table(data, '/', 'histogramm')
+        self.close()
 
     def hist_data(self):
         if not self.is_open():
