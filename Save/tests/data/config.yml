@@ -1,0 +1,23 @@
+lammps_path: {input: /home/ludwig/workspace/MonomerAnalysis/ChargeBasedModel/data/processing/samplingTests/LocalSimRun/abcd/input,
+  output: /home/ludwig/workspace/MonomerAnalysis/ChargeBasedModel/data/processing/samplingTests/LocalSimRun/abcd/output,
+  root: /home/ludwig/workspace/MonomerAnalysis/ChargeBasedModel/data/processing/samplingTests/LocalSimRun/abcd,
+  script: /home/ludwig/workspace/MonomerAnalysis/ChargeBasedModel/data/raw/clusterRun.in}
+lammps_parameter: {dielectric_par: 78, time_steps: 200000, timestep: 17}
+sim_parameter:
+  local: 0
+  monomers: [NTA, BP, Glu]
+  poly_length: 20
+  polymer_name: PIS3
+  protein: 1lya
+  protein_name: CathepsinD
+  sampling_rate: 1
+  weights: [2.0, 2.0, 1.0]
+sim_path: {active_site: /home/ludwig/workspace/MonomerAnalysis/ChargeBasedModel/data/raw/active_sites.h5,
+  config: /home/ludwig/workspace/MonomerAnalysis/ChargeBasedModel/data/raw/parameters_hp.yml,
+  protein: /home/ludwig/workspace/MonomerAnalysis/data/receptors/CathepsinD/1LYA.pdb,
+  root: ../../data/processing/samplingTests/LocalSimRun/abcd}
+fifo:
+  distance_fifo: {out: distance_as_polymer, path: distance.fifo, script: /home/ludwig/workspace/MonomerAnalysis/ChargeBasedModel/data/raw/fifo_processor.py, 
+                  stepsize: 2000}
+  traj_compression: {path: traj.fifo, script: /home/ludwig/workspace/MonomerAnalysis/ChargeBasedModel/data/raw/fifo_traj_compression.py,
+                     out: full_trajectory, stepsize: 2000}

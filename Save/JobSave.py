@@ -5,7 +5,7 @@ import sys
 import tarfile
 import PolyLibScan.Tools.config as cfg
 
-__git_hash__ = sys.modules['LammpsJobSave'].__git_hash__
+__git_hash__ = sys.modules['PolyLibScan'].__git_hash__
 
 class JobSave(object):
 

@@ -1,11 +1,8 @@
 import os
 from lammps import lammps
-import LammpsTools as lmp
-import LammpsJobSave as lmpJobSave
-import lmpWriter as l_writer
-import config
-import fifo
-import misc.time as tm
+import Tools
+import Save
+import helpers.time as tm
 import tempfile as temp
 
 class Job(object):
@@ -23,7 +20,7 @@ class Job(object):
             self.config.lmp_path['fifo'] = temp.mkdtemp()
 
     def read_config(self, path):
-        return config.JobConfig(path)
+        return Tools.config.JobConfig(path)
 
     def _create_fifos(self):
         fifo = {}
@@ -37,24 +34,24 @@ class Job(object):
         return fifo
 
     def setup_env(self):
-        self.env = lmp.Environment(self.config.sim_path['config'])
+        self.env = Tools.Environment(self.config.sim_path['config'])
         # Protein
-        self.protein_creator = lmp.ProteinCreator(self.env, self.config.sim_path['protein'], 
+        self.protein_creator = Tools.ProteinCreator(self.env, self.config.sim_path['protein'], 
                                                   with_ions=True)
         self.protein = self.protein_creator.create()
         self.protein_creator.change_to_res_based(self.protein)
         # Polymer
         if 'named_sequence' in self.config.sim_parameter:
-            self.polymer_creator = lmp.PolymerCreator(self.env, self.config.sim_parameter['named_sequence'], mode='cycle')
+            self.polymer_creator = Tools.PolymerCreator(self.env, self.config.sim_parameter['named_sequence'], mode='cycle')
         else:
-            self.polymer_creator = lmp.PolymerCreator(self.env, 
+            self.polymer_creator = Tools.PolymerCreator(self.env, 
                 self.config.sim_parameter['monomers'], weights=self.config.sim_parameter['weights'], 
                 length=self.config.sim_parameter['poly_length'])
         self.poly = self.polymer_creator.create()
 
-        self.sim = lmp.EnvManipulator(self.env, auto_repulsion=False)
+        self.sim = Tools.EnvManipulator(self.env, auto_repulsion=False)
         self.sim.create_random_start_positions()
-        self.setup_writer = l_writer.LmpWriter(self.env)
+        self.setup_writer = Tools.LmpWriter(self.env)
 
         # Update Lammps Parameters
         self.config.sim_parameter['named_sequence'] = [particle.type_.name for particle in self.poly.data['particles']]
@@ -76,12 +73,14 @@ class Job(object):
             fifo.terminate()
 
     def setup_job_save(self):
-        self.compactor = lmpJobSave.JobSave(self.config.sim_path['root'])
+        self.compactor = Save.JobSave(self.config.sim_path['root'])
 
     def save(self):
+        '''Save the data of the completed simulations to HDF5 database.
+        '''
         self.compactor.save()
         self.compactor.save_versions(lmp_version=lammps().version(),
-                                     lmp_tool_hash=lmp.__git_hash__)
+                                     lmp_tool_hash=Tools.__git_hash__)
         self.compactor._db.close()
 
     def clean_up(self):
@@ -200,7 +199,7 @@ class Job(object):
         return sorted(monomer_ids)      
 
 
-class TrajCompressionFifo(fifo.FiFo):
+class TrajCompressionFifo(Tools.FiFo):
     '''This class feeds the output of LAMMPS to 
     the python script that calculates the distance between 
     the polymer and the active site.
@@ -234,7 +233,7 @@ class TrajCompressionFifo(fifo.FiFo):
         return 'dump fifo_traj solid xyz %d "%s"' % (self.step_size, self.fifo_path)
 
 
-class DistanceFifo(fifo.FiFo):
+class DistanceFifo(Tools.FiFo):
     '''This class feeds the output of LAMMPS to 
     the python script that calculates the distance between 
     the polymer and the active site.

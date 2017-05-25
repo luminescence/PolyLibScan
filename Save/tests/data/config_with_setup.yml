@@ -1,0 +1,38 @@
+fifo:
+  distance_fifo: {out: distance_as_polymer, path: distance.fifo, script: /home/ludwig/workspace/MonomerAnalysis/ChargeBasedModel/data/raw/fifo_processor.py,
+    stepsize: 2000}
+  traj_compression: {out: full_trajectory, path: traj.fifo, script: /home/ludwig/workspace/MonomerAnalysis/ChargeBasedModel/data/raw/fifo_traj_compression.py,
+    stepsize: 2000}
+lammps_parameter:
+  active_site_ids: &id001 [33, 223]
+  dielectric_par: 78
+  monomer_ids: [23, 24]
+  time_steps: 200000
+  timestep: 17
+lammps_path: {fifo: /tmp/tmp9ljSak, input: /home/ludwig/workspace/MonomerAnalysis/ChargeBasedModel/data/processing/samplingTests/LocalSimRun/abcd/input,
+  local_root: /home/ludwig/workspace/MonomerAnalysis/ChargeBasedModel/data/processing/samplingTests/LocalSimRun/abcd,
+  output: /home/ludwig/workspace/MonomerAnalysis/ChargeBasedModel/data/processing/samplingTests/LocalSimRun/abcd/output,
+  root: /home/ludwig/workspace/MonomerAnalysis/ChargeBasedModel/data/processing/samplingTests/LocalSimRun/abcd,
+  script: /home/ludwig/workspace/MonomerAnalysis/ChargeBasedModel/data/raw/clusterRun.in}
+sim_parameter:
+  active_site:
+    chain: [A, B]
+    iCode: [' ', ' ']
+    pdb_id: [33, 231]
+    xyz: *id001
+  id_sequence: [23, 24, 23, 23, 24, 24, 24, 24, 24, 23, 23, 24, 23, 24, 23, 24, 23,
+    23, 24, 24]
+  local: 0
+  monomers: [BA, Glu]
+  named_sequence: [BA, Glu, BA, BA, Glu, Glu, Glu, Glu, Glu, BA, BA, Glu, BA, Glu,
+    BA, Glu, BA, BA, Glu, Glu]
+  poly_length: 20
+  polymer_name: PPGBA4.2
+  protein: 1a2c
+  protein_name: Thrombin
+  sampling_rate: 10
+  weights: [1.0, 1.0]
+sim_path: {active_site: /home/ludwig/workspace/MonomerAnalysis/ChargeBasedModel/data/raw/active_sites.h5,
+  config: /home/ludwig/workspace/MonomerAnalysis/ChargeBasedModel/data/raw/parameters_hp.yml,
+  protein: /home/ludwig/workspace/MonomerAnalysis/data/receptors/CathepsinD/1LYA.pdb,
+  root: ../../data/processing/samplingTests/LocalSimRun/abcd, sim_list: ../../data/processing/samplingTests/LocalSimRun/abcd/sim.list}

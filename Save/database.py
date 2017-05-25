@@ -1,10 +1,10 @@
 import tables as tb
 import numpy as np
-import misc.db
+import PolyLibScan.helpers.db as DB
 import parser
 import compute
 
-class Database(misc.db.Database):
+class Database(DB.Database):
     """docstring for Database"""
     def __init__(self, path, mode='w'):
         super(Database, self).__init__(path, mode)

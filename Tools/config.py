@@ -1,7 +1,7 @@
 import os
-import misc.config
+import PolyLibScan.helpers.config
 
-class JobConfig(misc.config.Config2):
+class JobConfig(PolyLibScan.helpers.config.Config2):
     '''Child of misc config base class.
     '''
 
@@ -25,11 +25,11 @@ class JobConfig(misc.config.Config2):
         data['lammps_parameter'] = self.lmp_parameter
         data['lammps_path'] = self.lmp_path
         data['fifo'] = self.fifo
-
         data['sim_parameter'] = self.sim_parameter
         data['sim_path'] = self.sim_path
         with open(path, 'w') as f:
-            misc.config.yaml.dump(data, f)
+            PolyLibScan.helpers.config.yaml.dump(data, f)
+        return path
 
     def copy(self):
          new_conf = JobConfig(self.config_path)

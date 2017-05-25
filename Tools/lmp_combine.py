@@ -7,7 +7,7 @@ import numpy as np
 import itertools as it
 import sets
 import pandas as pd
-import misc.db as db
+import PolyLibScan.Database.db as db
 
 class EnvManipulator(object):
     '''LmpObj constructor is not used here!!

@@ -31,7 +31,7 @@ class Test_compute(ut.TestCase):
 						 (2, 0.0, -5.0, 0.0),
 						 (3, 0.0, 0.0, 0.0),], dtype=dtype)
 		poly_ids = np.array([2,3])
-		active_site = np.array([0,1,2])
+		active_site = np.array([1,2,3])
 
 		results = compute.distance_to_active_site(coordinates, poly_ids, active_site)
 
