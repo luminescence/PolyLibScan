@@ -1,8 +1,8 @@
 import json
 import numpy as np
-import PolyLibScan.helpers.db
+import PolyLibScan.helpers.db as DB
 
-class Parser(PolyLibScan.helpers.db.Database):
+class Parser(DB.Database):
 
     def __init__(self, path, mode='r'):
         super(Parser, self).__init__(path, mode)

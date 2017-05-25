@@ -251,6 +251,7 @@ class PolymerTypeSims(object):
                 tag = 'non-inhibiting'
         else:
             line_style = '-'
+            tag = ' '
         if not max_distance_range:
             max_distance_range = self.distance_probability['distance'].shape[0]
         if cumulative:

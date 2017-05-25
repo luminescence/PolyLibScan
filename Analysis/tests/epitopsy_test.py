@@ -28,7 +28,6 @@ class TestEpitopsy(ut.TestCase):
 
 		# test box size
 
-
 	def test_create_empty_epitopsy_map(self):
 		box, epitopsy_data = self.job.pymol._create_empty_epitopsy_map()
 

@@ -57,6 +57,7 @@ class Job(object):
         self.config.sim_parameter['named_sequence'] = [particle.type_.name for particle in self.poly.data['particles']]
         self.config.sim_parameter['id_sequence'] = [particle.type_.Id for particle in self.poly.data['particles']]
         as_data = self.sim.activeSiteParticles(self.protein, self.config.sim_path['active_site'])
+        # the mapping ensures that vanilla python objects are used as the initial data is numpy-based.
         self.config.sim_parameter['active_site'] = {'xyz': map(int, as_data['xyz']), 
                                                     'chain': map(str, as_data['chain']), 
                                                     'pdb_id': map(int, as_data['pdb_id']), 
@@ -175,8 +176,8 @@ class Job(object):
 
     def _switch_to_local(self):
         '''if the data of the simulations 
-        are to be stored locally, the lmp paths 
-        are changed accordinly.
+        is to be stored locally, the lmp paths 
+        are changed to local folders.
         '''
         new_paths = self.create_local_env()
         self.config.lmp_path.update(new_paths)
@@ -267,4 +268,6 @@ class DistanceFifo(Tools.FiFo):
         return os.path.join(self.parent.config.lmp_path['output'], file_name)
 
 def localhost():
+    """return the nodename of the computer.
+    """
     return os.uname()[1]

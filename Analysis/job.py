@@ -356,7 +356,7 @@ class Job(bayes.Job):
             if self._energy_distance_distribution == None:
                 try:
                     results = self._parse.hist_data()
-                except parser.misc.db.tb.NoSuchNodeError:
+                except parser.DB.tb.NoSuchNodeError:
                     results = self._calc_distance_density(self)
                     self._parse.save_hist_data(results,
                                                results)
@@ -376,7 +376,7 @@ class Job(bayes.Job):
             if self._energy_distance_distribution == None:
                 try:
                     results = self._parse.hist_data()
-                except parser.misc.db.tb.NoSuchNodeError:
+                except parser.DB.tb.NoSuchNodeError:
                     results = self._calc_distance_density(self)
                     self._parse.save_hist_data(results[['distance', 'frequency']],
                                                results[ 'energy'])
