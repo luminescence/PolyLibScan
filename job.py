@@ -5,6 +5,9 @@ import Save
 import helpers.time as tm
 import tempfile as temp
 
+import helpers.git as _git
+__git_hash__ = _git.get_git_hash(__file__)
+
 class Job(object):
 
     def __init__(self, config_path):
@@ -81,7 +84,7 @@ class Job(object):
         '''
         self.compactor.save()
         self.compactor.save_versions(lmp_version=lammps().version(),
-                                     lmp_tool_hash=Tools.__git_hash__)
+                                     lmp_tool_hash=__git_hash__)
         self.compactor._db.close()
 
     def clean_up(self):
