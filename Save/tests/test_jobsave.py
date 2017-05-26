@@ -37,7 +37,7 @@ class Test_JobSave(ut.TestCase):
 		#if self.db_file2.exists():
 		#	self.db_file2.unlink()
 		obj = js.JobSave(self.path.as_posix(), db_name='test2.h5')
-		self.assertTrue(obj.has_error())
+		self.assertFalse(obj.has_error())
 
 		obj._db.close()
 		obj.db_path.unlink()
@@ -46,6 +46,18 @@ class Test_JobSave(ut.TestCase):
 		with self.assertRaises(Exception):
 			js_obj = js.JobSave(self.path.as_posix(), db_name='test.h5')
 
-	
+	def test_git_hashes(self):
+		'''since the hashes and versions will change in the future,
+		we will just check for failure.
+		'''
+		js_obj = js.JobSave(self.path.as_posix(), db_name='test2.h5')
+		self.assertNotEqual(js_obj.__git_hash__, ' ')
+		js_obj._db.close()
+		js_obj.db_path.unlink()
+
+	def test_job_length(self):
+		js_obj = js.JobSave(self.path.as_posix(), db_name='test2.h5')
+		self.assertEqual(len(js_obj.runs), 0)
+
 if __name__ == '__main__':
     ut.main(verbosity=2)

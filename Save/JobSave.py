@@ -5,12 +5,15 @@ import sys
 import tarfile
 import PolyLibScan.Tools.config as cfg
 
-__git_hash__ = sys.modules['PolyLibScan'].__git_hash__
-
 class JobSave(object):
 
-    def __init__(self, root_path, db_name='jobdata.h5', overwrite=False): 
+    __git_hash__ = sys.modules['PolyLibScan'].__git_hash__
+
+    def __init__(self, root_path, db_name='jobdata.h5', overwrite=False):
         self.root = pl.Path(root_path)
+        setup = self.root.joinpath('config_with_setup.yml')
+        if not setup.exists():
+            raise FileNotFoundError('%s does not exist. You have to run sims first' % setup.as_posix())
         self.config = cfg.JobConfig(self.root.joinpath('config_with_setup.yml').as_posix())
         self.path = self._set_paths(self.root)
         self.db_path = pl.Path(root_path).joinpath(db_name)
@@ -62,7 +65,7 @@ class JobSave(object):
             if energy.exists() and end_traj != None:
                 runs.append(Run(run_id, input_file, energy, 
                                 start_traj, end_traj, distance_file, traj_file))
-        return runs        
+        return runs
 
     def info(self):
         print('%d Simulations will be saved.' % len(self.runs))
@@ -87,7 +90,7 @@ class JobSave(object):
         return False
 
     def save_versions(self, lmp_version=None):
-        versions = {'PolyLibScan': str(__git_hash__)}
+        versions = {'PolyLibScan': str(self.__git_hash__)}
         if lmp_version:
             versions['LAMMPS'] = str(lmp_version)
         else:
@@ -98,17 +101,16 @@ class JobSave(object):
         shutil.rmtree(self.config.lmp_path['local_root'])
 
     def clean_up(self, force=False):
-        if not self.saved and not force:
-            return 
-        for run in self.runs:
-            run.energy.unlink()
-            run.end_traj.unlink()
-            run.input_path.unlink()
-            run.start_traj.unlink()
-            if run.distance:
-                run.distance.unlink()
-            if run.full_traj:
-                run.full_traj.unlink()
+        if self.saved or force:
+            for run in self.runs:
+                run.energy.unlink()
+                run.end_traj.unlink()
+                run.input_path.unlink()
+                run.start_traj.unlink()
+                if run.distance:
+                    run.distance.unlink()
+                if run.full_traj:
+                    run.full_traj.unlink()
 
         if not self.has_error():
             if self.path['logs'].joinpath('slurm.out').exists():

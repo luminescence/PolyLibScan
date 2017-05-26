@@ -70,6 +70,9 @@ class TestProtein_Maker(ut.TestCase):
         self.assertEqual(len(protein.data['particles']), 2*(338))
 
     def test_Create_Protein_with_Ions(self):
+        '''compared to the default protein creation, there are 28 new atoms 
+        from the inhibitor of the 1LYA model.
+        '''
         protein = ProteinCreator(self.env, local_path.joinpath('data/1LYA.pdb').as_posix(), with_ions=True).create()
         self.isProtein(protein)
         self.assertEqual(len(protein.data['particles']), 2*(338+28))
@@ -80,10 +83,15 @@ class TestProtein_Maker(ut.TestCase):
         self.assertRaises(ValueError)
 
     def test_ghost_option(self):
+        '''create 2 different proteins: one with ghost proteins and one 
+        without. The protein model with ghost particles should have twice
+        the number of particles.
+        '''
         protein = ProteinCreator(self.env, local_path.joinpath('data/1LYA.pdb').as_posix(), 
                                 with_ghosts=True).create()
         self.isProtein(protein)     
         self.assertEqual(len(protein.data['particles']), 2*(338))
+
         protein = ProteinCreator(self.env, local_path.joinpath('data/1LYA.pdb').as_posix(), 
                                     with_ghosts=False).create()
         self.isProtein(protein)
