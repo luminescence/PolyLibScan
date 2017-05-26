@@ -102,7 +102,7 @@ class Database(DB.Database):
         self._save_array(data, '/trajectories', 'traj_%d' % id_, compress=True)
 
     def save_versions(self, version_info):
-        np_format = [('program', '|S8'), ('version', '|S40')]
+        np_format = [('program', '|S11'), ('version', '|S40')]
         data = np.array(version_info.items(), dtype=np_format)
         
         self._save_table(data, '/meta', 'versions')

@@ -86,12 +86,8 @@ class JobSave(object):
             return True
         return False
 
-    def save_versions(self, lmp_tool_hash=None, lmp_version=None):
-        versions = {'lmp_save': __git_hash__}
-        if lmp_tool_hash:
-            versions['lmp_tool'] = str(lmp_tool_hash)
-        else:
-            versions['lmp_tool'] = ''
+    def save_versions(self, lmp_version=None):
+        versions = {'PolyLibScan': str(__git_hash__)}
         if lmp_version:
             versions['LAMMPS'] = str(lmp_version)
         else:
