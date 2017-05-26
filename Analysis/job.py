@@ -323,7 +323,7 @@ class Job(bayes.Job):
                     self._charge = self._calculate_polymer_charge()
                 return self._charge
             else:
-                raise AttributeError('Set parameter attribute with path or dict.')
+                raise AttributeError('Set parameters by path or dict.')
         def fset(self, value):
             self._charge = value
         def fdel(self):

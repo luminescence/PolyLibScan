@@ -84,10 +84,13 @@ class Job(object):
     def save(self):
         '''Save the data of the completed simulations to HDF5 database.
         '''
-        self.compactor.save()
-        self.compactor.save_versions(lmp_version=lammps().version(),
-                                     lmp_tool_hash=__git_hash__)
-        self.compactor._db.close()
+        if not hasattr(self, 'compactor'):
+            self.setup_job_save()
+        try:
+            self.compactor.save()
+            self.compactor.save_versions(lmp_version=lammps().version())
+        finally:
+            self.compactor._db.close()
 
     def clean_up(self):
         self.compactor.clean_up()
