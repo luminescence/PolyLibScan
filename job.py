@@ -19,8 +19,8 @@ class Job(object):
         if self.config.sim_parameter['local'] == 1:
             self._switch_to_local()
         else:
-            self.config.lmp_path['local_root'] = self.config.lmp_path['root']
-            self.config.lmp_path['fifo'] = temp.mkdtemp()
+            new_paths = self.create_folders(self.config.lmp_path['root'])
+            self.config.lmp_path.update(new_paths)
 
     def read_config(self, path):
         return Tools.config.JobConfig(path)
@@ -67,7 +67,9 @@ class Job(object):
                                                     'iCode': map(str, as_data['iCode'])}
         self.config.lmp_parameter['active_site_ids'] = self.config.sim_parameter['active_site']['xyz']
         self.config.lmp_parameter['monomer_ids'] = self._get_monomer_ids()
-        self.config.save()
+        # the config with added information is always saved to the root directory
+        config_with_setup = os.path.join(self.config.sim_path['root'], 'config_with_setup.yml')
+        self.config.save(config_with_setup)
         # fifos can only be created if the monomer ids are known
         self.fifo = self._create_fifos()
 
@@ -139,7 +141,7 @@ class Job(object):
         self.terminate_fifos()
 
     def create_local_env(self, local_dir='/data/ohl/'):
-        '''
+        '''Create unique local job-folder and create the 
         '''
         name_comp = self.config.sim_path['root'].split('/')[-3:]
         if name_comp[1] == 'jobs':
@@ -150,19 +152,26 @@ class Job(object):
         local_folder = os.path.join(local_dir, folder_name)
         if not os.path.exists(local_folder):
             os.mkdir(local_folder)
-        local_input_folder = os.path.join(local_folder, 'input')
-        if not os.path.exists(local_input_folder):
-            os.mkdir(local_input_folder)
-        local_output_folder = os.path.join(local_folder, 'output')
-        if not os.path.exists(local_output_folder):
-            os.mkdir(local_output_folder)
-        local_fifo_folder = os.path.join(local_folder, 'fifo')
-        if not os.path.exists(local_fifo_folder):
-            os.mkdir(local_fifo_folder)
-        new_paths = {'local_root': local_folder,
-                     'input': local_input_folder, 
-                     'output': local_output_folder,
-                     'fifo': local_fifo_folder}
+        new_paths = self.create_folders(local_folder)
+        return new_paths
+
+    def create_folders(self, root_folder):
+        '''Create the three needed folder in the root_folder
+        in case they do not already exist.
+        '''
+        input_folder = os.path.join(root_folder, 'input')
+        if not os.path.exists(input_folder):
+            os.mkdir(input_folder)
+        output_folder = os.path.join(root_folder, 'output')
+        if not os.path.exists(output_folder):
+            os.mkdir(output_folder)
+        fifo_folder = os.path.join(root_folder, 'fifo')
+        if not os.path.exists(fifo_folder):
+            os.mkdir(fifo_folder)
+        new_paths = {'local_root': root_folder,
+                     'input': input_folder, 
+                     'output': output_folder,
+                     'fifo': fifo_folder}
         return new_paths
 
     def _get_last_uncompleted_index(self):
