@@ -40,7 +40,7 @@ class PymolVisualisation(object):
         return atom_type_filter
 
     def _add_run_to_epitopsy_map(self, run_id, monomer_id, resolution, box, epitopsy_map):
-        """add all mapped coordinates to epitopsy grid
+        """Add all mapped coordinates to epitopsy grid.
         """
         particle_order = self.sim._parse.load_traj_type_order()
         type_filter = self._create_atom_type_filter(particle_order, monomer_id)
@@ -53,6 +53,12 @@ class PymolVisualisation(object):
         return epitopsy_map
     
     def create_epitopsy_map(self, monomer_id, margin=20, resolution=1.0, norm=None, save=False):
+        '''Create a 3-dimensional density map of one monomers. This density map 
+        
+        input:
+        monomer_id: 
+        norm: if true, rescales all values by deviding through the maximum value of the map. [bool]
+        '''
         if not monomer_id in self.sim._particle_ids['polymer']:
             raise ValueError("Id %d is not an ID of an monomer. Choose from %s" % (monomer_id, self.sim._particle_ids['polymer']))
 
@@ -71,6 +77,8 @@ class PymolVisualisation(object):
         return box, normed_epi_box
     
     def _map_path(self, monomer_id, margin, resolution):
+        '''Create a unique path name for the 3d-density map.
+        '''
         prefix = 'map_'
         if not (isinstance(monomer_id, list) or isinstance(monomer_id, np.ndarray)):
             monomer_id = [monomer_id]
