@@ -7,6 +7,124 @@ import numerics as numerics
 import os as _os
 import jinja2 as ji
 
+class DensityContainer(object):
+    """docstring for DensityContainer"""
+    def __init__(self, simulation, monomer_id='all', margin=20.0, resolution=2.0):
+        super(DensityContainer, self).__init__()
+        self.sim = simulation
+        self.monomer_id = monomer_id
+        self.db_folder = self.sim.db_path.parent.absolute().resolve()
+        self.margin = margin
+        self.resolution = resolution
+        
+        self.box, self.box_size, self.map = self._create_empty_map()
+
+    @property
+    def monomer_id(self):
+        return self._monomer_id
+
+    @monomer_id.setter
+    def monomer_id(self, value)
+        if isinstance(value, int):
+            m_id = [monomer_id]
+        elif isinstance(value, np.ndarray)):
+            m_id = list(value)
+        elif isinstance(value, list)):
+            m_id = value
+        elif value == 'all':
+            m_id = list(self.sim._particle_ids['polymer'])
+        else:
+            raise ValueError('monomer_id must be int or list or "all".')
+        if len(set(m_id) - set(self.sim._particle_ids['polymer'])) > 0:
+            raise ValueError("Some Ids are not ids of monomer. Choose from %s" % self.sim._particle_ids['polymer'])
+        else:
+            self._monomer_id = m_id
+
+    @property
+    def margin(self):
+        return self._margin
+
+    @margin.setter
+    def margin(self):
+        raise UserWarning('This attribute should not be changed after object creation.')
+    
+    @property
+    def resolution(self):
+        return self._resolution
+
+    @resolution.setter
+    def resolution(self):
+        raise UserWarning('This attribute should not be changed after object creation.')
+
+
+    def _create_empty_map(self):
+        '''Set up an empty array for the density and get the size and offset 
+        of the protein model.
+        '''
+        box = self.sim._calc_protein_box(self.margin)
+        self.box_size = (box[1] - box[0])
+        epi_map = np.zeros(np.ceil(self.box_size/float(self.resolution))+1, np.int32)
+        return box, box_size, epi_map
+        
+    def _map_path(self, monomer_id):
+        '''Create a unique path name for the 3d-density map.
+        '''
+        prefix = 'map_'
+        mono_str = 'ID-%s_' % 'X'.join(map(str, monomer_id))
+        margin_str = 'M-%.02f_' % (round(self.margin,2))
+        resolution_str = 'R-%.02f_' % (round(self.resolution,2))
+        suffix = '.dx'
+        name = ''.join([prefix, mono_str, margin_str, resolution_str, suffix])
+        return self.db_folder.joinpath(name).absolute().resolve()
+
+    def _create_atom_type_filter(self, particle_order, monomer_id):
+        mask = np.in1d(particle_order, monomer_id)
+        iterator = it.cycle(mask)
+        def atom_type_filter(whatever):
+            return iterator.next()
+        return atom_type_filter
+
+    def _add_run_to_epitopsy_map(self, run_id, monomer_id):
+        """Add all mapped coordinates to epitopsy grid.
+        """
+        particle_order = self.sim._parse.load_traj_type_order()
+        type_filter = self._create_atom_type_filter(particle_order, self.monomer_id)
+        offset = self.box[0]
+        traj_iterator = self.sim._parse.trajectory(run_id)
+        monomer_coords = it.ifilter(type_filter, traj_iterator)
+        for coord in it.ifilter(lambda x:numerics.in_box(x, self.box), monomer_coords):
+            idx = np.around(((coord - offset) / self.resolution)).astype(np.int)
+            self.map[idx[0],idx[1],idx[2]] += 1
+        return self.map
+    
+    def create_epitopsy_map(self, monomer_id, margin=20, resolution=1.0, norm=None, save=False):
+        '''Create a 3-dimensional density map of one monomers. This density map 
+        
+        input:
+        monomer_id: 
+        norm: if true, rescales all values by deviding through the maximum value of the map. [bool]
+        '''
+        box, epi_box = self._create_empty_epitopsy_map(self.margin, self.resolution)
+        for run in tqdm.tqdm_notebook(self.sim, leave=False, desc='Adding Job data'):
+            self._add_run_to_epitopsy_map(run.Id, monomer_id)
+        if norm:
+            normed_epi_box = epi_box / epi_box.max().astype(np.float)
+        else:
+            normed_epi_box = epi_box
+        if save:
+            box_size = box[1] - box[0]
+            dx_obj = dx.DXBox(box=normed_epi_box, meshsize=box_size/normed_epi_box.shape, offset=box[0])
+            path = self._map_path(monomer_id, margin, resolution)
+            dx_obj.write(path.as_posix())
+        return box, normed_epi_box
+
+    def save(self):
+        '''Save data to the dx format via the DXBox object of epitopsy.
+        '''
+        box_size = (self.box[1] - self.box[0])
+        dx_obj = dx.DXBox(box=self.map, meshsize=box_size/self.map.shape, offset=self.box[0])
+        dx_obj.write(self._map_path().as_posix())
+
 class PymolVisualisation(object):
     atom_names = ['C', 'N', 'O', 'S', 'H']
 
@@ -23,71 +141,6 @@ class PymolVisualisation(object):
             else:
                 self.protein_path = None
         self.pymol_handle = pym.connect(ip='localhost')
-
-    def _create_empty_epitopsy_map(self, margin=20, resolution=0.5):
-        box = self.sim._calc_protein_box(margin)
-        box_size = (box[1] - box[0])
-        epi_map = np.zeros(np.ceil(box_size/float(resolution))+1, np.int32)
-        return box, epi_map
-    
-    def _create_atom_type_filter(self, particle_order, monomer_id):
-        if isinstance(monomer_id, int):
-            monomer_id = [monomer_id]
-        mask = np.in1d(particle_order, monomer_id)
-        iterator = it.cycle(mask)
-        def atom_type_filter(whatever):
-            return iterator.next()
-        return atom_type_filter
-
-    def _add_run_to_epitopsy_map(self, run_id, monomer_id, resolution, box, epitopsy_map):
-        """Add all mapped coordinates to epitopsy grid.
-        """
-        particle_order = self.sim._parse.load_traj_type_order()
-        type_filter = self._create_atom_type_filter(particle_order, monomer_id)
-        offset = box[0]
-        traj_iterator = self.sim._parse.trajectory(run_id)
-        monomer_coords = it.ifilter(type_filter, traj_iterator)
-        for coord in it.ifilter(lambda x:numerics.in_box(x, box), monomer_coords):
-            idx = np.around(((coord - offset) / resolution)).astype(np.int)
-            epitopsy_map[idx[0],idx[1],idx[2]] += 1
-        return epitopsy_map
-    
-    def create_epitopsy_map(self, monomer_id, margin=20, resolution=1.0, norm=None, save=False):
-        '''Create a 3-dimensional density map of one monomers. This density map 
-        
-        input:
-        monomer_id: 
-        norm: if true, rescales all values by deviding through the maximum value of the map. [bool]
-        '''
-        if not monomer_id in self.sim._particle_ids['polymer']:
-            raise ValueError("Id %d is not an ID of an monomer. Choose from %s" % (monomer_id, self.sim._particle_ids['polymer']))
-
-        box, epi_box = self._create_empty_epitopsy_map(margin, resolution)
-        for run in tqdm.tqdm_notebook(self.sim, leave=False, desc='Adding Job data'):
-            self._add_run_to_epitopsy_map(run.Id, monomer_id, resolution, box, epi_box)
-        if norm:
-            normed_epi_box = epi_box / epi_box.max().astype(np.float)
-        else:
-            normed_epi_box = epi_box
-        if save:
-            box_size = box[1] - box[0]
-            dx_obj = dx.DXBox(box=normed_epi_box, meshsize=box_size/normed_epi_box.shape, offset=box[0])
-            path = self._map_path(monomer_id, margin, resolution)
-            dx_obj.write(path.as_posix())
-        return box, normed_epi_box
-    
-    def _map_path(self, monomer_id, margin, resolution):
-        '''Create a unique path name for the 3d-density map.
-        '''
-        prefix = 'map_'
-        if not (isinstance(monomer_id, list) or isinstance(monomer_id, np.ndarray)):
-            monomer_id = [monomer_id]
-        mono_str = 'ID-%s_' % 'X'.join(map(str, monomer_id))
-        margin_str = 'M-%.02f_' % (round(margin,2))
-        resolution_str = 'R-%.02f_' % (round(resolution,2))
-        suffix = '.dx'
-        name = ''.join([prefix, mono_str, margin_str, resolution_str, suffix])
-        return self.db_folder.joinpath(name).absolute().resolve()
     
     def save_density_maps(self, margin=20, resolution=1.0):
         complete_box = None
