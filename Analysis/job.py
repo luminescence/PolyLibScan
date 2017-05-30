@@ -269,6 +269,7 @@ class Job(bayes.Job):
         self._parse = parser.Parser(self.db_path, 'r')
         self.Id = None
         self.meta = self._parse.meta('misc')
+        self.lmp_parameters = self._parse.lmp_parameters()
         # self.lmp_parameter = self._parse.meta('parameter')
         self.sequence = self._parse.sequence()
         self.weights = self._parse.weights()
@@ -528,7 +529,7 @@ class Run(plotting.Run):
     def temperature(self):
         if not self._parse.is_open():
             self._parse.open()
-        return self.job._parse.energy_series(self.Id, column='kinetic')        
+        return self.job._parse.energy_series(self.Id, column='temperature')
 
     def distance_time_series(self):
         if not self._parse.is_open():

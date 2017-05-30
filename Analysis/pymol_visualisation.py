@@ -24,12 +24,12 @@ class DensityContainer(object):
         return self._monomer_id
 
     @monomer_id.setter
-    def monomer_id(self, value)
+    def monomer_id(self, value):
         if isinstance(value, int):
             m_id = [monomer_id]
-        elif isinstance(value, np.ndarray)):
+        elif isinstance(value, np.ndarray):
             m_id = list(value)
-        elif isinstance(value, list)):
+        elif isinstance(value, list):
             m_id = value
         elif value == 'all':
             m_id = list(self.sim._particle_ids['polymer'])

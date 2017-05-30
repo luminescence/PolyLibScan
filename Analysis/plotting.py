@@ -281,19 +281,39 @@ class Run(object):
         else:
             ax.set_title('Energies of Run %d' % self.Id , size=25)
 
-        ax.plot(self.total_energy(), label='Total Energy')
-        ax.plot(self.potential_energy(), label='Potential Energy')
-        ax.plot(self.kinetic_energy(), label='Kinetic Energy')
+        total_ene_data = self.total_energy()
+        sim_time_in_ps = total_ene_data[:,1]/1000 * self.job.lmp_parameters['timestep']
+        ax.plot(sim_time_in_ps, self.total_energy()[:,0], label='Total Energy')
+        ax.plot(sim_time_in_ps, self.potential_energy()[:,0], label='Potential Energy')
+        ax.plot(sim_time_in_ps, self.kinetic_energy()[:,0], label='Kinetic Energy')
         ax.set_ylabel('Energy', size=20)
         ax.set_xlabel('Time [ps]', size=20)
         legend1_info = ax.get_legend_handles_labels()
 
         ax2 = ax.twinx()
-        ax2.plot(self.binding_energy(), color='m', label='Binding Energy')
+        ax2.plot(sim_time_in_ps, self.binding_energy()[:,0], color='m', label='Binding Energy')
         ax2.set_ylabel('Binding Energy', size=20)
         ax2.tick_params('y', color='m')
         legend2_info = ax2.get_legend_handles_labels()
 
         ax2.legend(legend1_info[0]+legend2_info[0], legend1_info[1]+legend2_info[1],)
+        if save_path:
+            plt.savefig(save_path)
+
+    def plot_temperature(self, ax=None, save_path=None):
+        if not ax:
+            fig, ax = plt.subplots(figsize=(18,12))
+            ax.set_title('%s - %s - Job Id: %d - Run Id: %d' % (self.meta()['protein'], 
+                self.meta()['poly_name'],
+                self.job.Id, self.Id), size=20)
+        else:
+            ax.set_title('Temperature of Run %d' % self.Id , size=25)
+        data = self.temperature()
+        time_series = data[:,1] * self.lmp_parameters
+        ax.plot(time_series, data[:, 0], label='Temperature')
+        ax.set_ylabel('Temperture [K]', size=20)
+        ax.set_xlabel('Time [ps]', size=20)
+        legend1_info = ax.get_legend_handles_labels()
+
         if save_path:
             plt.savefig(save_path)

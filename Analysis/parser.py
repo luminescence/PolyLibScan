@@ -18,15 +18,15 @@ class Parser(DB.Database):
 
     def energy_series(self, Id, column='binding'):
         if column == 'binding':
-            return self._load_ctable('/energies', 'e%d' % Id, col=0)
+            return self._load_ctable('/energies', 'e%d' % Id, col=[0,5])
         elif column == 'total':
-            return self._load_ctable('/energies', 'e%d' % Id, col=1)
+            return self._load_ctable('/energies', 'e%d' % Id, col=[1,5])
         elif column == 'potential':
-            return self._load_ctable('/energies', 'e%d' % Id, col=2)
+            return self._load_ctable('/energies', 'e%d' % Id, col=[2,5])
         elif column == 'kinetic':
-            return self._load_ctable('/energies', 'e%d' % Id, col=3)
+            return self._load_ctable('/energies', 'e%d' % Id, col=[3,5])
         elif column == 'temperature':
-            return self._load_ctable('/energies', 'e%d' % Id, col=4)
+            return self._load_ctable('/energies', 'e%d' % Id, col=[4,5])
 
     def distance_series(self, Id):
         return self._load_ctable('/distances', 'd%d' % Id)
@@ -95,3 +95,10 @@ class Parser(DB.Database):
             self.open()
         return self._load_table('/', 'histogramm')
         self.close()
+
+    def lmp_parameters(self):
+        if not self.is_open():
+            self.open()
+        data = {key:val for key,val in self._load_table('/meta', 'parameter')}
+        return data
+
