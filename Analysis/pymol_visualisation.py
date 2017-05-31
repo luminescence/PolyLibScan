@@ -112,10 +112,7 @@ class DensityContainer(object):
         else:
             normed_epi_box = epi_box
         if save:
-            box_size = box[1] - box[0]
-            dx_obj = dx.DXBox(box=normed_epi_box, meshsize=box_size/normed_epi_box.shape, offset=box[0])
-            path = self._map_path(monomer_id, margin, resolution)
-            dx_obj.write(path.as_posix())
+            self.save()
         return box, normed_epi_box
 
     def save(self):
@@ -123,7 +120,9 @@ class DensityContainer(object):
         '''
         box_size = (self.box[1] - self.box[0])
         dx_obj = dx.DXBox(box=self.map, meshsize=box_size/self.map.shape, offset=self.box[0])
-        dx_obj.write(self._map_path().as_posix())
+        path = self._map_path().as_posix()
+        dx_obj.write(path)
+        return path
 
 class PymolVisualisation(object):
     atom_names = ['C', 'N', 'O', 'S', 'H']
@@ -142,25 +141,6 @@ class PymolVisualisation(object):
                 self.protein_path = None
         self.pymol_handle = pym.connect(ip='localhost')
     
-    def save_density_maps(self, margin=20, resolution=1.0):
-        complete_box = None
-        complete_path = self._map_path(self.sim._particle_ids['polymer'], margin, resolution)
-        for monomer_id in tqdm.tqdm_notebook(self.sim._particle_ids['polymer'], desc='Mono Maps'):
-            # generate standardised file path
-            path = self._map_path(monomer_id, margin, resolution)
-            if path.exists() and complete_path.exists():
-                continue
-            box, map_ = self.create_epitopsy_map(monomer_id, margin=margin, resolution=resolution, norm=True, save=False)
-            if complete_box == None:
-                complete_box = box
-                complete_map = np.zeros_like(map_)
-            complete_map += map_
-        # generating map of all monomers
-        if not complete_path.exists():
-            complete_box_size = complete_box[1] - complete_box[0]
-            dx_obj = dx.DXBox(box=complete_map, meshsize=complete_box_size/complete_map.shape, offset=complete_box[0])
-            dx_obj.write(complete_path.as_posix())
-
     def _poly_end_poses(self):
         elements = {id_: name for id_, name in zip(self.sim._particle_ids['polymer'], self.atom_names)}
         mask = np.in1d(self.sim._parse.load_traj_type_order(), self.sim._particle_ids['polymer'])
@@ -187,13 +167,11 @@ class PymolVisualisation(object):
         self.pymol_handle.color('red', 'active_site')
 
     def add_dx(self, monomer_id, margin=20.0, resolution=1.5):
-        if monomer_id == 'all':
-            monomer_id = self.sim._particle_ids['polymer']
-        elif not (isinstance(monomer_id, list) or isinstance(monomer_id, np.ndarray)):
-            monomer_id = [monomer_id]
         path = self._map_path(monomer_id, margin=margin, resolution=resolution)
         if not path.exists():
-            self.create_epitopsy_map(monomer_id, margin=margin, resolution=resolution, norm=True, save=True)
+            density = DensityContainer(monomer_id, margin=margin, resolution=resolution)
+            path = density.save()
+            monomer_id = density.monomer_id
         self.pymol_handle.load(path.as_posix())
         pymol_name = path.name.rstrip('.dx')
         return monomer_id, pymol_name
