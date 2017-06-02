@@ -309,7 +309,7 @@ class Run(object):
         else:
             ax.set_title('Temperature of Run %d' % self.Id , size=25)
         data = self.temperature()
-        time_series = data[:,1] * self.lmp_parameters
+        time_series = data[:,1] * self.job.lmp_parameters['timestep']
         ax.plot(time_series, data[:, 0], label='Temperature')
         ax.set_ylabel('Temperture [K]', size=20)
         ax.set_xlabel('Time [ps]', size=20)
