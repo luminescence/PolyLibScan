@@ -1,4 +1,4 @@
-import PolyLibScan.Analysis as lmp_lys
+import PolyLibScan.Analysis.pymol_visualisation as lmp_lys
 import pathlib2 as pl
 import mock
 import numpy as np

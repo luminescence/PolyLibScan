@@ -18,7 +18,10 @@ class Parser(DB.Database):
 
     def energy_series(self, Id, column='binding'):
         if column == 'binding':
-            return self._load_ctable('/energies', 'e%d' % Id, col=[0,5])
+            try:
+                return self._load_ctable('/energies', 'e%d' % Id, col=[0,5])
+            except IndexError:
+                return self._load_ctable('/energies', 'e%d' % Id, col=0)
         elif column == 'total':
             return self._load_ctable('/energies', 'e%d' % Id, col=[1,5])
         elif column == 'potential':

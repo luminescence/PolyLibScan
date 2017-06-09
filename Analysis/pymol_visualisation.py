@@ -26,7 +26,7 @@ class DensityContainer(object):
     @monomer_id.setter
     def monomer_id(self, value):
         if isinstance(value, int):
-            m_id = [monomer_id]
+            m_id = [value]
         elif isinstance(value, np.ndarray):
             m_id = list(value)
         elif isinstance(value, list):
@@ -35,7 +35,8 @@ class DensityContainer(object):
             m_id = list(self.sim._particle_ids['polymer'])
         else:
             raise ValueError('monomer_id must be int or list or "all".')
-        if len(set(m_id) - set(self.sim._particle_ids['polymer'])) > 0:
+            
+        if set(m_id) <= set(self.sim._particle_ids['polymer']):
             raise ValueError("Some Ids are not ids of monomer. Choose from %s" % self.sim._particle_ids['polymer'])
         else:
             self._monomer_id = m_id

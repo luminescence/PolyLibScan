@@ -5,6 +5,15 @@ import PolyLibScan.helpers.bootstrap as bstrap
 
 nb.jit()
 def binning(data, energy, bins):
+    '''Generate a histogramm for the frequency and
+    summed energy. The results are stored in the bins
+    array.
+
+    input:
+        data: distance_data
+        energy: energy of the distance data
+        bins: numpy array [m, 2]
+    '''
     # resolution of bins are 0.1 Angstrom
     discrete_data = (10*data).astype(np.int)
     for i, d in enumerate(discrete_data[1:]):

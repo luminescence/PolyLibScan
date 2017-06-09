@@ -26,7 +26,7 @@ class Project(object):
         '''
         if not ax:
             fig, ax = plt.subplots(figsize=(18,12))
-            plt.title(self.jobs[0].meta['protein'], size=20)
+            ax.set_title('%s (PDB: %s)' % (self.jobs[0].meta['protein_name'], self.jobs[0].meta['protein']), size=20)
             
         if self.experimental_data is not None:
             polymer_list = list(set(self.endstate_matrix.columns.levels[0]) & set(self.experimental_data.index))
@@ -84,7 +84,7 @@ class Project(object):
     def histogramm(self, min_dist_to_ac=5, ax=None, save_path=None):
         if not ax:
             fig, ax = plt.subplots(figsize=(18,12))
-            plt.title(self.jobs[0].meta['protein'], size=20)
+            ax.set_title('%s (PDB: %s)' % (self.jobs[0].meta['protein_name'], self.jobs[0].meta['protein']), size=20)
         if self.experimental_data is not None:
             near_active_site = self.endstate_matrix.stack(0).loc[self.endstate_matrix.stack(0)['Distance']<min_dist_to_ac, :].unstack()['Energy']
             a = near_active_site.loc[:, self.experimental_data[near_active_site.columns].isnull()].mean()
@@ -105,7 +105,7 @@ class Project(object):
     def multibox_plot(self, experimental_data=None, ax=None, save_path=None):
         if not ax:
             fig, ax = plt.subplots(figsize=(18,12))
-            plt.title(self.jobs[0].meta['protein'], size=20)
+            ax.set_title('%s (PDB: %s)' % (self.jobs[0].meta['protein_name'], self.jobs[0].meta['protein']), size=20)
         if experimental_data is None:
             experimental = self.experimental_data
         else:
@@ -133,7 +133,7 @@ class Project(object):
     def plot_distance_density(self, cumulative=False, max_distance_range=None, ax=None, save_path=None):
         if not ax:
             fig, ax = plt.subplots(figsize=(18,12))
-            plt.title(self.jobs[0].meta['protein'], size=20)
+            ax.set_title('%s (PDB: %s)' % (self.jobs[0].meta['protein_name'], self.jobs[0].meta['protein']), size=20)
         for name, poly_type in self.polymer_types.items():
             poly_type.distance_histogram(max_distance_range=max_distance_range, cumulative=cumulative, ax=ax)
         ax.set_xlabel('Distance $\AA$', size=20)
@@ -156,7 +156,7 @@ class Project(object):
     def plot_bars(self, distance_cutoff=5, ax=None, save_path=None):
         if not ax:
             fig, ax = plt.subplots(figsize=(18,12))
-            plt.title(self.jobs[0].meta['protein'], size=20)
+            ax.set_title('%s (PDB: %s)' % (self.jobs[0].meta['protein_name'], self.jobs[0].meta['protein']), size=20)
         width = 0.35
         index = np.arange(len(self.polymer_types.keys()))
         inhib_polys = filter(lambda x:self.polymer_types[x].ic50>=0,self.polymer_types.keys())
@@ -193,7 +193,7 @@ class PolymerTypeSims(object):
         '''
         if not ax:
             fig, ax = plt.subplots(figsize=(18,12))
-            plt.title('%s - %s' % (self.sims[0].meta['protein'], self.polymer_type), size=20)
+            ax.set_title('%s (PDB: %s)' % (self.jobs[0].meta['protein_name'], self.jobs[0].meta['protein']), size=20)
     
         digested_results = pd.DataFrame()
         if with_error:
@@ -241,7 +241,7 @@ class PolymerTypeSims(object):
         
         if not ax:
             fig, ax = plt.subplots(figsize=(18,12))
-            plt.title('%s - %s' % (self.sims[0].meta['protein'], self.polymer_type), size=20)
+            ax.set_title('%s (PDB: %s)' % (self.jobs[0].meta['protein_name'], self.jobs[0].meta['protein']), size=20)
         if self.ic50:
             if self.ic50 >= 0:
                 line_style = '-'

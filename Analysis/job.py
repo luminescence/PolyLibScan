@@ -14,6 +14,8 @@ import numerics
 import visualize
 import concurrent.futures as concurrent
 import pymol_visualisation
+import sim_run
+import poly_type
 
 warnings.filterwarnings("ignore")
 
@@ -59,7 +61,8 @@ class Project(plotting.Project, bayes.Project):
                 # storing job in the two containers
                 jobs.append(job)
                 sims_by_type[job.meta['poly_name']].append(job)
-        polymer_types = {name: PolymerTypeSims(self, sims) for name, sims in sims_by_type.items()}
+        polymer_types = {name: poly_type.PolymerTypeSims(self, sims) 
+                              for name, sims in sims_by_type.items()}
         return jobs, polymer_types
 
     def __repr__(self):
@@ -145,119 +148,6 @@ class Project(plotting.Project, bayes.Project):
             for p_type in tqdm.tqdm(self.polymer_types.values(), 
                                     desc='Creating endstate Dataframe')], axis=1)
         return complete_df
-
-class PolymerTypeSims(plotting.PolymerTypeSims, bayes.PolymerTypeSims):
-    '''Stores all simulation runs of one polymer type.
-    '''
-    def __init__(self, project, polymer_sims, ic50=None):
-        self.project = project
-        self.sims = polymer_sims
-        self.register(self.sims)
-        self.ic50 = ic50
-        self._distance_probability = None
-        self._energy_distance_distribution = None
-        self.polymer_type = self.sims[0].meta['poly_name']
-        self.weights = self.sims[0].weights
-        super(PolymerTypeSims, self).__init__()
-
-    def distance_probability():
-        doc = "The distance_probability property."
-        def fget(self):
-            if self._energy_distance_distribution == None:
-                results = self._calc_distance_distribution(self.sims)
-                self._distance_probability = results[['distance', 'density']]
-                self._energy_distance_distribution = results[['distance', 'energy']]
-            return self._distance_probability
-        def fset(self, value):
-            self._distance_probability = value
-        def fdel(self):
-            self._distance_probability = None
-        return locals()
-    distance_probability = property(**distance_probability())
-
-
-    def energy_distance_distribution():
-        doc = "The energy_distance_distribution property."
-        def fget(self):
-            if self._energy_distance_distribution == None:
-                results = self._calc_distance_distribution(self.sims)
-                self._distance_probability = results[['distance', 'density']]
-                self._energy_distance_distribution = results[['distance', 'energy']]
-            return self._energy_distance_distribution
-        def fset(self, value):
-            self._energy_distance_distribution = value
-        def fdel(self):
-            self._energy_distance_distribution = None
-        return locals()
-    energy_distance_distribution = property(**energy_distance_distribution())
-
-    def _calc_distance_distribution(self, sims, thread_num=2):
-        dist_v = np.zeros(2000, dtype=[('count', np.int), ('energy', np.float)])
-        with concurrent.ThreadPoolExecutor(max_workers=thread_num) as executor:
-            for job in tqdm.tqdm(sims, desc='Calculating distance distribution of Simulation'):
-                job_count = job.distance_frequency['frequency']
-                dist_v['count'][:len(job_count)] += job_count
-                dist_v['energy'][:len(job_count)] += job.energy_distance_distribution['energy']
-        # Shortening the array by trailing zeros
-        reduced_hist = numerics.discard_tailing_zeros(dist_v['count'])
-        reduced_len = reduced_hist.shape[0]
-        
-        # Mean Energy
-        energy_mean = dist_v['energy'][:reduced_len] / len(self.sims)
-        # set elements to zero, who are devided by zero
-        energy_mean[np.isnan(energy_mean)] = 0.0
-
-        # Calculating norm
-        n = np.sum(reduced_hist).astype(np.float)
-        hist_normed = reduced_hist/n
-        # results
-        results_dtype = [('distance', np.float), ('density', np.float),
-                         ('energy', np.float)]
-        results = np.empty(reduced_len, results_dtype)
-        results['distance'] = np.arange(reduced_len, dtype=np.float)/10
-        results['density'] = hist_normed
-        results['energy'] = energy_mean
-        return results
-
-    def cumulative_binding_probability(self, distance):
-        return numerics.cdf(self.distance_probability['density'], distance)
-
-    def cumulative_mean_energy(self, distance):
-        mean_energy = (numerics.cdf(self.distance_probability['density'] * self.energy_distance_distribution['energy'], distance)
-                                   / self.cumulative_binding_probability(distance))
-        return mean_energy
-
-    def distance_cumulative_probability(self):
-        '''Cumulative distance function: 
-        Return a 2xN Array that denotes the cumulative density within a 
-        given radius around the active site.
-        '''
-        cum_distance = np.empty_like(self.distance_probability)
-        cum_distance['distance'] = self.distance_probability['distance'] + 0.1
-        cum_distance['density'] = numerics.cumulative_bins(self.distance_probability['density'])
-        return cum_distance
-
-    def register(self, children):
-        for child in children:
-            child.poly_type = self
-
-    def data_frame(self):
-        sub_frames = np.empty(len(self.sims), dtype=object)
-        for i, job in enumerate(self.sims):
-            sub_frames[i] = job.to_dataFrame()
-            job._parse.close()
-        data_frame = pd.concat(sub_frames)
-        col_index = pd.MultiIndex.from_product([[self.polymer_type], data_frame.columns], 
-                                                names=['PolyType', 'Results'])
-        data_frame.set_axis(1, col_index)
-        return data_frame
-
-    def __repr__(self):
-        out  = []
-        out += ['Polymer Type %s.' % self.polymer_type]
-        out += ['Containing %d Jobs.' % len(self.sims)]
-        return '\n'.join(out)
-
 
 class Job(bayes.Job):
 
@@ -346,9 +236,9 @@ class Job(bayes.Job):
         # get inputs
         for data in self._parse.end_state():
             if 'Distance' in data.dtype.names:
-                runs.append(Run(self, data['ID'], data['Energy'], data["Distance"]))
+                runs.append(sim_run.Run(self, data['ID'], data['Energy'], data["Distance"]))
             else:
-                runs.append(Run(self, data['ID'], data['Energy']))
+                runs.append(sim_run.Run(self, data['ID'], data['Energy']))
         return sorted(runs, key=lambda x:x.Id)
 
     def distance_frequency():
@@ -394,7 +284,7 @@ class Job(bayes.Job):
     def _calc_distance_density(self, runs):
         dist_v = np.zeros(2000, dtype=[('count', np.int), ('energy', np.float)])
         for run in runs:
-            energy = run.binding_energy()
+            energy = run.binding_energy()[:,0]
             distance = run.distance_time_series()['distance'][-len(energy):]
             # discretize energy and distance timeseries into bins ofr histogram
             distance_density = numerics.binning(distance, energy, dist_v)
@@ -449,98 +339,3 @@ class Job(bayes.Job):
 
     def mean_energy(self):
         return np.mean(self.energies())
-
-class Run(plotting.Run):
-
-    def __init__(self, parent, Id, energy, distance=None):
-        self.job = parent
-        self._parse = self.job._parse
-        self.Id = Id
-        self._distance = -1.0
-        if not distance:
-            self._distance = distance
-        self.energy = energy
-
-    def distance():
-        doc = "The distance property."
-        def fget(self):
-            if self._distance < 0.0:
-                self._distance = self._distance_to_active_site()
-            return self._distance
-        def fset(self, value):
-            self._distance = value
-        return locals()
-    distance = property(**distance())
-
-    def show_trajectory(self):
-        self.job.project._visualize.trajectory(self)
-
-    def meta(self):
-        return self.job.meta
-
-    def weights(self):
-        return self.job.weights
-
-    def sequence(self):
-        return self.job.sequence
-
-    def coordinates(self):
-        if not self._parse.is_open():
-            self._parse.open()
-        data = {'start': self._parse.xyz(self.Id, start=True),
-                'end': self._parse.xyz(self.Id)}
-        return data
-
-    def _distance_to_active_site(self):
-        xyz = self.coordinates()['end']
-        mask = np.in1d(xyz['atom_type'], self.job._particle_ids['polymer'])
-        poly_coords = xyz[mask]
-        # subtracting the active site id by one since lammps starts 
-        # counting from one, while Numpy does not.
-        active_site = xyz[self.job.active_site['xyz']-1]
-        min_dist = 1000
-        for resi in active_site:
-            for mono in poly_coords:
-                md = self._dist(resi, mono)
-                if md < min_dist:
-                    min_dist = md
-        return min_dist
-
-    def binding_energy(self):
-        if not self._parse.is_open():
-            self._parse.open()
-        return self._parse.energy_series(self.Id, column='binding')
-
-    def total_energy(self):
-        if not self._parse.is_open():
-            self._parse.open()
-        return self.job._parse.energy_series(self.Id, column='total')
-        
-    def potential_energy(self):
-        if not self._parse.is_open():
-            self._parse.open()
-        return self.job._parse.energy_series(self.Id, column='potential')
-
-    def kinetic_energy(self):
-        if not self._parse.is_open():
-            self._parse.open()
-        return self.job._parse.energy_series(self.Id, column='kinetic')
-
-    def temperature(self):
-        if not self._parse.is_open():
-            self._parse.open()
-        return self.job._parse.energy_series(self.Id, column='temperature')
-
-    def distance_time_series(self):
-        if not self._parse.is_open():
-            self._parse.open()
-        return self._parse.distance_series(self.Id)
-
-    def _dist(self, a, b):
-        an = np.array([a['x'], a['y'], a['z']])
-        bn = np.array([b['x'], b['y'], b['z']])
-        c = an - bn
-        return np.sqrt(np.sum(c**2))
-
-    def __repr__(self):
-        return 'LammpsRun - id %d' % self.Id
