@@ -195,7 +195,7 @@ class PolymerTypeSims(object):
         '''
         if not ax:
             fig, ax = plt.subplots(figsize=(18,12))
-            ax.set_title('%s (PDB: %s)' % (self.jobs[0].meta['protein_name'], self.jobs[0].meta['protein']), size=20)
+            ax.set_title('%s (PDB: %s)' % (self.sims[0].meta['protein_name'], self.sims[0].meta['protein']), size=20)
     
         digested_results = pd.DataFrame()
         if with_error:
@@ -243,7 +243,7 @@ class PolymerTypeSims(object):
         
         if not ax:
             fig, ax = plt.subplots(figsize=(18,12))
-            ax.set_title('%s (PDB: %s)' % (self.jobs[0].meta['protein_name'], self.jobs[0].meta['protein']), size=20)
+            ax.set_title('%s (PDB: %s)' % (self.sims[0].meta['protein_name'], self.sims[0].meta['protein']), size=20)
         if self.ic50:
             if self.ic50 >= 0:
                 line_style = '-'

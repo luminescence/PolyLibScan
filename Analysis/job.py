@@ -27,7 +27,8 @@ class Project(plotting.Project, bayes.Project):
         if parameters is not None:
             self.parameters = parameters
         self._visualize = visualize.Visualize(self)
-        # stores jobs in list and dict form; the dict stores jobs by polymer type
+        # stores jobs in list (jobs)
+        # and dict form (polymer_types); polymer_types stores jobs sorted by polymer type
         self.jobs, self.polymer_types = self.read_jobs(self.path)
 
         # Experimental Data needs information from job objects
@@ -159,7 +160,6 @@ class Job(bayes.Job):
         self.Id = None
         self.meta = self._parse.meta('misc')
         self.lmp_parameters = self._parse.lmp_parameters()
-        # self.lmp_parameter = self._parse.meta('parameter')
         self.sequence = self._parse.sequence()
         self.weights = self._parse.weights()
         self.active_site = self._parse.active_site()

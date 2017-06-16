@@ -103,6 +103,11 @@ class Parser(DB.Database):
     def lmp_parameters(self):
         if not self.is_open():
             self.open()
-        data = {key:val for key,val in self._load_table('/meta', 'parameter')}
+        try:
+            # this table does not exist in legacy sims
+            data = {key:val for key,val in self._load_table('/meta', 'parameter')}
+        except DB.tb.NoSuchNodeError:
+            # take default. This is sensible since old simulations had the same settings.
+            data = {'dielectric_par': 78, 'timestep': 1}
         return data
 
