@@ -96,8 +96,9 @@ class Parser(DB.Database):
     def hist_data(self):
         if not self.is_open():
             self.open()
-        return self._load_table('/', 'histogramm')
+        hist_data = self._load_table('/', 'histogramm')
         self.close()
+        return hist_data
 
     def lmp_parameters(self):
         if not self.is_open():
