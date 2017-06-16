@@ -54,7 +54,7 @@ class Project(object):
 
         if self.experimental_data is not None:
             results['color_by_inhibition'] = experimental.apply(lambda x:'b' if x>0 else 'r')
-            results.plot(kind='scatter', x='dist_mean', y='energy_mean',
+            results.plot(kind='scatter', x='dist_mean', y='energy_mean', alpha=0.7,
                          ax=ax, c=results.dropna()['color_by_inhibition'], s=100)
             if with_errors:
                 ax.errorbar(results['dist_mean'] ,results['energy_mean'],
@@ -63,14 +63,15 @@ class Project(object):
                             capsize=6, fmt=' ', color='grey', zorder=-1)
             inhib_leg = mpatches.Patch(color='red', label='not inhibiting')
             non_inhib_leg = mpatches.Patch(color='blue', label='inhibiting')
-            ax.legend(handles=[inhib_leg, non_inhib_leg], fontsize=20, loc=1)
+            ax.legend(handles=[inhib_leg, non_inhib_leg], fontsize=20, loc='best')
         else:
-            results.plot(kind='scatter', x='dist_mean', y='energy_mean', 
-                                  ax=ax, s=100)
+            results.plot(kind='scatter', x='dist_mean', y='energy_mean', alpha=0.7, 
+                         ax=ax, s=100)
         if with_labels:
             self._annotate(ax, results, 'dist_mean', 'energy_mean')
-        ax.set_ylabel('energy', size=20)
-        ax.set_xlabel('binding probability within %.2fA to active site' % round(min_dist_to_ac,1), size=20)
+        ax.tick_params(axis='both', which='major', labelsize=15)
+        ax.set_ylabel('Energy', size=25)
+        ax.set_xlabel('Binding probability within %.2fA to active site' % round(min_dist_to_ac,1), size=25)
         ax.set_xlim([-0.2*results['dist_mean'].max(), 1.2*results['dist_mean'].max()+error])
         if save_path:
             plt.savefig(save_path)
@@ -170,10 +171,11 @@ class Project(object):
         # simulation data
         simulation = ax.bar(index + width, binding, width)
         ax.set_xticks(index + width / 2)
-        ax.set_xticklabels(poly_by_inhib)
+        ax.set_xticklabels(poly_by_inhib, rotation=45, ha='right')
         ax.set_xlabel('Polymer Types', size=20)
         ax.set_ylabel('Inhibition/Binding', size=20)
-        ax.legend([experimental, simulation], [r'$ic50^{-1}$ (Experiment)', 'Binding (Simulation)'])
+        ax.legend([experimental, simulation], [r'$ic50^{-1}$ (Experiment)', 'Binding (Simulation)'],
+                   loc='best')
         if save_path:
             plt.savefig(save_path)
 
