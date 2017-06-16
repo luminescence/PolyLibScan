@@ -1,9 +1,9 @@
-
 import numpy as np
 import tqdm
 import pandas as pd
 import plotting
 import bayesModels as bayes
+import concurrent.futures as concurrent
 import numerics
 
 class PolymerTypeSims(plotting.PolymerTypeSims, bayes.PolymerTypeSims):

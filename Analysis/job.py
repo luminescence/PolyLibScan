@@ -12,7 +12,6 @@ import PolyLibScan.helpers.idGenerator as idGen
 import itertools as it
 import numerics
 import visualize
-import concurrent.futures as concurrent
 import pymol_visualisation
 import sim_run
 import poly_type
