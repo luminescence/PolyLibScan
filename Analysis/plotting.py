@@ -150,7 +150,7 @@ class Project(object):
         ax2 = plt.subplot2grid((2,2),(0,1))
         self.plot_bars(ax=ax2, distance_cutoff=min_dist_to_ac)
         ax3 = plt.subplot2grid((2,2),(1,0), colspan=2)
-        self.plot_distance_density(ax=ax3, max_distance_range=min_dist_to_ac*10)
+        self.plot_distance_density(ax=ax3, max_distance_range=min_dist_to_ac)
         if save_path:
             plt.savefig(save_path)
 
@@ -256,6 +256,8 @@ class PolymerTypeSims(object):
             tag = ' '
         if not max_distance_range:
             max_distance_range = self.distance_probability['distance'].shape[0]
+        else:
+            max_distance_range = int(max_distance_range*10)
         if cumulative:
             density = num_.cumulative_bins(self.distance_probability['density'])
         else:
