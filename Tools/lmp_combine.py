@@ -275,6 +275,8 @@ class EnvManipulator(object):
         particle = filter(has_right_id, molecule.data['particles'])
         if len(particle)>1:
             raise Exception('Found more than one particle. Check your pdb file for duplicate entries.')
+        elif len(particle)==0:
+            raise Exception("There is no particle with chain %s, id %d and iCode %s" % pdb_residue_id)
         return particle[0]
 
     def _make_particle_unique(self, particle, type_name):
