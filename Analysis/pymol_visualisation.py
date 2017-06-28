@@ -71,7 +71,7 @@ class DensityContainer(object):
         box = self.sim._calc_protein_box(self.margin)
         self.box_size = (box[1] - box[0])
         epi_map = np.zeros(np.ceil(self.box_size/float(self.resolution))+1, np.int32)
-        self.box, self.box_size, self.map = box, box_size, epi_map
+        self.box, self.map = box, epi_map
         
     def _map_path(self):
         '''Create a unique path name for the 3d-density map.
@@ -154,20 +154,22 @@ class PymolVisualisation(object):
                 self.protein_path = None
         self.pymol_handle = pym.connect(ip='localhost')
     
-    def _poly_end_poses(self):
+    def _poly_poses(self, state='end'):
         '''Create generator of data for polymer-pdb via the pymol_polymer.tpl
         Each yield (run) the coordinates of the polymer are updated, while the constant
         information is left unchanged
         '''
+        if state not in ['start', 'end']:
+            raise AttributeError("state must have value of 'start' or 'end'.")
         elements = {id_: name for id_, name in zip(self.sim._particle_ids['polymer'], self.atom_names)}
         mask = np.in1d(self.sim._parse.load_traj_type_order(), self.sim._particle_ids['polymer'])
         pose_list_type = [('id', '>i2'), ('ele', '|S1'), ('res_name', '|S3'), ('x', np.float), ('y', np.float), ('z', np.float)]
         pose_data = np.zeros(mask.sum(), dtype=pose_list_type)
         pose_data['id'] = np.arange(1, mask.sum()+1)
-        pose_data['ele'] = map(lambda x:elements[x], self.sim[0].coordinates()['end'][mask]['atom_type'])
+        pose_data['ele'] = map(lambda x:elements[x], self.sim[0].coordinates()[state][mask]['atom_type'])
         pose_data['res_name'] = self.sim.sequence['monomer']
         for run in self.sim:
-            coords = run.coordinates()['end'][mask]
+            coords = run.coordinates()[state][mask]
             pose_data['x'] = coords['x']
             pose_data['y'] = coords['y']
             pose_data['z'] = coords['z']
@@ -188,6 +190,18 @@ class PymolVisualisation(object):
         self.pymol_handle.show('sticks', 'active_site')
         self.pymol_handle.color('red', 'active_site')
 
+    def set_protein_detail(self, level='cg'):
+        if not level in ['full', 'cg']:
+            raise AttributeError("level must be either 'cg' or 'full'")
+        protein_name = _os.path.base_name(self.protein)[:-4]
+        if level == 'cg':
+            self.pymol_handle.select('backbone', protein_name + ' and name ca')
+            self.pymol_handle.hide('(%s)' % protein_name)
+            self.pymol_handle.show_as('sphere', 'backbone')
+        if level == 'full':
+            self.pymol_handle.show_as('cartoon', protein_name)
+            self.pymol_handle.show('sticks', 'active_site')
+
     def add_dx(self, monomer_id, margin=20.0, resolution=1.5):
         density = DensityContainer(self.sim, monomer_id, margin=margin, resolution=resolution)
         dx_path = density._map_path()
@@ -205,17 +219,25 @@ class PymolVisualisation(object):
                                                                                level))
         self.pymol_handle.do('color blue, %s' % surface_name)
 
-    def _create_polymer_pdb(self):
-        gen = self._poly_end_poses()
-        output_path = self.db_folder.joinpath('polymer_.pdb').as_posix()
+    def _create_polymer_pdb(self, state='end'):
+        if state == 'start':
+            gen = self._poly_poses(state=state)
+            file_name = 'start_poses.pdb'
+        elif state == 'end':
+            gen = self._poly_poses(state=state)
+            file_name = 'end_poses.pdb'
+        else:
+            raise AttributeError("state supports only 'start' or 'end' as values.")
+        output_path = self.db_folder.joinpath(file_name).as_posix()
+        pymol_name = file_name[:-4]
         with open('%s/pymol_polymer.tpl' % self._module_folder) as f:
             template = ji.Template(f.read())
         with open(output_path, 'w') as f2:
-            f2.write(template.render(pymol=self))
-        return output_path
+            f2.write(template.render(pymol=gen))
+        return output_path, pymol_name
 
-    def add_polymers(self):
-        polymer_pdb_path = self._create_polymer_pdb()
+    def add_polymers(self, state='end'):
+        polymer_pdb_path, name = self._create_polymer_pdb(state=state)
         self.pymol_handle.load(polymer_pdb_path)
-        self.pymol_handle.show_as('sphere', 'polymer_')
+        self.pymol_handle.show_as('sphere', name)
         self.pymol_handle.do('cmd.set("sphere_scale", 2.0, "all")')
