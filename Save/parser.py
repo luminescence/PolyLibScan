@@ -42,7 +42,7 @@ class Parser(object):
             atoms_count = int(data[0])
             timestep = int(data[1].split()[-1])
         except ValueError:
-            raise ValueError('Fault format found in file %s' % file_path)
+            raise ValueError('Faulty format found in file %s' % file_path)
 
         dtype = {'names':['atom_type', 'x', 'y', 'z'],
                  'formats': [np.int] + 3*[np.float]}
@@ -56,7 +56,7 @@ class Parser(object):
                 atoms[i][2] = float(items[2])
                 atoms[i][3] = float(items[3])
         except ValueError:
-            raise ValueError('Fault format found in file %s' % file_path)        
+            raise ValueError('Faulty format found in file %s' % file_path)        
         
         return atoms
 
@@ -72,19 +72,28 @@ class Parser(object):
 
     def trajectory(self, file_path):
         with gzip.open(file_path) as f:
-            lines = liner(f)
-            chunks = chunk_data(lines)
-            traj = np.array(list(it.chain.from_iterable([el[1]['xyz'] for el in chunks])))
+            try:
+                lines = liner(f)
+                chunks = chunk_data(lines)
+                traj = np.array(list(it.chain.from_iterable([el[1]['xyz'] for el in chunks])))
+            except IndexError:
+                raise IndexError('Faulty format found in file %s' % file_path)
         return traj
 
     def trajectory_meta(self, file_path):
+        '''Extract the list which specifies the 
+        '''
         with gzip.open(file_path) as f:
-            lines = liner(f)
-            chunks = chunk_data(lines)
-            first = chunks.next()
-            second = chunks.next()
-            type_list = first[1]['type_']
-            step_size = second[0] - first[0]
+            try:
+                lines = liner(f)
+                chunks = chunk_data(lines)
+                first = chunks.next()
+                second = chunks.next()
+            except IndexError:
+                raise IndexError('Faulty format found in file %s' % file_path)
+            else:
+                type_list = first[1]['type_']
+                step_size = second[0] - first[0]
         return type_list, step_size
 
 def liner(handle):
