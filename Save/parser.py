@@ -89,8 +89,8 @@ class Parser(object):
                 chunks = chunk_data(lines)
                 first = chunks.next()
                 second = chunks.next()
-            except IndexError:
-                raise IndexError('Faulty format found in file %s' % file_path)
+            except (IndexError, ValueError):
+                raise ValueError('Faulty format found in file %s' % file_path)
             else:
                 type_list = first[1]['type_']
                 step_size = second[0] - first[0]
