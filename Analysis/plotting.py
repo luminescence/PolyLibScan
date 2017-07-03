@@ -9,7 +9,8 @@ import numerics as num_
 
 class Project(object):
 
-    def scatter_plot(self, with_errors=False, with_labels=False, confidence_interval=0.95, ax=None, save_path=None, min_dist_to_ac=5):
+    def scatter_plot(self, with_errors=False, with_labels=False, with_crossvalidation=False, 
+                           confidence_interval=0.95, ax=None, save_path=None, min_dist_to_ac=10):
         '''create a scatter plot with the probability
         of binding (x-axis) and the mean strength of binding 
         at the active site.
@@ -61,9 +62,18 @@ class Project(object):
                             xerr=[results['dist_min_error'], results['dist_max_error']], 
                             yerr=[results['energy_min_error'], results['energy_max_error']], 
                             capsize=6, fmt=' ', color='grey', zorder=-1)
-            inhib_leg = mpatches.Patch(color='red', label='not inhibiting')
-            non_inhib_leg = mpatches.Patch(color='blue', label='inhibiting')
-            ax.legend(handles=[inhib_leg, non_inhib_leg], fontsize=20, loc='best')
+            legend_items = [mpatches.Patch(color='red', label='not inhibiting')]
+            legend_items.append(mpatches.Patch(color='blue', label='inhibiting'))
+
+            if with_crossvalidation:
+                input_data = results.loc[:, ('energy_mean', 'dist_mean')]
+                classification = results['color_by_inhibition']
+                score, false_classification = self._cross_validate(input_data, classification)
+                results[false_classification].plot(kind='scatter', x='dist_mean', 
+                                                   y='energy_mean', ax=ax, c='black', s=40)
+                legend_items.append(mpatches.Patch(color='black', label='Validation: %d%%'%int(100*score)))
+
+            ax.legend(handles=legend_items, fontsize=20, loc='best')
         else:
             results.plot(kind='scatter', x='dist_mean', y='energy_mean', alpha=0.7, 
                          ax=ax, s=100)

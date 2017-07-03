@@ -1,7 +1,8 @@
 import pymc as mc
 import tqdm
+import pandas as pd
 import numpy as np
-
+from sklearn import linear_model
 
 class Project(object):
 
@@ -15,6 +16,15 @@ class Project(object):
             p_type.mcmc = {}
             p_type.bayes_sample_distance(show_progress=False)
             p_type.bayes_sample_energy(show_progress=False)
+
+    @staticmethod
+    def _cross_validate(input_data, classification):
+        logReg = linear_model.LogisticRegression()
+        cross_val = pd.Series(index=input_data.index)
+        for idx in input_data.index:
+            logReg.fit(input_data.drop([idx]), classification.drop([idx]))
+            cross_val[idx] = logReg.score([input_data.loc[idx]], [classification.loc[idx]])
+        return cross_val.mean(), cross_val.apply(lambda x:x<0.5)
 
 class PolymerTypeSims(object):
 
