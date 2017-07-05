@@ -2,7 +2,7 @@ import pymc as mc
 import tqdm
 import pandas as pd
 import numpy as np
-from sklearn import linear_model
+from sklearn import linear_model, metrics
 
 class Project(object):
 
@@ -20,11 +20,21 @@ class Project(object):
     @staticmethod
     def _cross_validate(input_data, classification):
         logReg = linear_model.LogisticRegression()
-        cross_val = pd.Series(index=input_data.index)
+        loo_score = pd.Series(index=input_data.index, name='predictions')
+        loo_probabilities = pd.Series(index=input_data.index, name='probabilities')
+        #predictions = pd.Series(index=input_data.index)
         for idx in input_data.index:
+            # leave one out validation
             logReg.fit(input_data.drop([idx]), classification.drop([idx]))
-            cross_val[idx] = logReg.score([input_data.loc[idx]], [classification.loc[idx]])
-        return cross_val.mean(), cross_val.apply(lambda x:x<0.5)
+            loo_score[idx] = logReg.score([input_data.loc[idx]], [classification.loc[idx]])
+            loo_probabilities[idx] = logReg.predict_proba([input_data.loc[idx]]).max()
+        # casting the scores of 1.0 and 0.0 to True and False
+        loo_predictions = loo_score.astype('bool')
+        return loo_predictions, loo_probabilities
+
+    @staticmethod
+    def _roc_auc(true_false_predictions, probabilities):
+        return metrics.roc_auc_score(true_false_predictions, probabilities)
 
 class PolymerTypeSims(object):
 

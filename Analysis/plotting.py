@@ -27,7 +27,7 @@ class Project(object):
         '''
         if not ax:
             fig, ax = plt.subplots(figsize=(18,12))
-            ax.set_title('%s (PDB: %s)' % (self.jobs[0].meta['protein_name'], self.jobs[0].meta['protein']), size=20)
+            ax.set_title('%s (PDB: %s)' % (self.jobs[0].meta['protein_name'], self.jobs[0].meta['protein'].upper()), size=20)
             
         if self.experimental_data is not None:
             polymer_list = list(set(self.endstate_matrix.columns.levels[0]) & set(self.experimental_data.index))
@@ -53,6 +53,8 @@ class Project(object):
             results['dist_mean'] = distance_matrix.count()/float(full_distance_matrix.shape[0])
             error = 0.0
 
+        # drop polymer types that are not present in the min-radius
+        results.dropna(inplace=True)
         if self.experimental_data is not None:
             results['color_by_inhibition'] = experimental.apply(lambda x:'b' if x>0 else 'r')
             results.plot(kind='scatter', x='dist_mean', y='energy_mean', alpha=0.7,
@@ -68,10 +70,12 @@ class Project(object):
             if with_crossvalidation:
                 input_data = results.loc[:, ('energy_mean', 'dist_mean')]
                 classification = results['color_by_inhibition']
-                score, false_classification = self._cross_validate(input_data, classification)
-                results[false_classification].plot(kind='scatter', x='dist_mean', 
+                true_predictions, probabilities = self._cross_validate(input_data, classification)
+                roc_auc_score = self._roc_auc(true_predictions, probabilities)
+                # plotting black dot on false predictions
+                results[~true_predictions].plot(kind='scatter', x='dist_mean', 
                                                    y='energy_mean', ax=ax, c='black', s=40)
-                legend_items.append(mpatches.Patch(color='black', label='Validation: %d%%'%int(100*score)))
+                legend_items.append(mpatches.Patch(color='black', label='ROC-AUC: %.2f' % roc_auc_score))
 
             ax.legend(handles=legend_items, fontsize=20, loc='best')
         else:
