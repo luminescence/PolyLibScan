@@ -56,7 +56,7 @@ class Project(object):
         # drop polymer types that are not present in the min-radius
         results.dropna(inplace=True)
         if self.experimental_data is not None:
-            results['color_by_inhibition'] = experimental.apply(lambda x:'b' if x>0 else 'r')
+            results['color_by_inhibition'] = experimental[results.index].apply(lambda x:'b' if x>0 else 'r')
             results.plot(kind='scatter', x='dist_mean', y='energy_mean', alpha=0.7,
                          ax=ax, c=results.dropna()['color_by_inhibition'], s=100)
             if with_errors:
@@ -69,9 +69,9 @@ class Project(object):
 
             if with_crossvalidation:
                 input_data = results.loc[:, ('energy_mean', 'dist_mean')]
-                classification = results['color_by_inhibition']
+                classification = results['color_by_inhibition'].apply(lambda x:x=='b')
                 true_predictions, probabilities = self._cross_validate(input_data, classification)
-                roc_auc_score = self._roc_auc(true_predictions, probabilities)
+                roc_auc_score = self._roc_auc(classification, probabilities)
                 # plotting black dot on false predictions
                 results[~true_predictions].plot(kind='scatter', x='dist_mean', 
                                                    y='energy_mean', ax=ax, c='black', s=40)

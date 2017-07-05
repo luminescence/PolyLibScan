@@ -24,17 +24,18 @@ class Project(object):
         loo_probabilities = pd.Series(index=input_data.index, name='probabilities')
         #predictions = pd.Series(index=input_data.index)
         for idx in input_data.index:
-            # leave one out validation
+            # leave one out
             logReg.fit(input_data.drop([idx]), classification.drop([idx]))
             loo_score[idx] = logReg.score([input_data.loc[idx]], [classification.loc[idx]])
-            loo_probabilities[idx] = logReg.predict_proba([input_data.loc[idx]]).max()
-        # casting the scores of 1.0 and 0.0 to True and False
+            # check at what index the true-class resides
+            true_index = np.argwhere(logReg.classes_)[0][0]
+            loo_probabilities[idx] = logReg.predict_proba([input_data.loc[idx]])[0][true_index]
         loo_predictions = loo_score.astype('bool')
         return loo_predictions, loo_probabilities
 
     @staticmethod
-    def _roc_auc(true_false_predictions, probabilities):
-        return metrics.roc_auc_score(true_false_predictions, probabilities)
+    def _roc_auc(classification, probabilities):
+        return metrics.roc_auc_score(classification, probabilities)
 
 class PolymerTypeSims(object):
 
