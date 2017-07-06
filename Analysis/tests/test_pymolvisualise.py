@@ -15,13 +15,13 @@ class TestPymolVis(ut.TestCase):
         self.sim = mock.MagicMock()
         self.sim.db_path = local_path.joinpath('data')
         self.sim._calc_protein_box = mock.Mock(return_value=box)
-        self.sim._particle_ids = [1,2,3]
+        self.sim._particle_ids = {'polymer': [1,2,3]}
 
     def test_monomer_id_prop(self):
-        density = lmp_lys.DensityContainer(self.sim, 1)
+        density = lmp_lys.dc.DensityContainer(self.sim, 1)
         self.assertEqual(density.monomer_id[0], 1)
 
-        density2 = lmp_lys.DensityContainer(self.sim, [1,2])
+        density2 = lmp_lys.dc.DensityContainer(self.sim, [1,2])
         self.assertEqual(density.monomer_id[0], 1)
         self.assertEqual(density.monomer_id[1], 2)
 
@@ -29,10 +29,10 @@ class TestPymolVis(ut.TestCase):
         self.assertEqual(density.monomer_id[0], 1)
 
         with self.assertException as e:
-            density4 = lmp_lys.DensityContainer(self.sim, np.array([5]))
+            density4 = lmp_lys.dc.DensityContainer(self.sim, np.array([5]))
 
         with self.assertException as e:
-            density5 = lmp_lys.DensityContainer(self.sim, '5')
+            density5 = lmp_lys.dc.DensityContainer(self.sim, '5')
 
         density6 = lmp_lys.DensityContainer(self.sim, 'all')
         self.assertEqual(density.monomer_id, [1,2,3])
