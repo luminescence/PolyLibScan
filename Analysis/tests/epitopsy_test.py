@@ -25,14 +25,6 @@ class TestEpitopsy(ut.TestCase):
 		print box_diff
 		self.assertTrue(np.all((box_diff[0] + 10 ) == np.array([.0,.0,.0])))
 		self.assertTrue(np.all((box_diff[1] - 10 ) == np.array([.0,.0,.0])))
-
-		# test box size
-
-	def test_create_empty_epitopsy_map(self):
-		box, epitopsy_data = self.job.pymol._create_empty_epitopsy_map()
-
-		# test if empty
-		self.assertEqual(np.sum(epitopsy_data), 0)
 		
 
 	def test_add_run_to_epitopsy_map(self):

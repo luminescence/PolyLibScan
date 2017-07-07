@@ -21,21 +21,21 @@ class TestPymolVis(ut.TestCase):
         density = lmp_lys.dc.DensityContainer(self.sim, 1)
         self.assertEqual(density.monomer_id[0], 1)
 
-        density2 = lmp_lys.dc.DensityContainer(self.sim, [1,2])
-        self.assertEqual(density.monomer_id[0], 1)
-        self.assertEqual(density.monomer_id[1], 2)
+        density2 = lmp_lys.dc.DensityContainer(self.sim, monomer_id=[1,2])
+        self.assertEqual(density2.monomer_id[0], 1)
+        self.assertEqual(density2.monomer_id[1], 2)
 
-        density3 = lmp_lys.DensityContainer(self.sim, np.array([1]))
-        self.assertEqual(density.monomer_id[0], 1)
+        density3 = lmp_lys.dc.DensityContainer(self.sim, np.array([1]))
+        self.assertEqual(density3.monomer_id[0], 1)
 
-        with self.assertException as e:
+        with self.assertRaises(ValueError):
             density4 = lmp_lys.dc.DensityContainer(self.sim, np.array([5]))
 
-        with self.assertException as e:
+        with self.assertRaises(ValueError):
             density5 = lmp_lys.dc.DensityContainer(self.sim, '5')
 
-        density6 = lmp_lys.DensityContainer(self.sim, 'all')
-        self.assertEqual(density.monomer_id, [1,2,3])
+        density6 = lmp_lys.dc.DensityContainer(self.sim, 'all')
+        self.assertEqual(density6.monomer_id, [1,2,3])
 
     def test_create_empty_map(self):
         pass

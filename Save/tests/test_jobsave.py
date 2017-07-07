@@ -55,9 +55,5 @@ class Test_JobSave(ut.TestCase):
 		js_obj._db.close()
 		js_obj.db_path.unlink()
 
-	def test_job_length(self):
-		js_obj = js.JobSave(self.path.as_posix(), db_name='test2.h5')
-		self.assertEqual(len(js_obj.runs), 0)
-
 if __name__ == '__main__':
     ut.main(verbosity=2)
