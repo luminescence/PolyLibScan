@@ -19,23 +19,30 @@ class Project(object):
 
     @staticmethod
     def _cross_validate(input_data, classification):
-        logReg = linear_model.LogisticRegression()
-        loo_score = pd.Series(index=input_data.index, name='predictions')
+        logReg = linear_model.LogisticRegression(max_iter=200, tol=1e-5)
+        loo_predictions = pd.Series(index=input_data.index, name='predictions')
+        loo_score = pd.Series(index=input_data.index, dtype='bool', name='score')
         loo_probabilities = pd.Series(index=input_data.index, name='probabilities')
         #predictions = pd.Series(index=input_data.index)
         for idx in input_data.index:
             # leave one out
             logReg.fit(input_data.drop([idx]), classification.drop([idx]))
-            loo_score[idx] = logReg.score([input_data.loc[idx]], [classification.loc[idx]])
+            loo_predictions[idx] = logReg.predict([input_data.loc[idx]])
+            loo_score[idx] = (loo_predictions[idx] == classification.loc[idx])
             # check at what index the true-class resides
             true_index = np.argwhere(logReg.classes_)[0][0]
             loo_probabilities[idx] = logReg.predict_proba([input_data.loc[idx]])[0][true_index]
-        loo_predictions = loo_score.astype('bool')
-        return loo_predictions, loo_probabilities
-
+        kappa =  metrics.cohen_kappa_score(classification, loo_predictions)
+        return loo_score, loo_probabilities, kappa
+        
     @staticmethod
     def _roc_auc(classification, probabilities):
         return metrics.roc_auc_score(classification, probabilities)
+
+    @staticmethod
+    def _kappa(true_classification, model_classification):
+        return metrics.cohen_kappa_score(true_classification, model_classification)
+
 
 class PolymerTypeSims(object):
 

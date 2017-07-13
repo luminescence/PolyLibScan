@@ -15,6 +15,7 @@ import visualize
 import pymol_visualisation
 import sim_run
 import poly_type
+import numerics as num_
 
 warnings.filterwarnings("ignore")
 
@@ -126,6 +127,37 @@ class Project(plotting.Project, bayes.Project):
             del self._parameters
         return locals()
     parameters = property(**parameters())
+
+    def _scatter_data(self, with_errors=False, with_labels=False, with_crossvalidation=False, 
+                           confidence_interval=0.95, min_dist_to_ac=10):
+        if self.experimental_data is not None:
+            polymer_list = list(set(self.endstate_matrix.columns.levels[0]) & set(self.experimental_data.index))
+            experimental = self.experimental_data[polymer_list]
+            experimental.sort_values(inplace=True)
+        else:
+            polymer_list = self.endstate_matrix.columns.levels[0]
+            
+        full_distance_matrix = self.endstate_matrix.swaplevel(0,1, axis=1)['Distance'][polymer_list]
+        full_energy_matrix = self.endstate_matrix.swaplevel(0,1, axis=1)['Energy'][polymer_list]
+        
+        distance_matrix = full_distance_matrix[full_distance_matrix<min_dist_to_ac]
+        energy_matrix = full_energy_matrix[full_distance_matrix<min_dist_to_ac]
+
+        if with_errors:
+            df1 = num_.distance_with_error(distance_matrix)
+            df2 = num_.energy_with_error(energy_matrix, 0.95)
+            results = pd.concat([df1, df2], axis=1)
+        else:
+            results = pd.DataFrame(index=distance_matrix.columns)
+            results['energy_mean'] = energy_matrix.mean()
+            results['dist_mean'] = distance_matrix.count()/float(full_distance_matrix.shape[0])
+        # drop polymer types that are not present in the min-radius
+        results.dropna(inplace=True)
+        if self.experimental_data is not None:
+            results['color_by_inhibition'] = experimental[results.index].apply(lambda x:'b' if x>0 else 'r')
+
+        return results
+
 
     def endstate_matrix():
         doc = "The endstate_matrix property."

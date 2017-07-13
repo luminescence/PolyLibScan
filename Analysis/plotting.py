@@ -29,34 +29,15 @@ class Project(object):
             fig, ax = plt.subplots(figsize=(18,12))
             ax.set_title('%s (PDB: %s)' % (self.jobs[0].meta['protein_name'], self.jobs[0].meta['protein'].upper()), size=20)
             
-        if self.experimental_data is not None:
-            polymer_list = list(set(self.endstate_matrix.columns.levels[0]) & set(self.experimental_data.index))
-            experimental = self.experimental_data[polymer_list]
-            experimental.sort_values(inplace=True)
-        else:
-            polymer_list = self.endstate_matrix.columns.levels[0]
-            
-        full_distance_matrix = self.endstate_matrix.swaplevel(0,1, axis=1)['Distance'][polymer_list]
-        full_energy_matrix = self.endstate_matrix.swaplevel(0,1, axis=1)['Energy'][polymer_list]
-        
-        distance_matrix = full_distance_matrix[full_distance_matrix<min_dist_to_ac]
-        energy_matrix = full_energy_matrix[full_distance_matrix<min_dist_to_ac]
-            
+        results = self._scatter_data(with_errors=with_errors, with_labels=with_labels, 
+                                     with_crossvalidation=with_crossvalidation, 
+                                     confidence_interval=confidence_interval, min_dist_to_ac=min_dist_to_ac)
         if with_errors:
-            df1 = num_.distance_with_error(distance_matrix)
-            df2 = num_.energy_with_error(energy_matrix, 0.95)
-            results = pd.concat([df1, df2], axis=1)
             error = results['dist_max_error'].max()
         else:
-            results = pd.DataFrame(index=distance_matrix.columns)
-            results['energy_mean'] = energy_matrix.mean()
-            results['dist_mean'] = distance_matrix.count()/float(full_distance_matrix.shape[0])
             error = 0.0
 
-        # drop polymer types that are not present in the min-radius
-        results.dropna(inplace=True)
         if self.experimental_data is not None:
-            results['color_by_inhibition'] = experimental[results.index].apply(lambda x:'b' if x>0 else 'r')
             results.plot(kind='scatter', x='dist_mean', y='energy_mean', alpha=0.7,
                          ax=ax, c=results.dropna()['color_by_inhibition'], s=100)
             if with_errors:
@@ -70,7 +51,7 @@ class Project(object):
             if with_crossvalidation:
                 input_data = results.loc[:, ('energy_mean', 'dist_mean')]
                 classification = results['color_by_inhibition'].apply(lambda x:x=='b')
-                true_predictions, probabilities = self._cross_validate(input_data, classification)
+                true_predictions, probabilities, kappa = self._cross_validate(input_data, classification)
                 roc_auc_score = self._roc_auc(classification, probabilities)
                 # plotting black dot on false predictions
                 results[~true_predictions].plot(kind='scatter', x='dist_mean', 
