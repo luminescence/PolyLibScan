@@ -77,6 +77,8 @@ class ProteinCreator(LmpCreator):
             particle_data_gen = self._extract_Calphas()
         elif self.cg_lvl == 'geometric_center':
             particle_data_gen = self._extract_resi_centered()
+	elif self.cg_lvl == 'bb+sc':
+	    particle_data_gen = self._extract_bb_sc()
         else:
             raise ValueError('%s-option is not implemented yet.' % self.cg_lvl)
         particles = self._add_particles_to_molecule(lmp_obj, particle_data_gen)
@@ -132,10 +134,27 @@ class ProteinCreator(LmpCreator):
         else:
             return type_data
 
+    def _extract_bb_sc(self):
+        '''Extract position of backbone and sidechain
+	and create generate particle-information 
+	of yield backbone and geometrically centered 
+	sidechain''' 
+	residues = self.pdb_structure.get_residues()
+	
+	for resi in residues:
+            atoms = resi.child_dict
+            c_alpha = atoms['CA']
+            yield c_alpha.coord.copy(), resi.resname, resi.parent.id , resi.id
+
+	    side_chain = [atom in name,atom in atoms.items() if not name in ['CA','N', 'C', 'O']] 
+	    if not len(side_chain) == 0:
+ 	        sc_center = np.array([atom.coord for atom in side_chain]).mean(axis=0)
+	        raise NotImplemented('sidechain particle needs unique signiture, but has same as bb.')
+                yield sc_center, resi.resname, resi.parent.id, resi.id
+
     def _extract_Calphas(self):
         filter_c_alphas = lambda x: x.id=='CA' and x.element=='C'
         atoms = filter(filter_c_alphas, self.pdb_structure.get_atoms())
-        particles = np.empty(len(atoms), dtype=object)
 
         for i, atom in enumerate(atoms,0):
             yield atom.coord.copy(), atom.get_parent().resname, atom.parent.parent.id , atom.parent.id
