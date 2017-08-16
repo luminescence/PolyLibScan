@@ -146,7 +146,7 @@ class ProteinCreator(LmpCreator):
             c_alpha = atoms['CA']
             yield c_alpha.coord.copy(), resi.resname, resi.parent.id , resi.id
 
-	    side_chain = [atom in name,atom in atoms.items() if not name in ['CA','N', 'C', 'O']] 
+	    side_chain = [atom for name,atom in atoms.items() if not name in ['CA','N', 'C', 'O']] 
 	    if not len(side_chain) == 0:
  	        sc_center = np.array([atom.coord for atom in side_chain]).mean(axis=0)
 	        raise NotImplemented('sidechain particle needs unique signiture, but has same as bb.')
