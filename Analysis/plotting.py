@@ -18,9 +18,12 @@ class Project(object):
         input:
             ax: pyplot axis
             with_errors: bool
+            with_labels: bool
+            with_crossvalidation: bool
             confidence_interval: float
-            min_dist_to_ac: float
+            ax: pyplot subplot object
             save_path: [string]
+            min_dist_to_ac: float
 
         output:
             none
@@ -49,15 +52,14 @@ class Project(object):
             legend_items.append(mpatches.Patch(color='blue', label='inhibiting'))
 
             if with_crossvalidation:
-                input_data = results.loc[:, ('energy_mean', 'dist_mean')]
                 classification = results['color_by_inhibition'].apply(lambda x:x=='b')
-                true_predictions, probabilities, kappa = self._cross_validate(input_data, classification)
-                roc_auc_score = self._roc_auc(classification, probabilities)
+                roc_auc_score = self._roc_auc(classification, results['probabilities'])
+                kappa = self._kappa(classification, results['model_predictions'])
                 # plotting black dot on false predictions
-                results[~true_predictions].plot(kind='scatter', x='dist_mean', 
+                results[~results['true_predictions']].plot(kind='scatter', x='dist_mean', 
                                                    y='energy_mean', ax=ax, c='black', s=40)
                 legend_items.append(mpatches.Patch(color='black', label='ROC-AUC: %.2f' % roc_auc_score))
-
+                legend_items.append(mpatches.Patch(color='black', label='kappa  : %.2f' % kappa))
             ax.legend(handles=legend_items, fontsize=20, loc='best')
         else:
             results.plot(kind='scatter', x='dist_mean', y='energy_mean', alpha=0.7, 

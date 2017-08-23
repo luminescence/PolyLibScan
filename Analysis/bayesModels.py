@@ -32,9 +32,8 @@ class Project(object):
             # check at what index the true-class resides
             true_index = np.argwhere(logReg.classes_)[0][0]
             loo_probabilities[idx] = logReg.predict_proba([input_data.loc[idx]])[0][true_index]
-        kappa =  metrics.cohen_kappa_score(classification, loo_predictions)
-        return loo_score, loo_probabilities, kappa
-        
+        return loo_score, loo_predictions, loo_probabilities
+    
     @staticmethod
     def _roc_auc(classification, probabilities):
         return metrics.roc_auc_score(classification, probabilities)

@@ -24,9 +24,7 @@ class Project(plotting.Project, bayes.Project):
         self.path = pl.Path(project_path)
         self._id_gen = idGen.IdGen()
         self._endstate_matrix = None
-        self._parameters = None
-        if parameters is not None:
-            self.parameters = parameters
+        self.parameters = self._init_parameters(parameters)
         self._visualize = visualize.Visualize(self)
         # stores jobs in list (jobs)
         # and dict form (polymer_types); polymer_types stores jobs sorted by polymer type
@@ -38,6 +36,16 @@ class Project(plotting.Project, bayes.Project):
             self.experimental_data = experimental_data
             for p_type in self.polymer_types.values():
                 p_type.ic50 = self.experimental_data[p_type.polymer_type]
+
+    def _init_parameters(self, parameters):
+        if parameters:
+            return parameters
+        else:
+            potential_parameters = list(self.db_folder.parent.parent.joinpath('static').glob('parameters.yml'))
+            if len(potential_parameters) == 1:
+                return potential_parameters[0].absolute().resolve()
+            else:
+                return None
 
     def read_jobs(self, path):
         '''Read in database files found in folders of project folder.
@@ -145,7 +153,7 @@ class Project(plotting.Project, bayes.Project):
 
         if with_errors:
             df1 = num_.distance_with_error(distance_matrix)
-            df2 = num_.energy_with_error(energy_matrix, 0.95)
+            df2 = num_.energy_with_error(energy_matrix, confidence_interval)
             results = pd.concat([df1, df2], axis=1)
         else:
             results = pd.DataFrame(index=distance_matrix.columns)
@@ -156,6 +164,13 @@ class Project(plotting.Project, bayes.Project):
         if self.experimental_data is not None:
             results['color_by_inhibition'] = experimental[results.index].apply(lambda x:'b' if x>0 else 'r')
 
+        if with_crossvalidation:
+            input_data = results.loc[:, ('energy_mean', 'dist_mean')]
+            classification = results['color_by_inhibition'].apply(lambda x:x=='b')
+            true_predictions, model_predictions, probabilities = self._cross_validate(input_data, classification)
+            results['true_predictions'] = true_predictions
+            results['model_predictions'] = model_predictions
+            results['probabilities'] = probabilities
         return results
 
 

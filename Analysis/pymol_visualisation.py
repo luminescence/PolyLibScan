@@ -12,16 +12,19 @@ class PymolVisualisation(object):
         self.sim = job
         self._module_folder = _os.path.dirname(__file__)
         self.db_folder = self.sim.db_path.parent.absolute().resolve()
+        self.protein_path = self._init_protein_path(protein_path)
+        self.pymol_handle = pym.connect(ip='localhost')
+    
+    def _init_protein_path(self, protein_path):
         if protein_path:
-            self.protein_path = protein_path
+            return protein_path
         else:
             potential_pdb_location = list(self.db_folder.parent.parent.joinpath('static').glob('*.pdb'))
             if len(potential_pdb_location) == 1:
-                self.protein_path = potential_pdb_location[0].absolute().resolve()
+                return potential_pdb_location[0].absolute().resolve()
             else:
-                self.protein_path = None
-        self.pymol_handle = pym.connect(ip='localhost')
-    
+                return None
+
     def _poly_poses(self, state='end'):
         '''Create generator of data for polymer-pdb via the pymol_polymer.tpl
         Each yield (run) the coordinates of the polymer are updated, while the constant
