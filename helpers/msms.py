@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import collections as col
 import Bio.PDB as PDB
+import PolyLibScan.helpers.db as DB
 
 class HydrophobicParameterisation(object):
     
@@ -99,6 +100,8 @@ class HydrophobicParameterisation(object):
         return vertices_file, face_file, area_file
     
     def area(self, path=None):
+        '''Parse msms-area file and return a numpy array.
+        '''
         if path:
             area_file = pl.Path(path)
         else:
@@ -107,12 +110,19 @@ class HydrophobicParameterisation(object):
         with open(area_file.as_posix()) as f:
             content = f.read().split('\n')[1:-1]
         atom_count = len(content)
-        data = np.zeros(atom_count, dtype=[('count', np.int), ('atom_id', 'S4'), ('resn', 'S3'), ('resi', np.int),
+        data = np.zeros(atom_count, dtype=[('count', np.int), ('atom_id', 'S4'), ('resn', 'S3'), 
+                                           ('chain', 'S1'), ('resi', np.int), ('iCode', 'S1'),
                                            ('ses', np.float), ('sas', np.float)])
         for i, line in enumerate(content):
             cnt, ses, sas, id_string = line.split()
-            a_id, resn, resi = id_string.split('_')
-            data[i] = (int(cnt), a_id, resn, int(resi), float(ses), float(sas))
+            a_id, resn, chain, resi = id_string.split('_')
+            try:
+                res_id = int(resi)
+                icode = ' '
+            except ValueError:
+                res_id = int(resi[:-1])
+                icode = resi[-1]
+            data[i] = (int(cnt), a_id, resn, chain, res_id, icode, float(ses), float(sas))
         return data
     
     def faces(self, path=None):
@@ -125,7 +135,8 @@ class HydrophobicParameterisation(object):
             f.next()
             f.next()
             n_faces, n_spheres, dens, probe_r = f.next().split()
-            data = np.zeros(int(n_faces), dtype=[('vertices', np.int,3), ('type', np.int8), ('f_no', np.int)])
+            data = np.zeros(int(n_faces), dtype=[('vertices', np.int,3), ('type', np.int8), 
+                                                 ('f_no', np.int)])
             for i,face in enumerate(f):
                 face_data = map(int, face.strip().split())
                 data[i] = (tuple(face_data[:3]), face_data[3], face_data[4])
@@ -143,7 +154,8 @@ class HydrophobicParameterisation(object):
             n_vertex, n_spheres, dens, probe_r = f.next().split()
             data = np.zeros(int(n_vertex), dtype=[('xyz', np.float, 3), ('normal', np.float, 3), 
                                                  ('face_id', np.int), ('sph_idx', np.int), ('type', np.int8),
-                                                 ('atom', 'S4'), ('resn', 'S3'), ('resi', np.int)])
+                                                 ('atom', 'S4'), ('resn', 'S3'), ('chain', 'S1'), ('resi', np.int), 
+                                                 ('icode', 'S1')])
             for i,line in enumerate(f):
                 vertex = line.split()
                 try:
@@ -155,11 +167,21 @@ class HydrophobicParameterisation(object):
                 normal = tuple(map(float, vertex[3:6]))
                 info = tuple(map(int, vertex[6:9]))
                 res_str = vertex[9].split('_')
-                res_info = res_str[0], res_str[1], int(res_str[2])
+                try:
+                    res_id = int(res_str[3])
+                    icode = ' '
+                except ValueError:
+                    res_id = int(res_str[3][:-1])
+                    icode = res_str[3][-1]
+                res_info = res_str[0], res_str[1], res_str[2], res_id, icode
                 data[i] = (coords, normal) + info + res_info
         return data
     
     def get_residue_hydro_levels(self, parameters_file=None):
+        '''Read in the clogP values of all residues from the 
+        parameter file and sort all members into sets hydrophobic 
+        and hydrophilic particles.
+        '''
         if parameters_file and pl.Path(parameters_file).exists():
             path = pl.Path(parameters_file)
         else:
@@ -182,6 +204,9 @@ class HydrophobicParameterisation(object):
                 self.phob_resis[res_id] = self.residues[res_id]
 
     def add_area(self, areas):
+        '''add area information to residue and 
+        delete the residue, if it has an area of 0.0.
+        '''
         for res_id, area in areas.items():
             if area > 0.0:
                 self.residues[res_id].area = area
@@ -194,14 +219,18 @@ class HydrophobicParameterisation(object):
 
     def add_vertices(self, vertices):
         for vert in vertices:
-            res_id = (vert[-2], vert[-1])
-            self.residues[res_id].vertices.append(vert[0]) 
+            res_id = (vert[-4], vert[-3], vert[-2], vert[-1])
+            # there are corner cases, where there is no area 
+            # but vertices. In case the residue has no area,
+            # we discard the vertices.
+            if res_id in self.residues:
+                self.residues[res_id].vertices.append(vert[0]) 
 
     def resi_surface(self, area_data):
         res_area = col.defaultdict(float)
         for atom in area_data:
-            res_id = (atom[2], atom[3])
-            res_area[res_id] += atom[5]
+            res_id = (atom[2], atom[3], atom[4], atom[5])
+            res_area[res_id] += atom[7]
         return res_area
 
     def calculate_distances(self):
@@ -227,6 +256,20 @@ class HydrophobicParameterisation(object):
         self.calculate_distances()
         self.add_neighbors()
         self.additive_area()
+
+    def to_hdf5(self, db_path, table_name):
+        '''Save residue info and parameters to HDF5 Database.
+        '''
+        arr_type = [('resname', 'S3'), ('chain', 'S1'), ('id', np.int16), 
+                    ('iCode', 'S1'), ('singleParameter', np.float16), ('areaParameter', np.float16)]
+        hydrophobic_array = np.zeros(len(self.phob_resis), dtype=arr_type)
+        for i,resi in enumerate(self.phob_resis.values()):
+            hydrophobic_array[i] = (resi.name[0], resi.pdb_id[0], resi.pdb_id[1], resi.pdb_id[2], 
+                                    resi.hydrophobic_energy_single(), resi.hydrophobic_energy_area())
+        dBase = DB.Database(db_path)
+        dBase._save_table(hydrophobic_array, '/', table_name)
+        dBase.close()
+
 
 class Residue(object):
 
@@ -277,19 +320,23 @@ class Residue(object):
         for neighbor in self.neighbors:
             self.surrounding_area += neighbor.area
 
-    def hydrophobic_energy(self):
+    def hydrophobic_energy_single(self):
         '''
         See: Reynolds1974
         '''
-        single_energy = self.parent.correlation_parameter * self.area 
-        multi_energy = self.parent.correlation_parameter * self.surrounding_area
-        return single_energy, multi_energy
+        return self.parent.correlation_parameter * self.area 
+
+    def hydrophobic_energy_area(self):
+        '''
+        See: Reynolds1974
+        '''
+        return self.parent.correlation_parameter * self.surrounding_area
 
     def set_pdb_id(self):
         matches = []
         for pdb_resi in self.parent.struc[0].get_residues():
-            pdb_id = pdb_resi.resname.strip(), pdb_resi.get_full_id()[3][1]
-            if self.name == pdb_id :
+            pdb_id = self.reduced_id(pdb_resi.get_full_id())
+            if self.name[1:] == pdb_id:
                 matches.append(self.reduced_id(pdb_resi.get_full_id()))
         if len(matches) !=1:
             raise ValueError('Amino Acid %s was not matched to a single pdb residue but %s' % (self.name, matches))

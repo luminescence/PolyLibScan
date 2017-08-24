@@ -78,12 +78,14 @@ $1=="ATOM"||$1=="atom"||$1=="HETATM"||$1=="hetatm"{
 	#
 	if(substr(aname,1,2) ~ /[Hh][^Gg]/ ) aname="H"
 
-
+	chain = substr($0,22,1);
 	resnum=substr($0,23,4);
+	icode=substr($0,27,1); 
 
 	# trim any blanks
 	gsub(" ", "", resname);
 	gsub(" ", "", aname);
+	gsub(" ", "", resnum);
 
 	for(pat=0;pat<npats;pat++) {
 		if( aname ~ atmpat[pat] && resname ~ respat[pat] ) break 
@@ -96,7 +98,7 @@ $1=="ATOM"||$1=="atom"||$1=="HETATM"||$1=="hetatm"{
 		  | "cat 1>&2" # write to stderr
 		print x,y,z,0.01
 		}
-	else printf("%f %f %f %f %d %s_%s_%d\n", x, y, z, \
-	  ('$h_select'== 5 ? united_rad[atmnum[pat]]:explicit_rad[atmnum[pat]]), 1, aname, resname, resnum);
+	else printf("%f %f %f %f %d %s_%s_%s_%d%s\n", x, y, z, \
+	  ('$h_select'== 5 ? united_rad[atmnum[pat]]:explicit_rad[atmnum[pat]]), 1, aname, resname, chain, resnum, icode);
 	next;
 	}' $*
