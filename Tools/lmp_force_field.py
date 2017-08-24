@@ -66,14 +66,16 @@ class Interaction(object):
 class Pair(object):
 
     def __init__(self, pair_type, atom_type1, atom_type2, epsilon=None, alpha=None):
+        '''
+        '''
         self.pair_type = pair_type
         self.atom_type1 = atom_type1
         self.atom_type2 = atom_type2
         if epsilon == None:
             if self.pair_type.kind == 'soft':
-                if self.atom_type1.hydrophobicity > 0 or self.atom_type1.hydrophobicity > 0:
+                if self.atom_type1.hydrophobicity > 0 or self.atom_type2.hydrophobicity > 0:
                     self._epsilon = self.pair_type.parameters['coeffs'][0] * 0.5 * (self.atom_type1.hydrophobicity + self.atom_type2.hydrophobicity)
-                else:    
+                else:
                     self._epsilon = 0.0
             else:
                 self._epsilon = self.pair_type.parameters['coeffs'][0]
