@@ -257,19 +257,28 @@ class HydrophobicParameterisation(object):
         self.add_neighbors()
         self.additive_area()
 
-    def to_hdf5(self, db_path, table_name):
-        '''Save residue info and parameters to HDF5 Database.
-        '''
+    def to_numpy_array(self, threshold=0.0):
         arr_type = [('resname', 'S3'), ('chain', 'S1'), ('id', np.int16), 
                     ('iCode', 'S1'), ('singleParameter', np.float16), ('areaParameter', np.float16)]
         hydrophobic_array = np.zeros(len(self.phob_resis), dtype=arr_type)
         for i,resi in enumerate(self.phob_resis.values()):
             hydrophobic_array[i] = (resi.name[0], resi.pdb_id[0], resi.pdb_id[1], resi.pdb_id[2], 
                                     resi.hydrophobic_energy_single(), resi.hydrophobic_energy_area())
+        mask = hydrophobic_array['singleParameter'] > threshold
+        return hydrophobic_array[mask]
+
+    def to_hdf5(self, db_path, table_name, threshold=0.1):
+        '''Save residue info and parameters to HDF5 Database.
+        '''
+        hydrophobic_array = self.to_numpy_array(threshold)
         dBase = DB.Database(db_path)
         dBase._save_table(hydrophobic_array, '/', table_name)
         dBase.close()
 
+    def to_dataframe(self, threshold=0.0):
+        hydrophobic_array = self.to_numpy_array(threshold)
+        df = pd.Dataframe(data=hydrophobic_array)
+        return df
 
 class Residue(object):
 
