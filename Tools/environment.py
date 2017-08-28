@@ -138,6 +138,9 @@ class Environment(object):
         return config
 
     def create_force_fields(self, pair_types):
+        '''only force fields that are single_typed need to be addressed,
+        in the lammps data file.
+        '''
         ff = {}
         for name, field_type in pair_types.items():
             if field_type.single_type_parametrised:
@@ -146,11 +149,7 @@ class Environment(object):
 
     def load_pair_types(self, config):
         for name, pair_parameters in config.items():
-            coefficients = sorted([(int(key2[4:]), float(v)) for key2, v in pair_parameters.items() if 'coef' in key2], 
-                                   key=lambda x:x[0])
-            self.pair_type[name] = PairType(name, pair_parameters['kind'], int(pair_parameters['repulsive_only']), 
-                                                [float(c[1]) for c in coefficients], float(pair_parameters['cutoff']),
-                                                pair_parameters['single_type_parametrised'])
+            self.pair_type[name] = PairType.from_dict(pair_parameters, name=name)
 
     def load_atom_types(self, config):
         for name, values in config.items():
@@ -158,25 +157,14 @@ class Environment(object):
 
     def load_bond_types(self, config):
         for name, values in config.items():
-            coefficients = sorted([(int(key2[4:]), float(v)) 
-                                    for key2, v in values.items() if 'coef' in key2], 
-                                  key=lambda x:x[0])
-            self.bond_type.define_type(name, 
-                                       BondType(name, values['kind'], [float(c[1]) for c in coefficients]))
+            self.bond_type.define_type(name, BondType.from_dict(values, name=name))
     def load_angle_types(self, config):
         for name, values in config.items():
-            coefficients = sorted([(int(key2[4:]), float(v)) for key2, v in values.items() if 'coef' in key2], 
-                                       key=lambda x:x[0])
-            self.angle_type.define_type(name, 
-                                        AngleType(name, values['kind'], [float(c[1]) for c in coefficients]))
+            self.angle_type.define_type(name, AngleType.from_dict(values, name=name))
 
     def load_dihedral_types(self, config):
         for name, values in config.items():
-            coefficients = sorted([(int(key2[4:]), float(v)) for key2, v in values.items() if 'coef' in key2], 
-                                       key=lambda x:x[0])
-            self.dihedral_type.define_type(name, 
-                               DihedralType(name, values['kind'], [float(c[1]) for c in coefficients]))
-
+            self.dihedral_type.define_type(name, DihedralType.from_dict(values, name=name))
 
     def load_globals(self, parameters):
         valid_keys = ['angle_style', 'atom_style', 'bond_style', 

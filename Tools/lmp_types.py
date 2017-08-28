@@ -100,6 +100,13 @@ class ArchType(object):
         self.kind = kind
         self.parameters['coeffs'] = coeffs
 
+    @classmethod
+    def from_dict(cls, pair_dict, name='None'):
+        coef_keys = sorted([key for key in pair_dict if 'coef' in key])
+        coefficients = [float(pair_dict[key]) for key in coef_keys]
+
+        return cls(name, pair_dict['kind'], coefficients)
+
     def __eq__(self, other):
         if self.name == other.name and self.Id == other.Id:
             if self.kind == other.kind and self.parameters['coeffs'] == other.parameters['coeffs']:
@@ -125,6 +132,15 @@ class PairType(ArchType):
         self.repulsive_only = rep_only
         self.cutoff = cutoff
         
+    @classmethod
+    def from_dict(cls, pair_dict, name='None'):
+        coef_keys = sorted([key for key in pair_dict if 'coef' in key])
+        coefficients = [float(pair_dict[key]) for key in coef_keys]
+
+        return cls(name, pair_dict['kind'], int(pair_dict['repulsive_only']), 
+                 coefficients, float(pair_dict['cutoff']),
+                 pair_dict['single_type_parametrised'])
+
     def __repr__(self):
         repr_str  = 'Pair Type | Name: {} - Pair-Id: {:> 3d} - Kind: {} \nCoefficients: '
         repr_str += '{:> 2f} '*len(self.parameters['coeffs'])
