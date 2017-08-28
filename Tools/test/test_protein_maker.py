@@ -49,7 +49,7 @@ class TestProtein_Maker(ut.TestCase):
                                     'coef1': 0.0,
                                     'coef2': 0.4}
                                     }
-        self.cfg_data['globals'] = {'affinity_file': '../data/affinities_Originals2.h5',
+        self.cfg_data['globals'] = {'affinity_file': local_path.joinpath('data/affinities_Originals2.h5'),
                                     'atom_style': 'angle',
                                     'bond_style': 'harmonic',
                                     'angle_style': 'harmonic',
@@ -171,6 +171,54 @@ class TestProtein_Maker(ut.TestCase):
         bond_types = set([bond.type_ for bond in bonds])
         self.assertEqual(len(bond_types), 1)
         self.assertEqual(list(bond_types)[0].name, 'ghost')
+
+    def test_make_unique(self):
+        Environment._get_config = mock.MagicMock(return_value=self.cfg_data)
+        env = Environment('dummy.cfg')
+        creator = ProteinCreator(env, local_path.joinpath('data/1LYA.pdb').as_posix(), 
+                                  add_protein_binding=False, with_ghosts=False, with_ions=False)
+        protein = creator.create()
+        self.assertTrue(protein.data['particles'][0].type_.name, 'BB')
+        creator._make_particle_unique(protein.data['particles'][0], 'huhu')
+        self.assertTrue(protein.data['particles'][0].type_.name, 'huhu')
+
+    def test_find_residue(self):
+        creator = ProteinCreator(self.env, local_path.joinpath('data/1LYA.pdb').as_posix(), 
+                                  add_protein_binding=False, with_ghosts=False, with_ions=False)
+        protein = creator.create()
+        pdb_id = ('B', 346, ' ')
+        resi = creator._find_particle_by_pdb_id(pdb_id, protein)
+        self.assertEqual(resi.residue[1], pdb_id[0])
+        self.assertEqual(resi.residue[2][1], pdb_id[1])
+        self.assertEqual(resi.residue[2][2], pdb_id[2])
+
+    def test_surface_energy_add(self):
+        creator = ProteinCreator(self.env, local_path.joinpath('data/1LYA.pdb').as_posix(), 
+                                  add_protein_binding=False, with_ghosts=False, with_ions=False)
+        protein = creator.create()
+        test_particle = protein.data['particles'][1]
+        pdb_id = (test_particle.residue[1], test_particle.residue[2][1], test_particle.residue[2][2])
+        energy = 1337.0
+        self.assertEqual(test_particle.type_.surface_energy, 0.0)
+        creator.add_surface_energy(pdb_id, energy, protein)
+        self.assertAlmostEqual(protein.data['particles'][1].type_.surface_energy, 1337.0)
+
+    def test_surface_energy_full(self):
+        surface_path = local_path.joinpath('data/hydrophobic_parameters.h5').as_posix()
+        protein = ProteinCreator(self.env, local_path.joinpath('data/1LYA.pdb').as_posix(), 
+                                  add_protein_binding=True, with_ghosts=True, with_ions=True,
+                                  surface_file=surface_path).create()
+        count = sum([1 for resi in protein.data['particles'] 
+                     if resi.type_.surface_energy > 0.0])
+        self.assertEqual(count, 121)
+
+    def test_get_surface_data(self):
+        creator = ProteinCreator(self.env, local_path.joinpath('data/1LYA.pdb').as_posix(), 
+                                  add_protein_binding=False, with_ghosts=False, with_ions=False)
+        protein = creator.create()
+        surface_path = local_path.joinpath('data/hydrophobic_parameters.h5').as_posix()
+        data = creator.get_surface_data(surface_path, protein.pdb_id)
+        self.assertEqual(tuple(data[['resname', 'chain', 'id']][0]), ('PRO', 'B', 287))
 
 if __name__ == '__main__':
     ut.main(verbosity=2)

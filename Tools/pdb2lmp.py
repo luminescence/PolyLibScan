@@ -6,6 +6,7 @@ from lmp_types import *
 from lmp_particlesAndInteractions import *
 from lmpObj import LmpObj
 from lmp_creator import LmpCreator
+import PolyLibScan.helpers.db as DB
 
 class ProteinCreator(LmpCreator):
     '''
@@ -23,7 +24,9 @@ class ProteinCreator(LmpCreator):
         add_protein_binding: bool    | if true, particles are bound together as 
                                        a polypeptide string
     '''
-    def __init__(self, environment, pdb_path, cg_lvl='backbone', with_ions=False, with_ghosts=True, add_protein_binding=True):
+    def __init__(self, environment, pdb_path, cg_lvl='backbone', 
+                 with_ions=False, with_ghosts=True, add_protein_binding=True,
+                 surface_file=''):
         super(ProteinCreator, self).__init__(environment)
         self.mol_type = 'protein'
         self.pdb_path = pdb_path
@@ -33,6 +36,7 @@ class ProteinCreator(LmpCreator):
         self._add_protein_binding = add_protein_binding
         self._with_ions = with_ions
         self._with_ghosts = with_ghosts
+        self.surface_file = surface_file
 
     def __str__(self):
         string  = ['Molecule Factory creates: %s' % (self.mol_type.upper())]
@@ -55,6 +59,9 @@ class ProteinCreator(LmpCreator):
         molecule.pdb_id = self.pdb_path.split('/')[-1].split('.')[0] # this has to be changed in the long run.
 
     def _create_custom(self, molecule):
+        if self.surface_file:
+            surface_data = self.get_surface_data(self.surface_file, molecule.pdb_id)
+            self.add_surface_energies(molecule, surface_data)
         if self.with_ghosts:
             g_particles, g_bonds = self.add_ghost_particles(molecule)
             molecule.data['particles'] = np.append(
@@ -64,10 +71,75 @@ class ProteinCreator(LmpCreator):
         if self.add_protein_binding:
             self.add_protein_properties(molecule)
 
-
-
     ### HELPER FUNCTIONS
-    
+    def get_surface_data(self, path, pdb_id):
+        surface_db = DB.Database(path)
+        return surface_db._load_table('/', pdb_id)
+
+    def add_surface_energies(self, molecule, surface_data, area_energy=False):
+        if area_energy:
+            e_id = 'areaParameter'
+        else:
+            #singleParameter column
+            e_id = 'singleParameter'
+
+        for atom_id,surface_energy in itt.izip(surface_data[['chain', 'id', 'iCode']], surface_data[e_id]):
+            self.add_surface_energy(atom_id, surface_energy, molecule)
+
+    def add_surface_energy(self, atom_id, surface_energy, molecule):
+        particle = self._find_particle_by_pdb_id(atom_id, molecule)
+        if not particle.type_.unique: 
+            new_type_name = '%s|%s%d|%d' % (particle.residue[0], particle.residue[1], 
+                                            particle.residue[2][1], particle.type_.Id) 
+            protein_particle_type = self._make_particle_unique(particle, new_type_name) 
+        particle.type_.surface_energy = surface_energy
+
+    def _find_particle_by_pdb_id(self, pdb_residue_id, molecule):
+        '''Finds the id of the particle in the molecule object based on the 
+        pdb internal id. 
+        TODO: Since just the single integer (id) is used and not the 
+              entire tuple. This could be unstable.
+        '''
+        def has_right_id(search_particle):
+            return (search_particle.residue != None 
+                    and search_particle.residue[1]==pdb_residue_id[0]      # chain
+                    and search_particle.residue[2][1]==pdb_residue_id[1]   # id
+                    and search_particle.residue[2][2]== pdb_residue_id[2]) # iCode
+
+        particle = filter(has_right_id, molecule.data['particles'])
+        if len(particle)>1:
+            raise Exception('Found more than one particle. Check your pdb file for duplicate entries.')
+        elif len(particle)==0:
+            raise Exception("There is no particle with chain %s, id %d and iCode %s" % pdb_residue_id)
+        return particle[0]
+
+    def _make_particle_unique(self, particle, type_name):
+        '''assigns new, unique particle-type to given particle.
+        The new particle type has the same properties as the old one,
+        but is uniquely assigned to just this particle.
+        Returns the newly created atom type.
+
+        Input:
+            particle:  [Particle Obj]
+            type_name: [String]
+
+        Output:
+            [atom_type]
+        '''
+        old_type = self.env.atom_type[particle.type_.name]
+        self.env.atom_type[type_name] = AtomType(type_name, 
+                                                 {'mass': old_type.mass,
+                                                  'radius': old_type.radius, 
+                                                  'charge': old_type.charge,
+                                                  'hydrophobicity': old_type.hydrophobicity,
+                                                  'surface_energy': old_type.surface_energy,
+                                                  'interacting': old_type.interacting},
+                                                  unique=True)
+        # change particle type to newly created
+        particle.type_ = self.env.atom_type[type_name]
+        return self.env.atom_type[type_name]
+
+
     def coarse_grain_particles(self, lmp_obj):
         '''
         input
@@ -120,8 +192,9 @@ class ProteinCreator(LmpCreator):
     def _add_particles_to_molecule(self, lmp_obj, particle_data):
         particles = []
         for i, p in enumerate(particle_data):
-            particles.append(Particle(lmp_obj, self.env.new_id['particle'], lmp_obj.env.atom_type['BB'], 
-                                    p[0].copy()))
+            particles.append(Particle(lmp_obj, self.env.new_id['particle'], 
+                                      lmp_obj.env.atom_type['BB'], 
+                                      p[0].copy()))
             particles[-1].residue = (p[1], p[2], p[3])
 
         return particles        
