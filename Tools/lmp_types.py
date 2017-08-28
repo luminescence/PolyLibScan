@@ -8,12 +8,17 @@ class AtomType(object):
         self._radius = 2.0
         self.charge = 0.0
         self.hydrophobicity = 0.0
+        self.surface_energy = 0.0
         self._interacting = True
         self.unique = unique
         self.set_parameters(parameters)
 
     def set_parameters(self, parameters):
-        parameter_names = ['mass', 'radius', 'interacting', 'charge', 'hydrophobicity']
+        '''Copy the needed parameters from the parameters variable 
+        to the object.
+        '''
+        parameter_names = ['mass', 'radius', 'interacting', 'charge', 'hydrophobicity',
+                           'surface_energy']
         for key in filter(lambda x:x in parameters.keys(), parameter_names):
             setattr(self, key, parameters[key])
 
