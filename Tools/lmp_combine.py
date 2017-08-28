@@ -241,10 +241,8 @@ class EnvManipulator(object):
         proteins = filter(lambda x:x.mol_type == 'protein', molecules.values())
         return [mol.pdb_id for mol in proteins]
 
-    def get_affinities(self, database, pdb_id, monomer, strength):
         '''read interaction values from database
         '''
-        affinities = database._load_table('/'+pdb_id, monomer)
         return affinities
 
     def add_interaction(self, affinities, pdb_id, monomer_name):
@@ -259,6 +257,16 @@ class EnvManipulator(object):
                 protein_particle_type = self._make_particle_unique(particle, new_type_name)
 
             self.env.ff['affinity'][(particle.type_, self.env.atom_type[monomer_name])].epsilon = value
+        for protein in filter(lambda x:x.pdb_id == pdb_id, proteins):
+            for chain,res_id,iCode,type_,value in affinities: 
+                residue_id = (chain, res_id, iCode) 
+                particle = self._find_particle_by_pdb_id(residue_id, protein) 
+                if not particle.type_.unique: 
+                    new_type_name = '%s|%s%d|%d' % (particle.residue[0], particle.residue[1],  
+                                                    particle.residue[2][1], particle.type_.Id) 
+                    protein_particle_type = self._make_particle_unique(particle, new_type_name) 
+     
+                self.env.ff['affinity'][(particle.type_, self.env.atom_type[monomer_name])].epsilon = value 
 
     def _find_particle_by_pdb_id(self, pdb_residue_id, molecule):
         '''Finds the id of the particle in the molecule object based on the 
