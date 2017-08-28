@@ -1,6 +1,8 @@
 
 class Interaction(object):
-
+    '''Container object that stored all interaction parameters in 
+    a matrix and takes care of all the paperwork.
+    '''
     def __init__(self, environment, pair_type):
         self._env = environment
         self.pair_type = pair_type

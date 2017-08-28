@@ -76,6 +76,15 @@ class LmpWriter(object):
                             pair.pair_type.kind)
             elif pair.pair_type.kind == 'soft':
                 bond_template = '{:> 3d} {:> 3d} {} {:> 6.2f}'
+                #The following coefficients must be defined for each pair of atom types 
+                # via the pair_coeff command as in the examples above, or in the data file 
+                # or restart files read by the read_data or read_restart commands, or by 
+                # mixing as described below:
+                #
+                #     A (energy units)
+                #     cutoff (distance units)
+                #
+                # The last coefficient is optional. If not specified, the global soft cutoff is used.
                 return bond_template.format(
                             pair.atom_type2.Id, pair.atom_type1.Id, 
                             pair.pair_type.kind, pair.epsilon)
