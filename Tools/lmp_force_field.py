@@ -91,7 +91,7 @@ class Pair(object):
         if pair_type == 'soft':
             self.epsilon_fct = self.soft_epsilon
             self.alpha_fct = self.soft_alpha
-        elif pair_type == 'lj/cut':
+        elif pair_type in ['lj/cut', 'lj96/cut']:
             self.epsilon_fct = self.lj_epsilon
             self.alpha_fct = self.lj_alpha
         elif pair_type == 'morse':
