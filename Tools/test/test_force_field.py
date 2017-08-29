@@ -12,6 +12,7 @@ class Atom_type(object):
 	def __init__(self, id_, name):
 		self.Id = id_
 		self.name = name
+		self.interacting = True
 
 class TestForceField(ut.TestCase):
 
@@ -49,8 +50,61 @@ class TestForceField(ut.TestCase):
 
 		self.assertTrue(affinity[(env.atom_type['test_atom4'], env.atom_type['test_atom3'])].pair_type.kind == 'morse')
 
-	def test_whatever(self):
-		pass
+
+class TestPair(ut.TestCase):
+
+	def __init__(self, *args, **kwargs):
+		super(TestPair, self).__init__(*args, **kwargs)
+		self.pair_type_lj = mock.Mock()
+		self.pair_type_lj.kind = 'lj/cut'
+		self.pair_type_lj.parameters = {'coeffs': [1,2,3]}
+		self.pair_type_soft = mock.Mock()
+		self.pair_type_soft.kind = 'soft'
+		self.pair_type_soft.parameters = {'coeffs': [4,5,6]}
+		self.pair_type_morse = mock.Mock()
+		self.pair_type_morse.kind = 'morse'
+		self.pair_type_morse.parameters = {'coeffs': [7,8,9]}
+		self.atom_type1 = mock.Mock()
+		self.atom_type1.hydrophobicity = 0
+		self.atom_type1.surface_energy = 0.0
+		self.atom_type2 = mock.Mock()
+		self.atom_type2.hydrophobicity = 0
+		self.atom_type2.surface_energy = 0.0
+		self.atom_type3 = mock.Mock()
+		self.atom_type3.hydrophobicity = 1.0
+		self.atom_type3.surface_energy = 2.0
+		self.atom_type4 = mock.Mock()
+		self.atom_type4.hydrophobicity = 1.0
+		self.atom_type4.surface_energy = 0.0
+
+	def test_lj_pair(self):
+		test_pair = ff.Pair(self.pair_type_lj, self.atom_type1, self.atom_type2, epsilon=5)
+		self.assertEqual(test_pair.epsilon, 5)
+		test_pair = ff.Pair(self.pair_type_lj, self.atom_type1, self.atom_type2)
+		self.assertEqual(test_pair.epsilon, 1)
+		self.assertEqual(test_pair.alpha, None)
+
+	def test_morse_pair(self):
+		test_pair = ff.Pair(self.pair_type_morse, self.atom_type1, self.atom_type2, epsilon=5, alpha=5.5)
+		self.assertEqual(test_pair.epsilon, 5)
+		self.assertEqual(test_pair.alpha, 5.5)
+		test_pair = ff.Pair(self.pair_type_morse, self.atom_type1, self.atom_type2)
+		self.assertEqual(test_pair.epsilon, 7)
+		self.assertEqual(test_pair.alpha, 8)
+
+	def test_soft_pair(self):
+		test_pair = ff.Pair(self.pair_type_soft, self.atom_type1, self.atom_type2, epsilon=6, alpha=5.5)
+		self.assertEqual(test_pair.epsilon, 6)
+		self.assertEqual(test_pair.alpha, None)
+		test_pair = ff.Pair(self.pair_type_soft, self.atom_type1, self.atom_type2)
+		self.assertEqual(test_pair.epsilon, 0.0)
+		self.assertEqual(test_pair.alpha, None)
+		test_pair = ff.Pair(self.pair_type_soft, self.atom_type3, self.atom_type4, epsilon=10.0)
+		self.assertEqual(test_pair.epsilon, 10.0)
+		self.assertEqual(test_pair.alpha, None)
+		test_pair = ff.Pair(self.pair_type_soft, self.atom_type3, self.atom_type4)
+		self.assertEqual(test_pair.epsilon, 2.0)
+		self.assertEqual(test_pair.alpha, None)
 
 if __name__ == '__main__':
     ut.main(verbosity=2)

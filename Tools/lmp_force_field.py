@@ -73,32 +73,80 @@ class Pair(object):
         self.pair_type = pair_type
         self.atom_type1 = atom_type1
         self.atom_type2 = atom_type2
-        if epsilon == None:
-            if self.pair_type.kind == 'soft':
-                if self.atom_type1.hydrophobicity > 0 or self.atom_type2.hydrophobicity > 0:
-                    self._epsilon = self.pair_type.parameters['coeffs'][0] * 0.5 * (self.atom_type1.hydrophobicity + self.atom_type2.hydrophobicity)
-                else:
-                    self._epsilon = 0.0
-            else:
-                self._epsilon = self.pair_type.parameters['coeffs'][0]
-        else:
-            self._epsilon = epsilon
-        if self.pair_type.kind == 'morse' and alpha == None:
+
+        self.epsilon = epsilon
+        self.alpha = alpha
+        
+        self.set_pair_type_functions(self.pair_type.kind)
+        self.epsilon_fct()
+        self.alpha_fct()
+
+    def epsilon_fct(self):
+        NotImplementedError('This method should be overridden.')
+
+    def alpha_fct(self):
+        NotImplementedError('This method should be overridden.')
+
+    def set_pair_type_functions(self, pair_type):
+        if pair_type == 'soft':
+            self.epsilon_fct = self.soft_epsilon
+            self.alpha_fct = self.soft_alpha
+        elif pair_type == 'lj/cut':
+            self.epsilon_fct = self.lj_epsilon
+            self.alpha_fct = self.lj_alpha
+        elif pair_type == 'morse':
+            self.epsilon_fct = self.morse_epsilon
+            self.alpha_fct = self.morse_alpha
+
+    ## MORSE parameter functions
+    #
+    def morse_epsilon(self):
+        '''Set default value, if epsilon is not set at initialisation.
+        '''
+        if self.epsilon == None:
+            self.epsilon = self.pair_type.parameters['coeffs'][0]
+
+    def morse_alpha(self):
+        if self.alpha == None:
             self.alpha = self.pair_type.parameters['coeffs'][1]
-        else:
-            self.alpha = alpha
 
+    ## SOFT parameter functions without surface
+    #
     def soft_epsilon(self):
-        if self.atom_type1.hydrophobicity > 0 or self.atom_type2.hydrophobicity > 0:
-            self._epsilon = self.pair_type.parameters['coeffs'][0] * 0.5 * (self.atom_type1.hydrophobicity + self.atom_type2.hydrophobicity)
-        else:
-            self._epsilon = 0.0
+        if self.epsilon == None:
+            if self.atom_type1.hydrophobicity > 0 and self.atom_type2.hydrophobicity > 0:
+                self.epsilon = self.pair_type.parameters['coeffs'][0] * 0.5 * (self.atom_type1.hydrophobicity + self.atom_type2.hydrophobicity)
+            else:
+                self.epsilon = 0.0
 
+    def soft_alpha(self):
+        self.alpha = None
+
+    ## SOFT parameter functions with surface energy
+    #
+    def soft_epsilon(self):
+        if self.epsilon == None:
+            if self.atom_type1.surface_energy > 0.0 or self.atom_type2.surface_energy > 0.0:
+                surface_energy = max(self.atom_type1.surface_energy, self.atom_type2.surface_energy)
+                self.epsilon = surface_energy * (self.atom_type1.hydrophobicity + self.atom_type2.hydrophobicity)/2.0
+            elif self.atom_type1.hydrophobicity > 0 and self.atom_type2.hydrophobicity > 0:
+                self.epsilon = self.pair_type.parameters['coeffs'][0] * (self.atom_type1.hydrophobicity + self.atom_type2.hydrophobicity)/2.0
+            else:
+                self.epsilon = 0.0
+
+    def soft_alpha(self):
+        self.alpha = None
+
+    ## LJ parameter functions
+    #
     def lj_epsilon(self):
-        self._epsilon = self.pair_type.parameters['coeffs'][0]
+        '''Set default value, if epsilon is not set at initialisation.
+        '''
+        if self.epsilon == None:
+            self._epsilon = self.pair_type.parameters['coeffs'][0]
 
-    def set_epsilon(self):
-        self._epsilon = 
+    def lj_alpha(self):
+        self.alpha = None
 
     def cutoff():
         doc = "The cutoff property."
