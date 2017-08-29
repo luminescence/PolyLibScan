@@ -88,6 +88,18 @@ class Pair(object):
         else:
             self.alpha = alpha
 
+    def soft_epsilon(self):
+        if self.atom_type1.hydrophobicity > 0 or self.atom_type2.hydrophobicity > 0:
+            self._epsilon = self.pair_type.parameters['coeffs'][0] * 0.5 * (self.atom_type1.hydrophobicity + self.atom_type2.hydrophobicity)
+        else:
+            self._epsilon = 0.0
+
+    def lj_epsilon(self):
+        self._epsilon = self.pair_type.parameters['coeffs'][0]
+
+    def set_epsilon(self):
+        self._epsilon = 
+
     def cutoff():
         doc = "The cutoff property."
         def fget(self):
