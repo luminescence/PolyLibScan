@@ -312,14 +312,22 @@ class ProteinCreator(LmpCreator):
         if res_type_config:
             type_data = self._get_config(res_type_config)
             ## add types
-
             for name, config_type in type_data.items():
                 molecule.env.atom_type.define_type(name, AtomType(name, config_type))
         ## read particle res and change restype
         real_particle = np.extract([x.type_.name !='BB_ghost' for x in molecule.data['particles']], molecule.data['particles'])
         for i, particle in enumerate(real_particle):
             if particle.residue[0] in molecule.env.atom_type:
-                particle.type_ = molecule.env.atom_type[particle.residue[0]]
+                if particle.type_.unique:
+                    # in case the particle type is already unique, the resi
+                    # specific properties are copied over.
+                    res_based_type = molecule.env.atom_type[particle.residue[0]]
+                    unique_particle_type = particle.type_
+                    properties = ['mass', 'radius', 'charge', 'hydrophobicity']
+                    for prop in properties:
+                        setattr(unique_particle_type, prop, getattr(res_based_type, prop))
+                else:
+                    particle.type_ = molecule.env.atom_type[particle.residue[0]]
             else:
                 raise ValueError('particle type %s not found in types.' % particle.residue[0])
 
