@@ -40,7 +40,8 @@ class Job(object):
         self.env = Tools.Environment(self.config.sim_path['config'])
         # Protein
         self.protein_creator = Tools.ProteinCreator(self.env, self.config.sim_path['protein'], 
-                                                  with_ions=True)
+                                                    with_ions=True, 
+                                                    surface_file=self.config.sim_path['surface_db'])
         self.protein = self.protein_creator.create()
         self.protein_creator.change_to_res_based(self.protein)
         # Polymer
