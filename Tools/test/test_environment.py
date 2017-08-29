@@ -39,7 +39,8 @@ class TestEnvironment(ut.TestCase):
                                     'bond_style': 'harmonic',
                                     'angle_style': 'harmonic',
                                     'pair_style': 'hybrid',
-                                    'box_margin': 30}
+                                    'box_margin': 30,
+                                    'surface_file': False}
 
         Environment._get_config = mock.MagicMock(return_value=self.cfg_data)
         self.env = Environment('test.cfg')
