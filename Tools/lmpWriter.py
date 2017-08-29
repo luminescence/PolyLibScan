@@ -18,6 +18,9 @@ class LmpWriter(object):
                           'dihedral': ['full', 'molecular']}
 
     def chain_data(self, key):
+        '''Return a generator that chains up all molecules.
+        The molecules are ordered by their id.
+        '''
         molecules = sorted(self.env.molecules.values(), key=lambda x: x.Id)
         return it.chain(*[molecule.data[key] for molecule in molecules])
 
@@ -26,8 +29,9 @@ class LmpWriter(object):
 
     def pair_list(self, pair_obj):
         sorted_atom_types = sorted(self.env.atom_type.values(), key=lambda x:x.Id)
-        return [pair_obj[(atomType1, atomType2)] for i, atomType1 in enumerate(sorted_atom_types)
-            for atomType2 in sorted_atom_types[i:] ]
+        return [pair_obj[(atomType1, atomType2)] 
+                    for i, atomType1 in enumerate(sorted_atom_types)
+                    for atomType2 in sorted_atom_types[i:]]
 
     def write(self, out_path):
         with open(out_path, 'w') as f:
@@ -76,7 +80,7 @@ class LmpWriter(object):
                             pair.pair_type.kind)
             elif pair.pair_type.kind == 'soft':
                 bond_template = '{:> 3d} {:> 3d} {} {:> 6.2f}'
-                #The following coefficients must be defined for each pair of atom types 
+                # The following coefficients must be defined for each pair of atom types 
                 # via the pair_coeff command as in the examples above, or in the data file 
                 # or restart files read by the read_data or read_restart commands, or by 
                 # mixing as described below:
@@ -98,7 +102,7 @@ class LmpWriter(object):
                             pair.epsilon, pair.sigma, 
                             pair.cutoff)
             elif pair.pair_type.kind == 'lj96/cut':
-                bond_template = '{:> 3d} {:> 3d} {} {:> 6.2f} {:> 6.2f} {:> 6.2f}'
+                bond_template = '{:> 3d} {:> 3d} {:> 6.2f} {:> 6.2f} {:> 6.2f}'
                 return bond_template.format(
                             pair.atom_type2.Id, pair.atom_type1.Id, 
                             pair.pair_type.kind, pair.epsilon, pair.sigma, 
@@ -142,8 +146,8 @@ class LmpWriter(object):
 
 
     def transfer_particle_str(self, molecule):
-        sub_styles = filter(lambda x:'substyle' in x, molecule.globals.keys())
-        sub_styles.sort(key=lambda x: [x[-1]])
+        #sub_styles = filter(lambda x:'substyle' in x, molecule.globals.keys())
+        #sub_styles.sort(key=lambda x: [x[-1]])
         def particle_str(particle):
             if molecule.globals['atom_style'] == 'atomic':
                 return '{:> 7d}{:> 4d}{:> 10.3f}{:> 10.3f}{:> 10.3f}'.format(
