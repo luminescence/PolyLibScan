@@ -103,8 +103,7 @@ class Pair(object):
     def morse_epsilon(self):
         '''Set default value, if epsilon is not set at initialisation.
         '''
-        if self.epsilon == None:
-            self.epsilon = self.pair_type.parameters['coeffs'][0]
+        return self.pair_type.parameters['coeffs'][0]
 
     def morse_alpha(self):
         if self.alpha == None:
@@ -113,11 +112,10 @@ class Pair(object):
     ## SOFT parameter functions without surface
     #
     def soft_epsilon(self):
-        if self.epsilon == None:
-            if self.atom_type1.hydrophobicity > 0 and self.atom_type2.hydrophobicity > 0:
-                self.epsilon = self.pair_type.parameters['coeffs'][0] * 0.5 * (self.atom_type1.hydrophobicity + self.atom_type2.hydrophobicity)
-            else:
-                self.epsilon = 0.0
+        if self.atom_type1.hydrophobicity > 0 and self.atom_type2.hydrophobicity > 0:
+            return self.pair_type.parameters['coeffs'][0] * 0.5 * (self.atom_type1.hydrophobicity + self.atom_type2.hydrophobicity)
+        else:
+            return 0.0
 
     def soft_alpha(self):
         self.alpha = None
@@ -125,14 +123,13 @@ class Pair(object):
     ## SOFT parameter functions with surface energy
     #
     def soft_epsilon(self):
-        if self.epsilon == None:
-            if self.atom_type1.surface_energy > 0.0 or self.atom_type2.surface_energy > 0.0:
-                surface_energy = max(self.atom_type1.surface_energy, self.atom_type2.surface_energy)
-                self.epsilon = surface_energy * (self.atom_type1.hydrophobicity + self.atom_type2.hydrophobicity)/2.0
-            elif self.atom_type1.hydrophobicity > 0 and self.atom_type2.hydrophobicity > 0:
-                self.epsilon = self.pair_type.parameters['coeffs'][0] * (self.atom_type1.hydrophobicity + self.atom_type2.hydrophobicity)/2.0
-            else:
-                self.epsilon = 0.0
+        if self.atom_type1.surface_energy > 0.0 or self.atom_type2.surface_energy > 0.0:
+            surface_energy = max(self.atom_type1.surface_energy, self.atom_type2.surface_energy)
+            return surface_energy * (self.atom_type1.hydrophobicity + self.atom_type2.hydrophobicity)/2.0
+        elif self.atom_type1.hydrophobicity > 0 and self.atom_type2.hydrophobicity > 0:
+            return self.pair_type.parameters['coeffs'][0] * (self.atom_type1.hydrophobicity + self.atom_type2.hydrophobicity)/2.0
+        else:
+            return 0.0
 
     def soft_alpha(self):
         self.alpha = None
@@ -142,8 +139,7 @@ class Pair(object):
     def lj_epsilon(self):
         '''Set default value, if epsilon is not set at initialisation.
         '''
-        if self.epsilon == None:
-            self._epsilon = self.pair_type.parameters['coeffs'][0]
+        return self.pair_type.parameters['coeffs'][0]
 
     def lj_alpha(self):
         self.alpha = None
@@ -167,7 +163,10 @@ class Pair(object):
         doc = "The epsilon property."
         def fget(self):
             if self.atom_type1.interacting and self.atom_type2.interacting:
-                return self._epsilon
+                if self._epsilon == None:
+                    return self.epsilon_fct()
+                else:
+                    return self._epsilon
             else:
                 return 0.0
         def fset(self, value):
