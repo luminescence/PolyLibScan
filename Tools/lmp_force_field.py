@@ -1,3 +1,4 @@
+import numpy as np
 
 class Interaction(object):
     '''Container object that stored all interaction parameters in 
@@ -67,7 +68,7 @@ class Interaction(object):
 
 class Pair(object):
 
-    def __init__(self, pair_type, atom_type1, atom_type2, epsilon=None, alpha=None):
+    def __init__(self, pair_type, atom_type1, atom_type2, epsilon=None, alpha=None, cutoff=None):
         '''
         '''
         self.pair_type = pair_type
@@ -76,10 +77,9 @@ class Pair(object):
 
         self.epsilon = epsilon
         self.alpha = alpha
+        self.cutoff = cutoff
         
         self.set_pair_type_functions(self.pair_type.kind)
-        self.epsilon_fct()
-        self.alpha_fct()
 
     def epsilon_fct(self):
         NotImplementedError('This method should be overridden.')
@@ -87,16 +87,22 @@ class Pair(object):
     def alpha_fct(self):
         NotImplementedError('This method should be overridden.')
 
+    def cutoff_fct(self):
+        NotImplementedError('This method should be overridden.')
+
     def set_pair_type_functions(self, pair_type):
         if pair_type == 'soft':
             self.epsilon_fct = self.soft_epsilon
             self.alpha_fct = self.soft_alpha
+            self.cutoff_fct = self.soft_cutoff
         elif pair_type in ['lj/cut', 'lj96/cut']:
             self.epsilon_fct = self.lj_epsilon
             self.alpha_fct = self.lj_alpha
+            self.cutoff_fct = self.lj_cutoff
         elif pair_type == 'morse':
             self.epsilon_fct = self.morse_epsilon
             self.alpha_fct = self.morse_alpha
+            self.cutoff_fct = self.morse_cutoff
 
     ## MORSE parameter functions
     #
@@ -106,33 +112,40 @@ class Pair(object):
         return self.pair_type.parameters['coeffs'][0]
 
     def morse_alpha(self):
-        if self.alpha == None:
-            self.alpha = self.pair_type.parameters['coeffs'][1]
+        return self.pair_type.parameters['coeffs'][1]
 
-    ## SOFT parameter functions without surface
+    def morse_cutoff(self):
+        return self.pair_type.cutoff
+
+    ## SOFT parameter functions
     #
     def soft_epsilon(self):
+        '''p is an rescaling factor that ensures that the set energy
+        is set at the vdw radius.
+        '''
         if self.atom_type1.hydrophobicity > 0 and self.atom_type2.hydrophobicity > 0:
-            return self.pair_type.parameters['coeffs'][0] * 0.5 * (self.atom_type1.hydrophobicity + self.atom_type2.hydrophobicity)
+            vdw = self.atom_type1.radius + self.atom_type2.radius
+            # if self.cutoff <= vdw:
+            #     raise ValueError("vdw (%f: %s-%s) radius must be smaller than the cutoff (%f)."%(vdw, self.atom_type1.name, self.atom_type1.name, self.pair_type.cutoff))
+            p = (1 + np.cos((np.pi*vdw)/self.cutoff))
+            if self.atom_type1.surface_energy > 0.0 or self.atom_type2.surface_energy > 0.0:
+                surface_energy = max(self.atom_type1.surface_energy, self.atom_type2.surface_energy)
+                return (surface_energy/p) * (self.atom_type1.hydrophobicity + self.atom_type2.hydrophobicity)
+            else:
+                min_phob = min(self.atom_type1.hydrophobicity, self.atom_type2.hydrophobicity)
+                return (self.pair_type.parameters['coeffs'][0]/p) * min_phob
+                
         else:
             return 0.0
 
     def soft_alpha(self):
-        self.alpha = None
+        return None
 
-    ## SOFT parameter functions with surface energy
-    #
-    def soft_epsilon(self):
-        if self.atom_type1.surface_energy > 0.0 or self.atom_type2.surface_energy > 0.0:
-            surface_energy = max(self.atom_type1.surface_energy, self.atom_type2.surface_energy)
-            return surface_energy * (self.atom_type1.hydrophobicity + self.atom_type2.hydrophobicity)/2.0
-        elif self.atom_type1.hydrophobicity > 0 and self.atom_type2.hydrophobicity > 0:
-            return self.pair_type.parameters['coeffs'][0] * (self.atom_type1.hydrophobicity + self.atom_type2.hydrophobicity)/2.0
-        else:
-            return 0.0
-
-    def soft_alpha(self):
-        self.alpha = None
+    def soft_cutoff(self):
+        '''Hydrophobic force field starts 2 Angstrom 
+        away from the van der Waals distance.
+        '''
+        return self.atom_type1.radius + self.atom_type2.radius + 2.0
 
     ## LJ parameter functions
     #
@@ -142,22 +155,42 @@ class Pair(object):
         return self.pair_type.parameters['coeffs'][0]
 
     def lj_alpha(self):
-        self.alpha = None
+        return None
+
+    def lj_cutoff(self):
+        if self.pair_type.repulsive_only == 1:
+            return self.sigma
+        else:
+            return self.pair_type.cutoff
 
     def cutoff():
         doc = "The cutoff property."
         def fget(self):
-            if self.pair_type.repulsive_only == 1:
-                return self.sigma
-            else:
-                return self.pair_type.cutoff
-            return self._cutoff
+            if self._cutoff == None:
+                return self.cutoff_fct()
+            else:            
+                return self._cutoff
         def fset(self, value):
-            raise Exception('Cannot be set')
+            self._cutoff = value
         def fdel(self):
             del self._cutoff
         return locals()
     cutoff = property(**cutoff())
+
+    def alpha():
+        doc = "The alpha property."
+        def fget(self):
+            if self._alpha == None:
+                if self.atom_type1.interacting and self.atom_type2.interacting:
+                    return self.alpha_fct()
+                else:
+                    return 0.0
+            else:
+                return self._alpha
+        def fset(self, value):
+            self._alpha = value
+        return locals()
+    alpha = property(**alpha())
 
     def epsilon():
         doc = "The epsilon property."
