@@ -136,9 +136,11 @@ class Project(plotting.Project, bayes.Project):
         return locals()
     parameters = property(**parameters())
 
-    def _scatter_data(self, with_errors=False, with_labels=False, with_crossvalidation=False, 
+    def _scatter_data(self, subset=None, with_errors=False, with_labels=False, with_crossvalidation=False, 
                            confidence_interval=0.95, min_dist_to_ac=10):
-        if self.experimental_data is not None:
+        if subset:
+            polymer_list = subset
+        elif self.experimental_data is not None:
             polymer_list = list(set(self.endstate_matrix.columns.levels[0]) & set(self.experimental_data.index))
             experimental = self.experimental_data[polymer_list]
             experimental.sort_values(inplace=True)
@@ -202,7 +204,7 @@ class Job(bayes.Job):
         self.project = project
         self.poly_type = None
         self.db_path = pl.Path(db_path)
-        self.pymol = pymol_visualisation.PymolVisualisation(self)
+        self.pymol = pymol_visualisation.PymolVisJob(self)
         self._parse = parser.Parser(self.db_path, 'r')
         self.Id = None
         self.meta = self._parse.meta('misc')

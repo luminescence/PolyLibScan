@@ -4,6 +4,7 @@ import pandas as pd
 import plotting
 import bayesModels as bayes
 import concurrent.futures as concurrent
+import pymol_visualisation as pym
 import numerics
 
 class PolymerTypeSims(plotting.PolymerTypeSims, bayes.PolymerTypeSims):
@@ -16,8 +17,9 @@ class PolymerTypeSims(plotting.PolymerTypeSims, bayes.PolymerTypeSims):
         self.ic50 = ic50
         self._distance_probability = None
         self._energy_distance_distribution = None
-        self.polymer_type = self.sims[0].meta['poly_name']
+        self.name = self.sims[0].meta['poly_name']
         self.weights = self.sims[0].weights
+        self.pymol = pym.PymolVisPolyType(self)
         super(PolymerTypeSims, self).__init__()
 
     def distance_probability():
@@ -107,13 +109,13 @@ class PolymerTypeSims(plotting.PolymerTypeSims, bayes.PolymerTypeSims):
             sub_frames[i] = job.to_dataFrame()
             job._parse.close()
         data_frame = pd.concat(sub_frames)
-        col_index = pd.MultiIndex.from_product([[self.polymer_type], data_frame.columns], 
+        col_index = pd.MultiIndex.from_product([[self.name], data_frame.columns], 
                                                 names=['PolyType', 'Results'])
         data_frame.set_axis(1, col_index)
         return data_frame
 
     def __repr__(self):
         out  = []
-        out += ['Polymer Type %s.' % self.polymer_type]
+        out += ['Polymer Type %s.' % self.name]
         out += ['Containing %d Jobs.' % len(self.sims)]
         return '\n'.join(out)

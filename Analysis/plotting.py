@@ -9,7 +9,7 @@ import numerics as num_
 
 class Project(object):
 
-    def scatter_plot(self, with_errors=False, with_labels=False, with_crossvalidation=False, 
+    def scatter_plot(self, subset=None, with_errors=False, with_labels=False, with_crossvalidation=False, 
                            confidence_interval=0.95, ax=None, save_path=None, min_dist_to_ac=10):
         '''create a scatter plot with the probability
         of binding (x-axis) and the mean strength of binding 
@@ -31,10 +31,15 @@ class Project(object):
         if not ax:
             fig, ax = plt.subplots(figsize=(18,12))
             ax.set_title('%s (PDB: %s)' % (self.jobs[0].meta['protein_name'], self.jobs[0].meta['protein'].upper()), size=20)
-            
-        results = self._scatter_data(with_errors=with_errors, with_labels=with_labels, 
-                                     with_crossvalidation=with_crossvalidation, 
-                                     confidence_interval=confidence_interval, min_dist_to_ac=min_dist_to_ac)
+        
+        if subset:
+            results = self._scatter_data(with_errors=with_errors, with_labels=with_labels, 
+                                         with_crossvalidation=with_crossvalidation, 
+                                         confidence_interval=confidence_interval, min_dist_to_ac=min_dist_to_ac)
+        else:
+            results = self._scatter_data(with_errors=with_errors, with_labels=with_labels, 
+                                         with_crossvalidation=with_crossvalidation, 
+                                         confidence_interval=confidence_interval, min_dist_to_ac=min_dist_to_ac)
         if with_errors:
             error = results['dist_max_error'].max()
         else:
@@ -68,7 +73,7 @@ class Project(object):
             self._annotate(ax, results, 'dist_mean', 'energy_mean')
         ax.tick_params(axis='both', which='major', labelsize=15)
         ax.set_ylabel('Energy', size=25)
-        ax.set_xlabel('Binding probability within %.2fA to active site' % round(min_dist_to_ac,1), size=25)
+        ax.set_xlabel(r'Binding probability within $%.2f\AA$ to active site' % round(min_dist_to_ac,1), size=25)
         ax.set_xlim([-0.2*results['dist_mean'].max(), 1.2*results['dist_mean'].max()+error])
         if save_path:
             plt.savefig(save_path)
@@ -262,7 +267,7 @@ class PolymerTypeSims(object):
         ax.plot(self.distance_probability['distance'][:max_distance_range], 
                 density[:max_distance_range], 
                 alpha=0.6, linestyle=line_style, lw=3,
-                label='%s - %s' % (self.polymer_type, tag) )
+                label='%s - %s' % (self.name, tag) )
 
         ax.set_xlabel('Distance [$\AA$]')
         ax.set_ylabel('Probability')

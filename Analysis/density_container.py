@@ -3,19 +3,34 @@ import tqdm
 import itertools as it
 import epitopsy.DXFile as dx
 import numerics as numerics
-
+import PolyLibScan
 
 class DensityContainer(object):
     """docstring for DensityContainer"""
-    def __init__(self, simulation, monomer_id='all', margin=20.0, resolution=2.0):
+    def __init__(self, simulations, monomer_id='all', margin=20.0, resolution=2.0, db_path=None):
         super(DensityContainer, self).__init__()
-        self.sim = simulation
+        self.sims = simulations
         self.monomer_id = monomer_id
         self.margin = margin
         self.resolution = resolution
-        self.db_folder = self.sim.db_path.parent.absolute().resolve()
+        if db_path:
+            self.db_folder = db_path
+        else:
+            self.db_folder = self.sims[0].db_path.parent.absolute().resolve()
         
         self._create_empty_map()
+
+    @property
+    def sims(self):
+        return self._sims
+
+    @sims.setter
+    def sims(self, value):
+        if not isinstance(value, list):
+            self._sims = [value]
+        else:
+            sorted_sims = sorted(value, key=lambda x:x.meta['id'])
+            self._sims = sorted_sims
 
     @property
     def monomer_id(self):
@@ -30,12 +45,12 @@ class DensityContainer(object):
         elif isinstance(value, list):
             m_id = value
         elif value == 'all':
-            m_id = list(self.sim._particle_ids['polymer'])
+            m_id = list(self.sims[0]._particle_ids['polymer'])
         else:
             raise ValueError('monomer_id must be int or list or "all".')
 
-        if not set(m_id) <= set(self.sim._particle_ids['polymer']):
-            raise ValueError("Some Ids are not ids of monomer. Choose from %s" % self.sim._particle_ids['polymer'])
+        if not set(m_id) <= set(self.sims[0]._particle_ids['polymer']):
+            raise ValueError("Some Ids are not ids of monomer. Choose from %s" % self.sims[0]._particle_ids['polymer'])
         else:
             self._monomer_id = m_id
 
@@ -80,19 +95,17 @@ class DensityContainer(object):
         bool_val = (self == other)
         return not bool_val
 
-    def __add__(self, other):
-        if self != other:
-            raise ValueError(self._check_for_difference(other))
-        new_map = DensityContainer(self.sim, self.monomer_id, self.margin, self.resolution)
-        new_map.map = self.map + other.map
-        new_map.box = self.box
-        return new_map
+    # def __add__(self, other):
+    #     if self != other:
+    #         raise ValueError(self._check_for_difference(other))
+    #     new_map = DensityContainer(self.sims+other.sims, self.monomer_id, self.margin, self.resolution)
+    #     return new_map
 
-    def __iadd__(self, other):
-        if self != other:
-            raise ValueError(self._check_for_difference(other))
-        self.map += other.map
-        return self
+    # def __iadd__(self, other):
+    #     if self != other:
+    #         raise ValueError(self._check_for_difference(other))
+    #     self.map += other.map
+    #     return self
 
     def _check_for_difference(self, other):
         if self.margin != other.margin: 
@@ -110,7 +123,11 @@ class DensityContainer(object):
         '''Set up an empty array for the density and get the size and offset 
         of the protein model.
         '''
-        box = self.sim._calc_protein_box(self.margin)
+        boxes = np.zeros([2,3,len(self.sims)])
+        for i, sim in enumerate(self.sims):
+            boxes[:,:,i] = sim._calc_protein_box(20.0)
+        # create largest box that surrounds all boxes
+        box = np.array([boxes[0,:,:].min(axis=1),boxes[1,:,:].max(axis=1)])
         box_size = (box[1] - box[0])
         epi_map = np.zeros(np.ceil(box_size/float(self.resolution))+1, np.int32)
         self.box, self.box_size, self.map = box, box_size, epi_map
@@ -135,15 +152,15 @@ class DensityContainer(object):
             return iterator.next()
         return atom_type_filter
 
-    def _add_run_to_epitopsy_map(self, run_id, monomer_id=None):
+    def _add_run_to_epitopsy_map(self, sim, run_id, monomer_id=None):
         """Add all mapped coordinates to epitopsy grid.
         """
         if not monomer_id:
             monomer_id = self.monomer_id
-        particle_order = self.sim._parse.load_traj_type_order()
-        type_filter = self._create_atom_type_filter(particle_order)
+        particle_order = sim._parse.load_traj_type_order()
+        type_filter = self._create_atom_type_filter(particle_order, monomer_id=monomer_id)
         offset = self.box[0]
-        traj_iterator = self.sim._parse.trajectory(run_id)
+        traj_iterator = sim._parse.trajectory(run_id)
         monomer_coords = it.ifilter(type_filter, traj_iterator)
         for coord in it.ifilter(lambda x:numerics.in_box(x, self.box), monomer_coords):
             idx = np.around(((coord - offset) / self.resolution)).astype(np.int)
@@ -171,8 +188,10 @@ class DensityContainer(object):
         norm: Options: 'max', None [string]
         '''
         self._create_empty_map()
-        for run in tqdm.tqdm_notebook(self.sim, leave=False, desc='Adding Run'):
-            self._add_run_to_epitopsy_map(run.Id, self.monomer_id)
+        number_of_runs = len(self.sims) * len(self.sims[0])
+        for sim in tqdm.tqdm_notebook(self.sims, leave=False, desc='Sim:'):
+            for run in tqdm.tqdm_notebook(sim, leave=False, desc='Adding Run'):
+                self._add_run_to_epitopsy_map(sim, run.Id, self.monomer_id)
         self._create_normalized(norm_type=norm)
         if save:
             self.save()
