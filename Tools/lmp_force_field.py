@@ -128,11 +128,11 @@ class Pair(object):
             # if self.cutoff <= vdw:
             #     raise ValueError("vdw (%f: %s-%s) radius must be smaller than the cutoff (%f)."%(vdw, self.atom_type1.name, self.atom_type1.name, self.pair_type.cutoff))
             p = (1 + np.cos((np.pi*vdw)/self.cutoff))
+            min_phob = min(self.atom_type1.hydrophobicity, self.atom_type2.hydrophobicity)
             if self.atom_type1.surface_energy > 0.0 or self.atom_type2.surface_energy > 0.0:
                 surface_energy = max(self.atom_type1.surface_energy, self.atom_type2.surface_energy)
-                return (surface_energy/p) * (self.atom_type1.hydrophobicity + self.atom_type2.hydrophobicity)
+                return (surface_energy/p) * min_phob
             else:
-                min_phob = min(self.atom_type1.hydrophobicity, self.atom_type2.hydrophobicity)
                 return (self.pair_type.parameters['coeffs'][0]/p) * min_phob
                 
         else:
