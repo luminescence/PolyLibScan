@@ -28,23 +28,42 @@ class Project(plotting.Project, bayes.Project):
         self._visualize = visualize.Visualize(self)
         # stores jobs in list (jobs)
         # and dict form (polymer_types); polymer_types stores jobs sorted by polymer type
-        self.jobs, self.polymer_types = self.read_jobs(self.path)
+        self.jobs, self.polymer_types = self.read_jobs(self.path.joinpath('jobs'))
 
         # Experimental Data needs information from job objects
-        self._experimental_data = None
+        self.experimental_data = self._init_experimental_data(experimental_data)
         if experimental_data is not None:
             self.experimental_data = experimental_data
             for p_type in self.polymer_types.values():
                 p_type.ic50 = self.experimental_data[p_type.polymer_type]
 
-    def _init_parameters(self, parameters):
-        if parameters:
-            return parameters
+    def search_static(self, file_name):
+        file_list = list(self.path.joinpath('static').glob(file_name))
+        if len(file_list) == 1:
+            return file_list[0]
         else:
-            potential_parameters = list(self.db_folder.parent.parent.joinpath('static').glob('parameters.yml'))
-            if len(potential_parameters) == 1:
-                return potential_parameters[0].absolute().resolve()
-            else:
+            raise IOError('No file found with name: %s' % file_name)
+
+    def _init_parameters(self, file_path):
+        if file_path:
+            return file_path
+        else:
+            try:
+                default_file_name = 'parameters.yml'
+                return self.search_static(default_file_name).as_posix()
+            except IOError:
+                print 'Parameter file not specified and no file "%s" found in static folder.' % default_file_name
+                return None
+    
+    def _init_experimental_data(self, file_path):
+        if file_path:
+            return file_path
+        else:
+            try:
+                default_file_name = 'ic50.h5'
+                return self.search_static(default_file_name).as_posix()
+            except IOError:
+                print 'Parameter file not specified and no file "%s" found in static folder.' % default_file_name 
                 return None
 
     def read_jobs(self, path):
@@ -111,6 +130,9 @@ class Project(plotting.Project, bayes.Project):
                     series = df.loc[:, self.jobs[0].meta['protein'].lower()]
                 except IndexError:
                     raise IndexError("No Jobs were found in project-folder")
+            else:
+                self._experimental_data = None
+                return    
             common_polymers = list(set(self.endstate_matrix.columns.levels[0]) & set(series.index))
             self._experimental_data = series[common_polymers]
         def fdel(self):
@@ -137,10 +159,10 @@ class Project(plotting.Project, bayes.Project):
     parameters = property(**parameters())
 
     def _scatter_data(self, subset=None, with_errors=False, with_labels=False, with_crossvalidation=False, 
-                           confidence_interval=0.95, min_dist_to_ac=10):
+                           confidence_interval=0.95, min_dist_to_ac=10, ignore_experiment=False):
         if subset:
             polymer_list = subset
-        elif self.experimental_data is not None:
+        elif (self.experimental_data is not None) and (not ignore_experiment):
             polymer_list = list(set(self.endstate_matrix.columns.levels[0]) & set(self.experimental_data.index))
             experimental = self.experimental_data[polymer_list]
             experimental.sort_values(inplace=True)
@@ -163,8 +185,10 @@ class Project(plotting.Project, bayes.Project):
             results['dist_mean'] = distance_matrix.count()/float(full_distance_matrix.shape[0])
         # drop polymer types that are not present in the min-radius
         results.dropna(inplace=True)
-        if self.experimental_data is not None:
+        if (self.experimental_data is not None) and (not ignore_experiment):
             results['color_by_inhibition'] = experimental[results.index].apply(lambda x:'b' if x>0 else 'r')
+        else:
+            results['color_by_inhibition'] = 'k'
 
         if with_crossvalidation:
             input_data = results.loc[:, ('energy_mean', 'dist_mean')]

@@ -7,7 +7,7 @@ import PolyLibScan
 
 class DensityContainer(object):
     """docstring for DensityContainer"""
-    def __init__(self, simulations, monomer_id='all', margin=20.0, resolution=2.0, db_path=None):
+    def __init__(self, simulations, monomer_id='all', margin=20.0, resolution=3.0, db_path=None):
         super(DensityContainer, self).__init__()
         self.sims = simulations
         self.monomer_id = monomer_id
@@ -125,23 +125,25 @@ class DensityContainer(object):
         '''
         boxes = np.zeros([2,3,len(self.sims)])
         for i, sim in enumerate(self.sims):
-            boxes[:,:,i] = sim._calc_protein_box(20.0)
+            boxes[:,:,i] = sim._calc_protein_box(margin=self.margin)
         # create largest box that surrounds all boxes
         box = np.array([boxes[0,:,:].min(axis=1),boxes[1,:,:].max(axis=1)])
         box_size = (box[1] - box[0])
         epi_map = np.zeros(np.ceil(box_size/float(self.resolution))+1, np.int32)
         self.box, self.box_size, self.map = box, box_size, epi_map
-        
-    def _map_path(self):
+
+    def _map_path(self, root=None):
         '''Create a unique path name for the 3d-density map.
         '''
+        if not root:
+            root = self.db_folder
         prefix = 'map_'
         mono_str = 'ID-%s_' % 'X'.join(map(str, self.monomer_id))
         margin_str = 'M-%.02f_' % (round(self.margin,2))
         resolution_str = 'R-%.02f_' % (round(self.resolution,2))
         suffix = '.dx'
         name = ''.join([prefix, mono_str, margin_str, resolution_str, suffix])
-        return self.db_folder.joinpath(name).absolute().resolve()
+        return root.joinpath(name).absolute().resolve()
 
     def _create_atom_type_filter(self, particle_order, monomer_id=None):
         if not monomer_id:
@@ -180,7 +182,7 @@ class DensityContainer(object):
         else:
             self.normed_map = self.map
 
-    def create_epitopsy_map(self, norm='max', save=False):
+    def create_epitopsy_map(self, norm='max'):
         '''Create a 3-dimensional density map of one monomers. This density map 
         
         input:
@@ -193,14 +195,14 @@ class DensityContainer(object):
             for run in tqdm.tqdm_notebook(sim, leave=False, desc='Adding Run'):
                 self._add_run_to_epitopsy_map(sim, run.Id, self.monomer_id)
         self._create_normalized(norm_type=norm)
-        if save:
-            self.save()
         return self.box, self.normed_map
 
-    def save(self,):
+    def save(self, root_folder=None):
         '''Save data to the dx format via the DXBox object of epitopsy.
         '''
+        if not hasattr(self, 'normed_map'):
+            raise AttributeError("Create a map with create_epitopsy_map()")
         dx_obj = dx.DXBox(box=self.normed_map, meshsize=self.box_size/self.normed_map.shape, offset=self.box[0])
-        path = self._map_path().as_posix()
+        path = self._map_path(root_folder).as_posix()
         dx_obj.write(path)
         return path

@@ -12,11 +12,15 @@ class PymolVisualisation(object):
     '''Parent class of pymol Visualisation
     '''
     atom_names = ['C', 'N', 'O', 'S', 'H']
-    
+    surface_colors = ['blue', 'brightorange', 'cyan', 'deepteal', 'forest', 
+                      'lightmagenta', 'orange', 'oxygen', 'purple', 'yellow']
     def __init__(self, protein_path=None):
         self.protein_path = self._init_protein_path(protein_path)
         self._module_folder = _os.path.dirname(__file__)
         self.pymol_handle = pym.connect(ip='localhost')
+        self.map_data = set([])
+
+
 
     def _init_protein_path(self, protein_path):
         '''Set the path of the pdb model to protein_path or
@@ -89,14 +93,22 @@ class PymolVisualisation(object):
             self.pymol_handle.show_as('cartoon', protein_name)
             self.pymol_handle.show('sticks', 'active_site')
 
-    def show_isosurface(self, dx_info, level=0.5):
-        monomer_id, pymol_name = dx_info
+    def isosurface(self, dx_info=None, lvl=0.5, color=None):
+        if dx_info:
+            if not color: color = self.surface_colors[0]
+            self.change_isosurface(dx_info, level=lvl, color=color)
+        else:
+            for color, map_dat in it.izip(self.surface_colors, self.map_data):
+                self.change_isosurface(map_dat, level=lvl, color=color)
+
+    def change_isosurface(self, dx_info, level=0.5, color='blue'):
+        dx_dat, pymol_name = dx_info
         surface_name = "%s_%s_density" % (self.sim.meta['polymer_name'], 
-                                          'X'.join(map(str, monomer_id)))
+                                          'X'.join(map(str, dx_dat)))
         self.pymol_handle.do('cmd.isosurface("%s", "%s", level=%f)' % (surface_name, 
                                                                        pymol_name, 
-                                                                       level))
-        self.pymol_handle.do('color blue, %s' % surface_name)
+                                                                       level))    
+        self.pymol_handle.do('color %s, %s' % (color, surface_name))
 
 
 class PymolVisPolyType(PymolVisualisation):
@@ -135,12 +147,15 @@ class PymolVisPolyType(PymolVisualisation):
 
     def add_dx(self, monomer_id='all', margin=20.0, resolution=1.5):
         density = dc.DensityContainer(self.sims, monomer_id, margin=margin, resolution=resolution)
-        dx_path = density._map_path()
+        dx_path = density._map_path(self.type_folder)
         if not dx_path.exists():
-            density.create_epitopsy_map(norm='max', save=True)
+            density.create_epitopsy_map(norm='max')
+            density.save(self.type_folder)
         self.pymol_handle.load(dx_path.as_posix())
+        dx_info = (monomer_id, margin, resolution)
         pymol_name = dx_path.name.rstrip('.dx')
-        return monomer_id, pymol_name
+        self.map_data.add((dx_info, pymol_name))
+        return dx_info, pymol_name
 
 
 class PymolVisJob(PymolVisualisation):
@@ -169,7 +184,10 @@ class PymolVisJob(PymolVisualisation):
         density = dc.DensityContainer(self.sim, monomer_id, margin=margin, resolution=resolution)
         dx_path = density._map_path()
         if not dx_path.exists():
-            density.create_epitopsy_map(norm='max', save=True)
+            density.create_epitopsy_map(norm='max')
+            density.save()
         self.pymol_handle.load(dx_path.as_posix())
+        dx_info = (monomer_id, margin, resolution)
         pymol_name = dx_path.name.rstrip('.dx')
-        return monomer_id, pymol_name
+        self.map_data.add((dx_info, pymol_name))
+        return dx_info, pymol_name

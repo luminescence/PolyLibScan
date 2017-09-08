@@ -10,7 +10,8 @@ import numerics as num_
 class Project(object):
 
     def scatter_plot(self, subset=None, with_errors=False, with_labels=False, with_crossvalidation=False, 
-                           confidence_interval=0.95, ax=None, save_path=None, min_dist_to_ac=10):
+                           confidence_interval=0.95, ax=None, save_path=None, min_dist_to_ac=10,
+                           ignore_experiment=False):
         '''create a scatter plot with the probability
         of binding (x-axis) and the mean strength of binding 
         at the active site.
@@ -32,14 +33,11 @@ class Project(object):
             fig, ax = plt.subplots(figsize=(18,12))
             ax.set_title('%s (PDB: %s)' % (self.jobs[0].meta['protein_name'], self.jobs[0].meta['protein'].upper()), size=20)
         
-        if subset:
-            results = self._scatter_data(with_errors=with_errors, with_labels=with_labels, 
+        results = self._scatter_data(subset=subset, with_errors=with_errors, with_labels=with_labels, 
                                          with_crossvalidation=with_crossvalidation, 
-                                         confidence_interval=confidence_interval, min_dist_to_ac=min_dist_to_ac)
-        else:
-            results = self._scatter_data(with_errors=with_errors, with_labels=with_labels, 
-                                         with_crossvalidation=with_crossvalidation, 
-                                         confidence_interval=confidence_interval, min_dist_to_ac=min_dist_to_ac)
+                                         confidence_interval=confidence_interval, min_dist_to_ac=min_dist_to_ac,
+                                         ignore_experiment=ignore_experiment)
+
         if with_errors:
             error = results['dist_max_error'].max()
         else:
