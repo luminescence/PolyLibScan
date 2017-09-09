@@ -102,7 +102,7 @@ class PymolVisualisation(object):
                 self.change_isosurface(map_dat, level=lvl, color=color)
 
     def change_isosurface(self, dx_info, level=0.5, color='blue'):
-        dx_dat, pymol_name = dx_info
+        dx_dat, pymol_name, path = dx_info
         surface_name = "%s_%s_density" % (self.sim.meta['polymer_name'], 
                                           'X'.join(map(str, dx_dat)))
         self.pymol_handle.do('cmd.isosurface("%s", "%s", level=%f)' % (surface_name, 
@@ -155,7 +155,7 @@ class PymolVisPolyType(PymolVisualisation):
         dx_info = (monomer_id, margin, resolution)
         pymol_name = dx_path.name.rstrip('.dx')
         self.map_data.add((dx_info, pymol_name))
-        return dx_info, pymol_name
+        return dx_info, pymol_name, dx_path
 
 
 class PymolVisJob(PymolVisualisation):
@@ -190,4 +190,4 @@ class PymolVisJob(PymolVisualisation):
         dx_info = (monomer_id, margin, resolution)
         pymol_name = dx_path.name.rstrip('.dx')
         self.map_data.add((dx_info, pymol_name))
-        return dx_info, pymol_name
+        return dx_info, pymol_name, dx_path
