@@ -119,7 +119,8 @@ class Glycinator(object):
         elif isinstance(res_ids, list):
             pass
         else:
-            raise ValueError('Intput must be tuple or list')
+            raise ValueError('Input must be tuple or list')
+
         for res_id in res_ids:
             self.protein.residues[res_id].to_glycine()
         self.protein.reindex()
