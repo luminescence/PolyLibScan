@@ -4,6 +4,7 @@ import pandas as pd
 import plotting
 import bayesModels as bayes
 import concurrent.futures as concurrent
+import collections as col
 import pymol_visualisation as pym
 import numerics
 
@@ -119,3 +120,30 @@ class PolymerTypeSims(plotting.PolymerTypeSims, bayes.PolymerTypeSims):
         out += ['Polymer Type %s.' % self.name]
         out += ['Containing %d Jobs.' % len(self.sims)]
         return '\n'.join(out)
+
+    def __string__(self):
+        out  = []
+        out += ['Polymer Type %s.' % self.name]
+        out += ['Containing %d Jobs.' % len(self.sims)]
+        out += ['Composition:']
+        for name,weight in self.weights.items():
+            out += ['  %s: %0.2f (charge: %d)' % (
+                    name, weight, self.project.parameters['Atoms'][name]['charge'])]
+        out += ['Average Charge: %0.2f (monomer), %0.2f (sequence)' % self.charge_average()]
+        if self.ic50:
+            out += ['Experimental inhibition: %0.2f (inverse IC50)' % self.ic50]
+        return '\n'.join(out)
+
+    def charge_average(self):
+        '''Return the average charges of the polymer type.
+        "monomer" gives the average charge per monomer.
+        "sequence" returns the average charge from the generates sequences
+        '''
+        ChargeAverage = col.namedtuple('ChargeAverage', 'monomer, sequence')
+        particle_props = self.project.parameters['Atoms']
+
+        per_monomer = sum((particle_props[name]['charge'] * weight 
+                           for name,weight in self.weights.items()))/len(self.weights)
+        sequence = sum((sim.charge for sim in self.sims))/len(self.sims)
+
+        return ChargeAverage(monomer=per_monomer, sequence=sequence)
