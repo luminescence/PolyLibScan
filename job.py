@@ -28,12 +28,7 @@ class Job(object):
     def _create_fifos(self):
         fifo = {}
         for name, data in self.config.fifo.items():
-            if name == 'distance_fifo':
-                fifo[name] = DistanceFifo(self, data['path'], data['script'], data['out'], data['stepsize'])
-            elif name == 'traj_compression':
-                fifo[name] = TrajCompressionFifo(self, data['path'], data['script'], data['out'], data['stepsize'])
-            else:
-                raise NotImplementedError('this fifo based postproduction is not yet implemented.')
+            fifo[name] = FiFo.create_from_dict(name, self, data)
         return fifo
 
     def setup_env(self):
@@ -215,73 +210,6 @@ class Job(object):
         monomer_ids = set([p.type_.Id for p in self.poly.data['particles']])
         return sorted(monomer_ids)      
 
-
-class TrajCompressionFifo(Tools.FiFo):
-    '''This class feeds the output of LAMMPS to 
-    the python script that calculates the distance between 
-    the polymer and the active site.
-    '''
-    def __init__(self, job, fifo_name, script, file_name, steps_size=100):
-        self.parent = job
-        fifo_path = self.generate_path(fifo_name)
-        super(TrajCompressionFifo, self).__init__(fifo_path, script, file_name, steps_size)
-        self.args = self.additional_arguments()
-
-    def generate_path(self, file_name):
-        '''fifo files should reside in the fifo folder.
-        '''
-        if 'fifo' in self.parent.config.lmp_path:
-            fifo_folder = self.parent.config.lmp_path['fifo']
-        else:
-            fifo_folder = self.create_temp_folder()
-        return os.path.join(fifo_folder, file_name)
-
-    def additional_arguments(self):
-        '''The monomer IDs are needed to be able to discern
-        between active site and polymer.
-        '''
-        return ' '
-
-    def output_path(self, index):
-        file_name = '%s%05d.xyz.gz' % (self.out_file, index)
-        return os.path.join(self.parent.config.lmp_path['output'], file_name)
-
-    def lammps_string(self):
-        return 'dump fifo_traj solid xyz %d "%s"' % (self.step_size, self.fifo_path)
-
-
-class DistanceFifo(Tools.FiFo):
-    '''This class feeds the output of LAMMPS to 
-    the python script that calculates the distance between 
-    the polymer and the active site.
-    '''
-    def __init__(self, job, fifo_name, script, file_name, steps_size=100):
-        self.parent = job
-        fifo_path = self.generate_path(fifo_name)
-        super(DistanceFifo, self).__init__(fifo_path, script, file_name, steps_size)
-        self.args = self.additional_arguments()
-
-    def generate_path(self, file_name):
-        '''fifo files should reside in the fifo folder.
-        '''
-        if 'fifo' in self.parent.config.lmp_path:
-            fifo_folder = self.parent.config.lmp_path['fifo']
-        else:
-            fifo_folder = self.create_temp_folder()
-        return os.path.join(fifo_folder, file_name)
-
-    def additional_arguments(self):
-        '''The monomer IDs are needed to be able to discern
-        between active site and polymer.
-        '''
-        return '-'.join(map(str, self.parent.config.lmp_parameter['monomer_ids']))
-
-    def lammps_string(self):
-        return 'dump fifo_distance distance_group xyz %d "%s"' % (self.step_size, self.fifo_path)
-
-    def output_path(self, index):
-        file_name = '%s%05d' % (self.out_file, index)
-        return os.path.join(self.parent.config.lmp_path['output'], file_name)
 
 def localhost():
     """return the nodename of the computer.
