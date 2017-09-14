@@ -10,7 +10,7 @@ import PolyLibScan.helpers.idGenerator as idGen
 import visualize
 import poly_type
 import numerics as num_
-import job_class
+import job as job_class
 
 warnings.filterwarnings("ignore")
 
@@ -156,6 +156,8 @@ class Project(plotting.Project, bayes.Project):
                            confidence_interval=0.95, min_dist_to_ac=10, ignore_experiment=False):
         if subset:
             polymer_list = subset
+            if self.experimental_data is not None:
+                experimental = self.experimental_data[polymer_list]    
         elif (self.experimental_data is not None) and (not ignore_experiment):
             polymer_list = list(set(self.endstate_matrix.columns.levels[0]) & set(self.experimental_data.index))
             experimental = self.experimental_data[polymer_list]

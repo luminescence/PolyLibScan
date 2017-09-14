@@ -1,10 +1,14 @@
 from datetime import datetime
+from datetime import timedelta
 
 def date_string():
 	return datetime.strftime(datetime.now(), format='%Y-%m-%d')
 
 def time_string():
 	return datetime.strftime(datetime.now(), format='%Y-%m-%dT%H:%M:%S')
+
+def add_to_time(time, seconds):
+    return time + timedelta(seconds=seconds)
 
 def conversion(time_obj):
     if isinstance(time_obj, basestring):
