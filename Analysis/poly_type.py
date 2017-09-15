@@ -121,7 +121,7 @@ class PolymerTypeSims(plotting.PolymerTypeSims, bayes.PolymerTypeSims):
         out += ['Containing %d Jobs.' % len(self.sims)]
         return '\n'.join(out)
 
-    def __string__(self):
+    def __str__(self):
         out  = []
         out += ['Polymer Type %s.' % self.name]
         out += ['Containing %d Jobs.' % len(self.sims)]

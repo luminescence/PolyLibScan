@@ -105,7 +105,7 @@ class BaseFiFo(object):
 class FiFo(object):
 
     @staticmethod
-    def create(fifo_type, job, fifo_path, script, out_file, step_size)
+    def create(fifo_type, job, fifo_path, script, out_file, step_size):
         if fifo_type == 'distance_fifo':
             return DistanceFifo(job, data['path'], data['script'], data['out'], data['stepsize'])
         elif fifo_type == 'traj_compression':
@@ -113,7 +113,8 @@ class FiFo(object):
         else:
             raise NotImplementedError('this fifo based postproduction is not yet implemented.')
 
-    def create_from_dict(fifo_type, job, fifo_dict)
+    @staticmethod
+    def create_from_dict(fifo_type, job, fifo_dict):
         if fifo_type == 'distance_fifo':
             return DistanceFifo.from_dict(job, fifo_dict)
         elif fifo_type == 'traj_compression':
@@ -122,7 +123,7 @@ class FiFo(object):
             raise NotImplementedError('this fifo based postproduction is not yet implemented.')
 
 
-class TrajCompressionFifo(Tools.BaseFiFo):
+class TrajCompressionFifo(BaseFiFo):
     '''This class feeds the output of LAMMPS to 
     the python script that calculates the distance between 
     the polymer and the active site.
@@ -144,7 +145,7 @@ class TrajCompressionFifo(Tools.BaseFiFo):
         return 'dump fifo_traj solid xyz %d "%s"' % (self.step_size, self.fifo_path)
 
 
-class DistanceFifo(Tools.BaseFiFo):
+class DistanceFifo(BaseFiFo):
     '''This class feeds the output of LAMMPS to 
     the python script that calculates the distance between 
     the polymer and the active site.
