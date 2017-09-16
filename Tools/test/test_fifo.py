@@ -10,7 +10,8 @@ class TestFiFo(ut.TestCase):
 
 	def __init__(self, *args, **kwargs):
 		super(TestFiFo, self).__init__(*args, **kwargs)
-		self.test_fifo =  fifo.FiFo(local_path.joinpath('data', 'fifo_file.fifo').as_posix(),
+		self.test_fifo =  fifo.BaseFiFo({}, 
+								   local_path.joinpath('data', 'fifo_file.fifo').as_posix(),
 								   'path.to.nowhere',
 								   local_path.joinpath('fifo.out').as_posix(),
 								   2000)

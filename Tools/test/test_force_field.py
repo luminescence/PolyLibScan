@@ -116,7 +116,7 @@ class TestPair(ut.TestCase):
 		self.assertEqual(test_pair.alpha, None)
 		self.assertAlmostEqual(test_pair.cutoff, 6)
 		test_pair = ff.Pair(self.pair_type_soft, self.atom_type3, self.atom_type4)
-		self.assertAlmostEqual(test_pair.epsilon, 8.0)
+		self.assertAlmostEqual(test_pair.epsilon, 4.0)
 		self.assertEqual(test_pair.alpha, None)
 		self.assertAlmostEqual(test_pair.cutoff, 6.0)
 

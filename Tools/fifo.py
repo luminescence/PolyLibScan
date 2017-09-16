@@ -13,7 +13,6 @@ class BaseFiFo(object):
         self.out_file = out_file
         self.step_size = step_size
         self._process = None
-        self.args = self.additional_arguments()
 
     @classmethod
     def from_dict(cls, job, fifo_dict):
@@ -71,7 +70,8 @@ class BaseFiFo(object):
         are needed for calculation.
         '''
         self._process = sp.Popen('python "%s" "%s" "%s" "%s"' % (self.script, self.fifo_path, 
-                                                                out_path,    self.args     ), 
+                                                                out_path, self.additional_arguments()
+                                                                ), 
                      stdin=None, stdout=None, stderr=None, shell=True, close_fds=True)
 
     def additional_arguments(self):
