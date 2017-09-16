@@ -1,5 +1,5 @@
 import unittest as ut
-import PolyLibScan.helpers.db
+import PolyLibScan.Database.db
 import pathlib2 as pl
 import os
 import numpy as np

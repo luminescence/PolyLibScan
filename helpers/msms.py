@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import collections as col
 import Bio.PDB as PDB
-import PolyLibScan.helpers.db as DB
+import PolyLibScan.Database.db as DB
 
 class HydrophobicParameterisation(object):
     
