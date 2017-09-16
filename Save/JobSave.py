@@ -1,9 +1,12 @@
 import pathlib2 as pl
 import shutil
-import database
+import numpy as np
 import sys
 import tarfile
 import PolyLibScan.Tools.config as cfg
+import PolyLibScan.Database.db as DB
+import parser
+import compute
 
 class JobSave(object):
 
@@ -12,63 +15,72 @@ class JobSave(object):
     def __init__(self, root_path, db_name='jobdata.h5', overwrite=False):
         self.root = pl.Path(root_path)
         setup = self.root.joinpath('config_with_setup.yml')
-        if not setup.exists():
-            raise FileNotFoundError('%s does not exist. You have to run sims first' % setup.as_posix())
-        self.config = cfg.JobConfig(self.root.joinpath('config_with_setup.yml').as_posix())
+        self.config = cfg.JobConfig(setup.as_posix())
         self.path = self._set_paths(self.root)
+        self.parse = parser.Parser()
         self.db_path = pl.Path(root_path).joinpath(db_name)
         # initialize database
-        self._db = database.Database(self.db_path, mode='a')
-        self._db.create_groups()
+        self.db = DB.JobDataBase(self.db_path, mode='a')
+        self.db.create_groups()
         self.saved = False
         self.runs = self._read_runs()
 
     def _set_paths(self, root_path):
-        path = {}
+        path = {dir_name: root_path.joinpath(dir_name)
+                        for dir_name in ['input', 'output', 'logs', 'fifo']}
         path['meta'] = root_path.joinpath('config_with_setup.yml')
-        path['input'] = pl.Path(self.config.lmp_path['input'])
-        path['logs'] = root_path.joinpath('logs/')
-        path['output'] = pl.Path(self.config.lmp_path['output'])
-        path['fifo'] = pl.Path(self.config.lmp_path['fifo'])
         return path
 
     def save(self, path=None, overwrite=False):
-        self._db.save_meta_data(self.config)
-        self._db.save_trajectory_meta(self.runs[0].full_traj.as_posix())
-        self._db.save_runs(self.runs)
+        self.save_meta_data(self.config)
+        self.save_trajectory_meta(self.runs[0].full_traj.as_posix())
+        self.db.save_runs(self.runs)
+        self.save_endstates(self.runs)
         self.saved = True
 
+    def save_trajectory_meta(self, path):
+        type_list, step_size = self.parse.trajectory_meta(path)
+        traj_info = self.parse.traj_info(path)
+        self.db.traj_type_order = type_list
+        self.db.traj_info = traj_info
+
+    def save_meta_data(self, config):
+        meta_data = self.parse.meta(config)
+        self.db.sequence = meta_data['sequence']
+        self.db.weights = meta_data['weights']
+        self.db.active_site = meta_data['active_site']
+        self.db.parameter = meta_data['parameter']
+
+    def save_runs(self, runs):
+        polymer_ids = np.array(np.unique(self.db.sequence['ID']))
+        active_site_pos = self.db.active_site['xyz']
+        for run in runs:
+            self.db.start_trajectories_save(run.start_traj, run.ID)
+            self.db.end_trajectories_save(run.end_traj, run.ID)
+            if 'full_traj' in run.path:
+                self.db.trajectory_save(run.path['full_traj'].as_posix(), run.Id)
+            # Save Energy timeseries
+            self.db.energie_ts_save(run.energy, run.Id)
+            # Save Distance Timeseries
+            if 'distance' in run.path:
+                self.distance_ts_save(run.distance, run.Id)
+
+    def save_endstates(self, runs):
+        endstates = np.zeros(len(runs), dtype=[('ID', '>i2'), 
+                                               ('Energy', '>f4'), 
+                                               ('TotalEnergy', '>f4'), 
+                                               ('Distance', '>f4')])
+        for run in runs:
+            distance = compute.distance_to_active_site(run.end_traj, polymer_ids, 
+                                                       active_site_pos)
+            endstates[run.Id] = (run.Id, run.energy[-1,0], run.energy[-1,1], distance)
+        self.db.end_states = endstates
+    
     def _read_runs(self):
         runs = []
-        # get inputs
         input_files = self.path['input'].glob('*')
-        for input_file in input_files:
-            run_id = int(input_file.name)
-            energy = self.path['output'].joinpath('Energy'+input_file.name)
-            if self.path['output'].joinpath('trajectoryS%s.xyz' % input_file.name).exists():
-                start_traj = self.path['output'].joinpath('trajectoryS%s.xyz' % input_file.name)
-            else:
-                start_traj = None
-
-            if self.path['output'].joinpath('trajectoryE%s.xyz' % input_file.name).exists():
-                end_traj = self.path['output'].joinpath('trajectoryE%s.xyz' % input_file.name)
-            elif self.path['output'].joinpath('trajectory%s.xyz' % input_file.name).exists():
-                end_traj = self.path['output'].joinpath('trajectory%s.xyz' % input_file.name)
-            else:
-                end_traj = None
-            distance_file = self.path['output'].joinpath('distance_as_polymer%s' % input_file.name)
-            if not distance_file.exists():
-                distance_file = None
-            traj_file = self.path['output'].joinpath('full_trajectory%s.xyz.gz' % input_file.name)
-            if not distance_file.exists():
-                traj_file = None
-            if energy.exists() and end_traj != None:
-                runs.append(Run(run_id, input_file, energy, 
-                                start_traj, end_traj, distance_file, traj_file))
-        return runs
-
-    def info(self):
-        print('%d Simulations will be saved.' % len(self.runs))
+        return [Run.from_id(self, self.path['output'], input_file.name) 
+                for input_file in input_files]
 
     def get_Error(self):
         if self.has_error():
@@ -95,7 +107,7 @@ class JobSave(object):
             versions['LAMMPS'] = str(lmp_version)
         else:
             versions['LAMMPS'] = ''
-        self._db.save_versions(versions)
+        self.db.save_versions(versions)
 
     def remove_local(self):
         shutil.rmtree(self.config.lmp_path['local_root'])
@@ -103,45 +115,58 @@ class JobSave(object):
     def clean_up(self, force=False):
         if self.saved or force:
             for run in self.runs:
-                run.energy.unlink()
-                run.end_traj.unlink()
-                run.input_path.unlink()
-                run.start_traj.unlink()
-                if run.distance:
-                    run.distance.unlink()
-                if run.full_traj:
-                    run.full_traj.unlink()
+                run.cleanup()
 
         if not self.has_error():
-            if self.path['logs'].joinpath('slurm.out').exists():
-                self.path['logs'].joinpath('slurm.out').unlink()
-            if self.path['logs'].joinpath('slurm.err').exists():
-                self.path['logs'].joinpath('slurm.err').unlink()
-            if self.root.joinpath('log.lammps').exists():
-                self.root.joinpath('log.lammps').unlink()
-            if self.root.joinpath('meta.dat').exists():
-                self.root.joinpath('meta.dat').unlink()
-            if self.path['input'].exists():
-                self.path['input'].rmdir()
-            if self.path['output'].exists():
-                self.path['output'].rmdir() 
-            if self.path['logs'].exists():
-                self.path['logs'].rmdir()
+            for file_ in ['log.lammps','meta.dat','log.lammps']:
+                if self.root.joinpath(file_).exists():
+                    self.root.joinpath(file_).unlink()
+            for file_ in ['slurm.out','slurm.err']:
+                if self.path['logs'].joinpath(file_).exists():
+                    self.path['logs'].joinpath(file_).unlink()    
+            for dir_ in ['input', 'output', 'logs', 'fifo']:
+                if self.path[dir_].exists():
+                    self.path[dir_].rmdir()
             if self.config.sim_parameter['local'] == 1:
                 self.remove_local()
 
 class Run(object):
 
-    def __init__(self, Id, input_path, energy, start_traj, end_traj, distance=None, full_traj=None):
-        self.Id = Id
-        self.energy = energy
-        self.start_traj = start_traj
-        self.end_traj = end_traj
-        self.input_path = input_path
+    @classmethod
+    def from_id(cls, job, path, str_ID):
+        run_id = int(str_ID)
+        energy = path.joinpath('Energy'+str_ID)
+        start_traj = path.joinpath('trajectoryS%s.xyz' % str_ID)
+        end_traj = path.joinpath('trajectoryE%s.xyz' % str_ID)
+        distance_file = path.joinpath('distance_as_polymer%s' % str_ID)
+        if not distance_file.exists():
+            distance_file = None
+        traj_file = path.joinpath('full_trajectory%s.xyz.gz' % str_ID)
+        if not traj_file.exists():
+            traj_file = None
+        return cls(job, run_id, energy, start_traj, end_traj, distance_file, traj_file)
+
+    def __init__(self, job, ID, energy, start_traj, end_traj, distance=None, full_traj=None):
+        self.parent = job
+        self.ID = ID
+        self.path = {}
+        self.path['energy'] =  energy
+        self.path['start_traj'] = start_traj
+        self.path['end_traj'] = end_traj
         if distance:
-            self.distance = distance
+            self.path['distance'] = distance
+            self.distance = self.parent.parse.distance(self.path['distance'].as_posix())
         if full_traj:
-            self.full_traj = full_traj
+            self.path['full_traj'] = full_traj
+
+        self.start_traj = self.parent.parse.xyz(self.path['start_traj'].as_posix())
+        self.end_traj = self.parent.parse.xyz(self.path['end_traj'].as_posix())
+        self.energy = self.parent.parse.energy(self.path['energy'].as_posix())
+
+    def cleanup(self):
+        for path in self.path.values():
+            if path.exists():
+                path.unlink()
 
     def __repr__(self):
-        return 'LammpsRun - id %d' % self.Id
+        return 'LammpsRun - id %d' % self.ID

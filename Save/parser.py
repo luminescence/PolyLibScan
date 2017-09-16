@@ -96,6 +96,13 @@ class Parser(object):
                 step_size = second[0] - first[0]
         return type_list, step_size
 
+    def traj_info(self, file_path):
+        type_list, step_size = self.trajectory_meta(path)
+        data = np.array([('particle_number', len(type_list)),
+                         ('step_size', step_size)], dtype=[('key', '|S15'),
+                                                           ('value', np.int)])
+        return data
+
 def liner(handle):
     for raw_line in handle:
         line = raw_line[:-1]

@@ -1,6 +1,6 @@
 import tables as tb
 import numpy as np
-import PolyLibScan.helpers.db as DB
+import PolyLibScan.Database.db as DB
 import parser
 import compute
 
@@ -9,17 +9,12 @@ class Database(DB.Database):
     def __init__(self, path, mode='w'):
         super(Database, self).__init__(path, mode)
         self.parse = parser.Parser()
+        self.db = DB.JobDataBase(path, mode='w')
         
     def create_groups(self):
         '''Creates the default groups in the database.
         '''
-        self._create_group('energies', self._handle.root)
-        self._create_group('distances', self._handle.root)
-        self._create_group('start_trajectories', self._handle.root)
-        self._create_group('end_trajectories', self._handle.root)
-        self._create_group('meta', self._handle.root)
-        self._create_group('trajectory', '/meta')
-        self._create_group('trajectories', self._handle.root)
+        self.db.create_groups()
 
     def get_active_site_data(self):
         return self._load_table('/meta', 'active_site')
