@@ -1,6 +1,6 @@
 import json
 import numpy as np
-import PolyLibScan.helpers.db as DB
+import PolyLibScan.Database.db as DB
 
 class Parser(DB.Database):
 

@@ -6,7 +6,7 @@ from lmp_types import *
 from lmp_particlesAndInteractions import *
 from lmpObj import LmpObj
 from lmp_creator import LmpCreator
-import PolyLibScan.helpers.db as DB
+import PolyLibScan.Database.db as DB
 
 class ProteinCreator(LmpCreator):
     '''
