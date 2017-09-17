@@ -1,3 +1,6 @@
+import collections as col
+
+Particle_id = col.namedtuple('Particle_id', 'name, chain, id')
 
 class Particle(object):
     
@@ -6,8 +9,16 @@ class Particle(object):
         self.type_ = atom_type
         self.position = position
         self.mol = molecule
-        self.residue = None
+        self._residue = None
     
+    @property
+    def residue(self):
+        return self._residue
+
+    @residue.setter
+    def residue(self, values):
+        self._residue = Particle_id._make(values)
+
     @property
     def mol_name(self):
         return self.mol.name
