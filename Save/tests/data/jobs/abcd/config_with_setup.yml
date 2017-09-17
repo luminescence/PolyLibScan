@@ -9,11 +9,11 @@ lammps_parameter:
   monomer_ids: [23, 24]
   time_steps: 200000
   timestep: 17
-lammps_path: {fifo: /tmp/tmp9ljSak, input: /home/ludwig/workspace/MonomerAnalysis/ChargeBasedModel/data/processing/samplingTests/LocalSimRun/abcd/input,
-  local_root: /home/ludwig/workspace/MonomerAnalysis/ChargeBasedModel/data/processing/samplingTests/LocalSimRun/abcd,
-  output: /home/ludwig/workspace/MonomerAnalysis/ChargeBasedModel/data/processing/samplingTests/LocalSimRun/abcd/output,
-  root: /home/ludwig/workspace/MonomerAnalysis/ChargeBasedModel/data/processing/samplingTests/LocalSimRun/abcd,
-  script: /home/ludwig/workspace/MonomerAnalysis/ChargeBasedModel/data/raw/clusterRun.in}
+lammps_path: {fifo: /tmp/tmp9ljSak, input: input,
+  local_root: ./,
+  output: output,
+  root: ./,
+  script: ../../static/clusterRun.in}
 sim_parameter:
   active_site:
     chain: [A, B]
