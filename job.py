@@ -28,7 +28,7 @@ class Job(object):
     def _create_fifos(self):
         fifo = {}
         for name, data in self.config.fifo.items():
-            fifo[name] = FiFo.create_from_dict(name, self, data)
+            fifo[name] = Tools.FiFo.create_from_dict(name, self, data)
         return fifo
 
     def setup_env(self):

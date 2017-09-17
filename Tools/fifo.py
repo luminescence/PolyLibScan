@@ -128,8 +128,8 @@ class TrajCompressionFifo(BaseFiFo):
     the python script that calculates the distance between 
     the polymer and the active site.
     '''
-    def __init__(self, job, fifo_name, script, file_name, steps_size=100):
-        super(TrajCompressionFifo, self).__init__(fifo_path, script, file_name, steps_size)
+    def __init__(self, job, fifo_path, script, file_name, steps_size=100):
+        super(TrajCompressionFifo, self).__init__(job, fifo_path, script, file_name, steps_size)
 
     def additional_arguments(self):
         '''The monomer IDs are needed to be able to discern
@@ -150,9 +150,8 @@ class DistanceFifo(BaseFiFo):
     the python script that calculates the distance between 
     the polymer and the active site.
     '''
-    def __init__(self, job, fifo_name, script, file_name, steps_size=100):
-        super(DistanceFifo, self).__init__(fifo_path, script, file_name, steps_size)
-
+    def __init__(self, job, fifo_path, script, file_name, steps_size=100):
+        super(DistanceFifo, self).__init__(job, fifo_path, script, file_name, steps_size)
     def additional_arguments(self):
         '''The monomer IDs are needed to be able to discern
         between active site and polymer.
