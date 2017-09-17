@@ -67,9 +67,24 @@ class Job(object):
         # the config with added information is always saved to the root directory
         config_with_setup = os.path.join(self.config.sim_path['root'], 'config_with_setup.yml')
         self.config.save(config_with_setup)
+        # save particle list
+        p_list_path = os.path.join(self.config.sim_path['root'], 'particle_list.npy')
+        self.save_particle_list(p_list_path)
         # fifos can only be created if the monomer ids are known
         self.fifo = self._create_fifos()
 
+    def save_particle_list(self, path):
+        dtype = [('xyz', np.int), ('p_id', np.int), ('name', 'S3'), 
+                 ('chain', 'S1'), ('atom', 'S6'), ('res_id', np.int), ('iCode', 'S1')]
+
+        molecules = sorted(self.env.molecules.values(), key=lambda x: x.Id)
+        particle_list = it.chain(*[molecule.data[key] for molecule in molecules])
+        particles = list(particle_list)
+        particle_dat = np.array(len(particles) , dtype=dtype)
+        for i,p in enumerate(particles):
+            particle_dat[i] = (p.Id, p.type_.Id, p.residue.name, p.residue.chain, 
+                                p.residue.id[0], p.residue.id[1], p.residue.id[2]) 
+        particle_dat.tofile(path)
 
     def terminate_fifos(self):
         for name, fifo in self.fifo.items():
