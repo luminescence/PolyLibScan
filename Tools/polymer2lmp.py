@@ -104,7 +104,9 @@ class PolymerCreator(LmpCreator):
             coords = np.array([0.0, 0.0, 0.0])
         else:
             coords = polymer[-1].position + np.array([4.0, 0.0, 0.0])
-        return Particle(lmpObj, self.env.new_id['particle'], lmpObj.env.atom_type[element], coords)
+        new_id = self.env.new_id['particle']
+        res_id = (element, 'A', new_id)
+        return Particle(lmpObj, new_id, lmpObj.env.atom_type[element], res_id, coords)
         
 
     def create_polymer_bonds(self, molecule):

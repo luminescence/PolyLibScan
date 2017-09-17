@@ -194,9 +194,8 @@ class ProteinCreator(LmpCreator):
         for i, p in enumerate(particle_data):
             particles.append(Particle(lmp_obj, self.env.new_id['particle'], 
                                       lmp_obj.env.atom_type['BB'], 
+                                      (p[1], p[2], p[3]),
                                       p[0].copy()))
-            particles[-1].residue = (p[1], p[2], p[3])
-
         return particles        
 
     def _get_config(self, res_type_config):
@@ -243,10 +242,11 @@ class ProteinCreator(LmpCreator):
         g_particles = np.empty(len(lmp_obj.data['particles']), dtype=object)
         g_bonds = []
         for i, real_particle in enumerate(lmp_obj.data['particles']):
+            res_id = ('ghost', real_particle.residue.chain, ('ghost', ' ',  ' '))
             g_particles[i] = Particle(lmp_obj, self.env.new_id['particle'],
                                     lmp_obj.env.atom_type['BB_ghost'],
+                                    res_id,
                                     real_particle.position.copy())
-            g_particles[i].residue = ('ghost', real_particle.residue.chain, ('ghost', ' ',  ' '))
         
             # create bonds
             if 'ghost' not in lmp_obj.env.bond_type:

@@ -4,12 +4,12 @@ Particle_id = col.namedtuple('Particle_id', 'name, chain, id')
 
 class Particle(object):
     
-    def __init__(self, molecule, id_, atom_type, position):
+    def __init__(self, molecule, id_, atom_type, res_id, position):
         self.Id = id_ 
         self.type_ = atom_type
         self.position = position
         self.mol = molecule
-        self._residue = None
+        self.residue = res_id
     
     @property
     def residue(self):

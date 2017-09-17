@@ -29,7 +29,7 @@ class TestSubClasses(unittest.TestCase):
              'interacting': 'True',
              'charge': -5}
     	test_atom = lmp_t.AtomType('ca', p)
-    	test_particle = lmp_pi.Particle(molecule, 1, test_atom, [1,2,3])
+    	test_particle = lmp_pi.Particle(molecule, 1, test_atom, ('PHE', 'A', 1), [1,2,3])
     	self.assertEqual(test_particle.Id, 1)
     	self.assertEqual(test_particle.position, [1,2,3])
         self.assertEqual(test_particle.mol_name, molecule.name)
