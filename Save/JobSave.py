@@ -31,11 +31,13 @@ class JobSave(object):
         path = {dir_name: root_path.joinpath(dir_name)
                         for dir_name in ['input', 'output', 'logs', 'fifo']}
         path['meta'] = root_path.joinpath('config_with_setup.yml')
+        path['p_list'] = root_path.joinpath('particle_list.npy')
         return path
 
     def save(self):
         self.save_meta_data(self.config)
         self.save_trajectory_meta(self.runs[0].full_traj.as_posix())
+        self.save_particle_list(self.path['p_list'])
         self.save_runs(self.runs)
         self.save_endstates(self.runs)
         self.saved = True
@@ -52,6 +54,10 @@ class JobSave(object):
         self.db.weights = meta_data['weights']
         self.db.active_site = meta_data['active_site']
         self.db.parameter = meta_data['parameter']
+
+    def save_particle_list(self, path):
+        particle_data = self.parse.particle_list(path)
+        self.db.particle_list = particle_data
 
     def save_runs(self, runs):
         polymer_ids = np.array(np.unique(self.db.sequence['ID']))

@@ -24,6 +24,14 @@ class JobDataBase(object):
         self.db._create_group('trajectories', self.db._handle.root)
 
     @property
+    def particle_list(self):
+        return self.db._load_table('/meta', 'particle_list')
+
+    @particle_list.setter
+    def particle_list(self, value):
+        self.db._save_table(value, '/meta', 'particle_list')
+
+    @property
     def active_site(self):
         return self.db._load_table('/meta', 'sequence')
     

@@ -80,6 +80,13 @@ class Parser(object):
                 raise IndexError('Faulty format found in file %s' % file_path)
         return traj
 
+    def particle_list(self, path):
+        '''Extract particles from list
+        '''
+        dtype = [('xyz', np.int), ('p_id', np.int), ('name', 'S3'), 
+                 ('chain', 'S1'), ('atom', 'S6'), ('res_id', np.int), ('iCode', 'S1')]
+        return np.fromfile(path, dtype=dtype)
+
     def trajectory_meta(self, file_path):
         '''Extract the list which specifies the 
         '''
