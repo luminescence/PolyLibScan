@@ -1,4 +1,5 @@
 import numpy as np
+import numba as nb
 
 def distance_to_active_site(xyz_coords, polymer_ids, active_site_no):
     '''calculates the minimal distance between the polymer and the 
@@ -18,6 +19,7 @@ def distance_to_active_site(xyz_coords, polymer_ids, active_site_no):
                 min_dist = md
     return min_dist
 
+@nb.jit
 def _dist(a, b):
     an = np.array([a['x'], a['y'], a['z']])
     bn = np.array([b['x'], b['y'], b['z']])
