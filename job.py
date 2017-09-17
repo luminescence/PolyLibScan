@@ -28,6 +28,7 @@ class Job(object):
     def _create_fifos(self):
         fifo = {}
         for name, data in self.config.fifo.items():
+            data['path'] = os.path.join(self.config.lmp_path['fifo'], data['path'])
             fifo[name] = Tools.FiFo.create_from_dict(name, self, data)
         return fifo
 
@@ -158,19 +159,12 @@ class Job(object):
         '''Create the three needed folder in the root_folder
         in case they do not already exist.
         '''
-        input_folder = os.path.join(root_folder, 'input')
-        if not os.path.exists(input_folder):
-            os.mkdir(input_folder)
-        output_folder = os.path.join(root_folder, 'output')
-        if not os.path.exists(output_folder):
-            os.mkdir(output_folder)
-        fifo_folder = os.path.join(root_folder, 'fifo')
-        if not os.path.exists(fifo_folder):
-            os.mkdir(fifo_folder)
-        new_paths = {'local_root': root_folder,
-                     'input': input_folder, 
-                     'output': output_folder,
-                     'fifo': fifo_folder}
+        new_paths = {'local_root': root_folder}
+        for sub_folder in ['input', 'output', 'fifo']:
+            folder = os.path.join(root_folder, sub_folder)
+            if not os.path.exists(folder):
+                os.mkdir(folder)
+            new_paths[sub_folder] = folder
         return new_paths
 
     def _get_last_uncompleted_index(self):
