@@ -21,7 +21,6 @@ class Test_JobSave(ut.TestCase):
 			self.db_file2.unlink()
 		obj = js.JobSave(self.path.as_posix(), db_name='test2.h5')
 		results = obj._set_paths(self.path)
-		print results
 		self.assertIn('meta', results)
 		self.assertIn('input', results)
 		self.assertIn('logs', results)
@@ -43,6 +42,13 @@ class Test_JobSave(ut.TestCase):
 		self.assertEqual(len(js_obj.runs), 1)
 		js_obj.db.close()
 		self.db_file2.unlink()
+
+	def test_get_version(self):
+		if self.db_file2.exists():
+			self.db_file2.unlink()
+		js_obj = js.JobSave(self.path.as_posix(), db_name='test2.h5')
+		print js.__git_hash__
+		self.assertTrue(len(js.__git_hash__), 20)
 
 	# def test_has_error(self):
 	# 	#if self.db_file2.exists():

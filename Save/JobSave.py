@@ -25,7 +25,7 @@ class JobSave(object):
             self.db = DB.JobDataBase(self.db_path, mode='a')
         self.db.create_groups()
         self.saved = False
-        self.runs = self._read_runs()
+        self.runs = self.read_runs()
 
     def _set_paths(self, root_path):
         path = {dir_name: root_path.joinpath(dir_name)
@@ -84,7 +84,7 @@ class JobSave(object):
             endstates[run.Id] = (run.Id, run.energy[-1,0], run.energy[-1,1], distance)
         self.db.end_states = endstates
     
-    def _read_runs(self):
+    def read_runs(self):
         runs = []
         input_files = self.path['input'].glob('*')
         return [Run.from_id(self, self.path['output'], input_file.name) 
