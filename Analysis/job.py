@@ -27,7 +27,7 @@ class Job(bayes.Job):
         self.weights = self._parse.weights()
         self.active_site = self._parse.active_site()
         self._runs = self._read_runs()
-        self._particle_ids = self._get_particle_ids()
+        self.particle_ids = self._get_particle_ids()
         self._charge = None
         self._parse.close()
         self._distance_frequency = None
@@ -184,7 +184,7 @@ class Job(bayes.Job):
         Output:
             box -- 2x3 numpy array
         """
-        protein_mask = np.in1d(self._parse.load_traj_type_order(), self._particle_ids['protein'])
+        protein_mask = np.in1d(self._parse.load_traj_type_order(), self.particle_ids['protein'])
         trajectory_iterator = self._parse.trajectory(0)
         protein_coords = np.array(list(it.islice(trajectory_iterator, len(protein_mask))))[protein_mask]
         box = num_.calc_box(protein_coords, margin=margin)

@@ -45,12 +45,12 @@ class DensityContainer(object):
         elif isinstance(value, list):
             m_id = value
         elif value == 'all':
-            m_id = list(self.sims[0]._particle_ids['polymer'])
+            m_id = list(self.sims[0].particle_ids['polymer'])
         else:
             raise ValueError('monomer_id must be int or list or "all".')
 
-        if not set(m_id) <= set(self.sims[0]._particle_ids['polymer']):
-            raise ValueError("Some Ids are not ids of monomer. Choose from %s" % self.sims[0]._particle_ids['polymer'])
+        if not set(m_id) <= set(self.sims[0].particle_ids['polymer']):
+            raise ValueError("Some Ids are not ids of monomer. Choose from %s" % self.sims[0].particle_ids['polymer'])
         else:
             self._monomer_id = m_id
 

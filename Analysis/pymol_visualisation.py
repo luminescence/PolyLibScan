@@ -44,8 +44,8 @@ class PymolVisualisation(object):
         '''
         if state not in ['start', 'end']:
             raise AttributeError("state must have value of 'start' or 'end'.")
-        elements = {id_: name for id_, name in zip(sim._particle_ids['polymer'], self.atom_names)}
-        mask = np.in1d(sim._parse.load_traj_type_order(), sim._particle_ids['polymer'])
+        elements = {id_: name for id_, name in zip(sim.particle_ids['polymer'], self.atom_names)}
+        mask = np.in1d(sim._parse.load_traj_type_order(), sim.particle_ids['polymer'])
         pose_list_type = [('id', '>i2'), ('ele', '|S1'), ('res_name', '|S3'), 
                           ('x', np.float), ('y', np.float), ('z', np.float)]
         pose_data = np.zeros(mask.sum(), dtype=pose_list_type)

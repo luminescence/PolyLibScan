@@ -15,7 +15,7 @@ def calc_protein_box(margin):
 
 def create_sim():
 	sim = mock.Mock()
-	sim._particle_ids = {'polymer': [1,2,3]}
+	sim.particle_ids = {'polymer': [1,2,3]}
 	sim._calc_protein_box = calc_protein_box
 	sim._parse = mock.Mock()
 	attrs = {'load_traj_type_order.return_value': [1,2,3,4,5,1]}

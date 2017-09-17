@@ -15,7 +15,7 @@ class TestPymolVis(ut.TestCase):
         self.sim = mock.MagicMock()
         self.sim.db_path = local_path.joinpath('data')
         self.sim._calc_protein_box = mock.Mock(return_value=box)
-        self.sim._particle_ids = {'polymer': [1,2,3]}
+        self.sim.particle_ids = {'polymer': [1,2,3]}
 
     def test_monomer_id_prop(self):
         density = lmp_lys.dc.DensityContainer(self.sim, 1)

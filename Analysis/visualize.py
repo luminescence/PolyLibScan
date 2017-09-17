@@ -38,7 +38,7 @@ class Visualize(object):
         '''
         points_end = run.coordinates()['end']
         points_start = run.coordinates()['start']
-        poly_mask = np.in1d(points_start['atom_type'], run.job._particle_ids['polymer'])
+        poly_mask = np.in1d(points_start['atom_type'], run.job.particle_ids['polymer'])
         polymer_points_start = points_start[poly_mask]
         complete_points = np.append(points_end, polymer_points_start)
         return complete_points
@@ -46,7 +46,7 @@ class Visualize(object):
     def _identify_groups(self, points, run):
         group = np.zeros(points.shape, np.int)
         for i,at in enumerate(points['atom_type']):
-            if at in run.job._particle_ids['polymer']:
+            if at in run.job.particle_ids['polymer']:
                 group[i] = 1
             else:
                 group[i] = 2

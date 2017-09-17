@@ -44,7 +44,7 @@ class Run(plotting.Run):
 
     def _distance_to_active_site(self):
         xyz = self.coordinates()['end']
-        mask = np.in1d(xyz['atom_type'], self.job._particle_ids['polymer'])
+        mask = np.in1d(xyz['atom_type'], self.job.particle_ids['polymer'])
         poly_coords = xyz[mask]
         # subtracting the active site id by one since lammps starts 
         # counting from one, while Numpy does not.
