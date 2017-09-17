@@ -19,8 +19,10 @@ class JobSave(object):
         self.path = self._set_paths(self.root)
         self.parse = parser.Parser()
         self.db_path = pl.Path(root_path).joinpath(db_name)
-        # initialize database
-        self.db = DB.JobDataBase(self.db_path, mode='a')
+        if overwrite:
+            self.db = DB.JobDataBase(self.db_path, mode='w')
+        else:
+            self.db = DB.JobDataBase(self.db_path, mode='a')
         self.db.create_groups()
         self.saved = False
         self.runs = self._read_runs()
@@ -31,10 +33,10 @@ class JobSave(object):
         path['meta'] = root_path.joinpath('config_with_setup.yml')
         return path
 
-    def save(self, path=None, overwrite=False):
+    def save(self):
         self.save_meta_data(self.config)
         self.save_trajectory_meta(self.runs[0].full_traj.as_posix())
-        self.db.save_runs(self.runs)
+        self.save_runs(self.runs)
         self.save_endstates(self.runs)
         self.saved = True
 
