@@ -110,7 +110,7 @@ class ProteinCreator(LmpCreator):
         if len(particle)>1:
             raise Exception('Found more than one particle. Check your pdb file for duplicate entries.')
         elif len(particle)==0:
-            raise Exception("There is no particle with chain %s, id %d and iCode %s" % pdb_residue_id)
+            raise Exception("There is no particle with chain %s, id %d and iCode '%s'" % pdb_residue_id)
         return particle[0]
 
     def _make_particle_unique(self, particle, type_name):
@@ -246,7 +246,7 @@ class ProteinCreator(LmpCreator):
             g_particles[i] = Particle(lmp_obj, self.env.new_id['particle'],
                                     lmp_obj.env.atom_type['BB_ghost'],
                                     real_particle.position.copy())
-            g_particles[i].residue = ('ghost', real_particle.residue[1], ('ghost', ' ',  ' '))
+            g_particles[i].residue = ('ghost', real_particle.residue.chain, ('ghost', ' ',  ' '))
         
             # create bonds
             if 'ghost' not in lmp_obj.env.bond_type:
@@ -257,7 +257,6 @@ class ProteinCreator(LmpCreator):
                            [g_particles[i], real_particle])]
         return g_particles, g_bonds
 
-
     def add_protein_properties(self, protein):
         '''Adds the bonds, angles and dihedrals to the particles that
         are typical for the protein, i.e. it's a chain.
@@ -266,7 +265,7 @@ class ProteinCreator(LmpCreator):
         bonds = []
         angles = []
         dihedrals = []
-        filter_non_aa = lambda x: x.residue[2][0]==' '
+        filter_non_aa = lambda x: x.residue.id[0]==' '
         amino_acids = filter(filter_non_aa, protein.data['particles'])
 
         for particle1,particle2 in itt.izip(amino_acids[:-1], amino_acids[1:]):
@@ -286,7 +285,6 @@ class ProteinCreator(LmpCreator):
         protein.data['angles']    +=  angles
         protein.data['dihedrals'] +=  dihedrals
 
-
     def change_to_seqIdBased(self, res_config):
         '''change all amino-acid beads to be of sequence id based
         type.
@@ -301,10 +299,9 @@ class ProteinCreator(LmpCreator):
         for i, particle in enumerate(real_particle):
             type_id = max_id + 1 + i
             #print type_id
-            type_name = '%s|%s%d|%d' % (particle.residue[0], particle.residue[1], particle.residue[2][1], type_id)
-            type_data[particle.residue[0]]['name'] = type_name
-            self.env.atom_type[type_name] = AtomType(type_id, 
-                                                      type_data[particle.residue[0]])
+            type_name = '%s|%s%d|%d' % (particle.residue.name, particle.residue.chain, particle.residue.id[1], type_id)
+            type_data[particle.residue.name]['name'] = type_name
+            self.env.atom_type[type_name] = AtomType(type_id, type_data[particle.residue.name])
             # setting type for the particle
             real_particle[i].type_ = self.types['particles'][type_name]
 
@@ -317,19 +314,19 @@ class ProteinCreator(LmpCreator):
         ## read particle res and change restype
         real_particle = np.extract([x.type_.name !='BB_ghost' for x in molecule.data['particles']], molecule.data['particles'])
         for i, particle in enumerate(real_particle):
-            if particle.residue[0] in molecule.env.atom_type:
+            if particle.residue.name in molecule.env.atom_type:
                 if particle.type_.unique:
                     # in case the particle type is already unique, the resi
                     # specific properties are copied over.
-                    res_based_type = molecule.env.atom_type[particle.residue[0]]
+                    res_based_type = molecule.env.atom_type[particle.residue.name]
                     unique_particle_type = particle.type_
                     properties = ['mass', 'radius', 'charge', 'hydrophobicity']
                     for prop in properties:
                         setattr(unique_particle_type, prop, getattr(res_based_type, prop))
                 else:
-                    particle.type_ = molecule.env.atom_type[particle.residue[0]]
+                    particle.type_ = molecule.env.atom_type[particle.residue.name]
             else:
-                raise ValueError('particle type %s not found in types.' % particle.residue[0])
+                raise ValueError('particle type %s not found in types.' % particle.residue.name)
 
     def cg_lvl():
         doc = "The cg_lvl property."
