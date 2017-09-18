@@ -13,7 +13,8 @@ class TestEpitopsy(ut.TestCase):
 		super(TestEpitopsy, self).__init__(*args, **kwargs)
 		self.project = lmp_lys.Project(local_path.joinpath('data/').as_posix(), 
                 experimental_data=local_path.joinpath('data/statics', 'ic50.h5').as_posix(),
-                parameters=local_path.joinpath('data/statics', 'parameters_hp.yml').as_posix())
+                parameters=local_path.joinpath('data/statics', 'parameters_hp.yml').as_posix(),
+                protein_path='asd.pdb')
 		self.job = self.project.jobs[0]
 
 	def test_calc_protein_box(self):

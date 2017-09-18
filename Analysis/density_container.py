@@ -7,18 +7,31 @@ import PolyLibScan
 
 class DensityContainer(object):
     """docstring for DensityContainer"""
-    def __init__(self, simulations, monomer_id='all', margin=20.0, resolution=3.0, db_path=None):
+    def __init__(self, simulations, monomer_id='all', margin=20.0, resolution=3.0, 
+                 norm_type='max'):
         super(DensityContainer, self).__init__()
         self.sims = simulations
+        self.poly_type = self.sims[0].meta['polymer_name']
+        self.sim_number = self.sims
         self.monomer_id = monomer_id
         self.margin = margin
         self.resolution = resolution
-        if db_path:
-            self.db_folder = db_path
-        else:
-            self.db_folder = self.sims[0].db_path.parent.absolute().resolve()
+        self.norm_type = norm_type
         
         self._create_empty_map()
+
+    @property
+    def sim_number(self):
+        return self._sim_number
+
+    @sim_number.setter
+    def sim_number(self, list_):
+        if len(list_) == 1:
+            self._sim_number = list_[0].Id
+        elif len(list_) > 1:
+            self._sim_number = -1
+        else:
+            raise AttributeError('Empty list.')
 
     @property
     def sims(self):
@@ -132,17 +145,18 @@ class DensityContainer(object):
         epi_map = np.zeros(np.ceil(box_size/float(self.resolution))+1, np.int32)
         self.box, self.box_size, self.map = box, box_size, epi_map
 
-    def _map_path(self, root=None):
+    def _map_path(self, root):
         '''Create a unique path name for the 3d-density map.
         '''
-        if not root:
-            root = self.db_folder
-        prefix = 'map_'
-        mono_str = 'ID-%s_' % 'X'.join(map(str, self.monomer_id))
-        margin_str = 'M-%.02f_' % (round(self.margin,2))
-        resolution_str = 'R-%.02f_' % (round(self.resolution,2))
+        prefix = 'map'
+        p_type = 'PT-%s' % self.poly_type
+        s_no = 'sims-%d' % self.sim_number
+        mono_str = 'ID-%s' % 'X'.join(map(str, self.monomer_id))
+        margin_str = 'M-%.02f' % (round(self.margin,2))
+        resolution_str = 'R-%.02f' % (round(self.resolution,2))
         suffix = '.dx'
-        name = ''.join([prefix, mono_str, margin_str, resolution_str, suffix])
+        name = '_'.join([prefix, p_type, s_no, mono_str, margin_str, 
+                         resolution_str, self.norm_type, suffix])
         return root.joinpath(name).absolute().resolve()
 
     def _create_atom_type_filter(self, particle_order, monomer_id=None):
@@ -169,15 +183,15 @@ class DensityContainer(object):
             self.map[idx[0],idx[1],idx[2]] += 1
         return self.map
     
-    def normalized_map(self, norm_type='max'):
+    def normalized_map(self):
     	'''public instance of map normalisation'''
         self._create_normalized(norm_type)
         return self.normed_map
 
     def _create_normalized(self, norm_type='max'):
-        if norm_type == 'max':
+        if self.norm_type == 'max':
             self.normed_map = self.map / self.map.max().astype(np.float)
-        elif nor_type == 'probability':
+        elif self.norm_type == 'probability':
             self.normed_map = self.map / self.map.sum().astype(np.float)
         else:
             self.normed_map = self.map

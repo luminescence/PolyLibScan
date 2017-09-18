@@ -7,6 +7,7 @@ import warnings
 import plotting
 import bayesModels as bayes
 import PolyLibScan.helpers.idGenerator as idGen
+import pymol_visualisation as pym
 import visualize
 import poly_type
 import numerics as num_
@@ -15,7 +16,7 @@ import job as job_class
 warnings.filterwarnings("ignore")
 
 class Project(plotting.Project, bayes.Project):
-    def __init__(self, project_path, experimental_data=None, parameters=None):
+    def __init__(self, project_path, experimental_data=None, parameters=None, protein_path=None):
         self.path = pl.Path(project_path)
         self._id_gen = idGen.IdGen()
         self._endstate_matrix = None
@@ -24,6 +25,8 @@ class Project(plotting.Project, bayes.Project):
         # stores jobs in list (jobs)
         # and dict form (polymer_types); polymer_types stores jobs sorted by polymer type
         self.jobs, self.polymer_types = self.read_jobs(self.path.joinpath('jobs'))
+        self.protein_path = self._init_protein(protein_path)
+        self.pymol = pym.PymolVisProject(self, self.protein_path)
 
         # Experimental Data needs information from job objects
         self.experimental_data = self._init_experimental_data(experimental_data)
@@ -48,6 +51,17 @@ class Project(plotting.Project, bayes.Project):
             except IOError:
                 print 'Parameter file not specified and no file "%s" found in static folder.' % default_file_name
                 return None
+
+    def _init_protein(self, file_path):
+        if file_path:
+            return file_path
+        else:
+            try:
+                default_file_name = '*.pdb'
+                return self.search_static(default_file_name).as_posix()
+            except IOError:
+                print 'pdb file not specified and no file "%s" found in static folder.' % default_file_name
+                return None
     
     def _init_experimental_data(self, file_path):
         if file_path:
@@ -57,7 +71,7 @@ class Project(plotting.Project, bayes.Project):
                 default_file_name = 'ic50.h5'
                 return self.search_static(default_file_name).as_posix()
             except IOError:
-                print 'Parameter file not specified and no file "%s" found in static folder.' % default_file_name 
+                print 'Inhibition file not specified and no file "%s" found in static folder.' % default_file_name 
                 return None
 
     def read_jobs(self, path):
