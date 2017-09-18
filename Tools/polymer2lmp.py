@@ -105,7 +105,7 @@ class PolymerCreator(LmpCreator):
         else:
             coords = polymer[-1].position + np.array([4.0, 0.0, 0.0])
         new_id = self.env.new_id['particle']
-        res_id = (element, 'A', (' ', new_id, ' ')
+        res_id = (element, 'A', (' ', new_id, ' '))
         return Particle(lmpObj, new_id, lmpObj.env.atom_type[element], res_id, coords)
         
 
