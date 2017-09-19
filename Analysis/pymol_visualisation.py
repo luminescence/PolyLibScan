@@ -113,6 +113,21 @@ class PymolVisProject(PymolVisualisation):
         self.project = project
         super(PymolVisProject, self).__init__(protein_path=protein_path)
 
+    def _init_protein_path(self, protein_path):
+        '''Set the path of the pdb model to protein_path or
+        if protein_path is set to None look for the most likely 
+        path relative to the job's database path. 
+        If that fails, return None.
+        '''
+        if protein_path:
+            return protein_path
+        else:
+            potential_pdb_location = list(self.project.path.joinpath('static').glob('*.pdb'))
+            if len(potential_pdb_location) == 1:
+                return potential_pdb_location[0].absolute().resolve()
+            else:
+                return None
+
 class PymolVisPolyType(PymolVisualisation):
     """docstring for PymolVisPolyType"""
     def __init__(self, poly_type, protein_path=None):
@@ -183,10 +198,10 @@ class PymolVisJob(PymolVisualisation):
 
     def add_dx(self, monomer_id='all', margin=20.0, resolution=1.5, norm='max'):
         density = dc.DensityContainer(self.sim, monomer_id, margin=margin, 
-            resolution=resolution, norm_type=norm,)
+            resolution=resolution, norm_type=norm)
         dx_path = density._map_path(self.db_folder)
         if not dx_path.exists():
-            density.create_epitopsy_map(norm='max')
+            density.create_epitopsy_map(norm=norm)
             density.save(self.db_folder)
         self.pymol_handle.load(dx_path.as_posix())
         density_obj = DensityMap(self.sim.poly_type.name, self.sim.Id, 
