@@ -35,6 +35,33 @@ class TestEpitopsy(ut.TestCase):
         map2 = dc.DensityContainer(sim, monomer_id=1)
         self.assertTrue(map1==map2)
 
+    def test_monomer_id_prop(self):
+
+        box = np.array([[-10, -10, -10], [10, 10, 10]])
+        sim = mock.MagicMock()
+        sim.db_path = local_path.joinpath('data')
+        sim._calc_protein_box = mock.Mock(return_value=box)
+        sim.particle_ids = {'polymer': [1,2,3]}
+        
+        density = dc.DensityContainer(sim, 1)
+        self.assertEqual(density.monomer_id[0], 1)
+
+        density2 = dc.DensityContainer(sim, monomer_id=[1,2])
+        self.assertEqual(density2.monomer_id[0], 1)
+        self.assertEqual(density2.monomer_id[1], 2)
+
+        density3 = dc.DensityContainer(sim, np.array([1]))
+        self.assertEqual(density3.monomer_id[0], 1)
+
+        with self.assertRaises(ValueError):
+            density4 = dc.DensityContainer(sim, np.array([5]))
+
+        with self.assertRaises(ValueError):
+            density5 = dc.DensityContainer(sim, '5')
+
+        density6 = dc.DensityContainer(sim, 'all')
+        self.assertEqual(density6.monomer_id, [1,2,3])
+
     def test_unequal(self):
         sim = create_sim()
         map1 = dc.DensityContainer(sim, monomer_id=1)

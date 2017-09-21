@@ -3,6 +3,7 @@ import os as _os
 import jinja2 as ji
 # own module
 import PolyLibScan.helpers.pymol as pym
+import PolyLibScan.helpers.numpy as np_help
 import density_container as dc
 import pathlib2 as pl
 import itertools as it
@@ -15,12 +16,12 @@ class PymolVisualisation(object):
     surface_colors = ['blue', 'brightorange', 'cyan', 'forest', 'orange', 
                       'lightmagenta', 'deepteal', 'oxygen', 'purple', 'yellow']
     def __init__(self, protein_path=None):
-        self.protein_path = self._init_protein_path(protein_path)
+        self.protein_path = protein_path
         self._module_folder = _os.path.dirname(__file__)
         self.pymol_handle = pym.connect(ip='localhost')
         self.map_data = set([])
 
-    def _init_protein_path(self, protein_path):
+    def _init_protein_path(self, protein_path, search_path=None):
         '''Set the path of the pdb model to protein_path or
         if protein_path is set to None look for the most likely 
         path relative to the job's database path. 
@@ -28,12 +29,14 @@ class PymolVisualisation(object):
         '''
         if protein_path:
             return protein_path
-        else:
-            potential_pdb_location = list(self.db_folder.parent.parent.joinpath('static').glob('*.pdb'))
+        elif search_path:
+            potential_pdb_location = list(search_path.glob('*.pdb'))
             if len(potential_pdb_location) == 1:
                 return potential_pdb_location[0].absolute().resolve()
             else:
-                return None
+                raise AttributeError('Could not find pdb file at %s.' % search_path)
+        else:
+            raise AttributeError('No pdb file or file location given')
 
     def _poly_poses(self, sim, state='end'):
         '''Create generator of data for polymer-pdb via the pymol_polymer.tpl
@@ -42,20 +45,26 @@ class PymolVisualisation(object):
         '''
         if state not in ['start', 'end']:
             raise AttributeError("state must have value of 'start' or 'end'.")
-        elements = {id_: name for id_, name in zip(sim.particle_ids['polymer'], self.atom_names)}
         mask = np.in1d(sim._parse.load_traj_type_order(), sim.particle_ids['polymer'])
+        pose_data = self._create_poly_pose_array(sim, mask)
+        for run in sim:
+            np_help.copy_fields(pose_data, self.traj_data(run, state, mask), ['x','y', 'z'])
+            yield pose_data
+
+    def _create_poly_pose_array(self, sim, mask):
+        '''
+        '''
         pose_list_type = [('id', '>i2'), ('ele', '|S1'), ('res_name', '|S3'), 
                           ('x', np.float), ('y', np.float), ('z', np.float)]
+        elements = dict(zip(sim.particle_ids['polymer'], self.atom_names))
         pose_data = np.zeros(mask.sum(), dtype=pose_list_type)
         pose_data['id'] = np.arange(1, mask.sum()+1)
-        pose_data['ele'] = map(lambda x:elements[x], sim[0].coordinates()[state][mask]['atom_type'])
+        pose_data['ele'] = map(lambda x:elements[x], sim[0].coordinates()['end'][mask]['atom_type'])
         pose_data['res_name'] = sim.sequence['monomer']
-        for run in sim:
-            coords = run.coordinates()[state][mask]
-            pose_data['x'] = coords['x']
-            pose_data['y'] = coords['y']
-            pose_data['z'] = coords['z']
-            yield pose_data
+
+
+    def traj_data(self, run, state, mask):
+        return run.coordinates()[state][mask]
 
     def add_polymers(self, state='end'):
         polymer_pdb_path, name = self._create_polymer_pdb(state=state)
@@ -111,33 +120,26 @@ class PymolVisProject(PymolVisualisation):
     """docstring for PymolVisPolyType"""
     def __init__(self, project, protein_path=None):
         self.project = project
+        self._default_pdb_folder = self.project.path.joinpath('static')
+        protein_path = self._init_protein_path(
+                        protein_path, 
+                        search_path=self._default_pdb_folder)
         super(PymolVisProject, self).__init__(protein_path=protein_path)
 
-    def _init_protein_path(self, protein_path):
-        '''Set the path of the pdb model to protein_path or
-        if protein_path is set to None look for the most likely 
-        path relative to the job's database path. 
-        If that fails, return None.
-        '''
-        if protein_path:
-            return protein_path
-        else:
-            potential_pdb_location = list(self.project.path.joinpath('static').glob('*.pdb'))
-            if len(potential_pdb_location) == 1:
-                return potential_pdb_location[0].absolute().resolve()
-            else:
-                return None
-
+    
 class PymolVisPolyType(PymolVisualisation):
     """docstring for PymolVisPolyType"""
     def __init__(self, poly_type, protein_path=None):
         self.poly_type = poly_type
         self.sims = sorted(poly_type.sims, key=lambda x:x.Id)
         self.sim = self.sims[0]
-        self.db_folder = self.sim.db_path.parent.absolute().resolve()
+        first_sim_folder = self.sim.db_path.parent
+        self._default_pdb_folder = self.poly_type.project.path.joinpath('static')
+        protein_path = self._init_protein_path(
+                        protein_path, 
+                        search_path=self._default_pdb_folder)
+        self.type_folder = self.create_polytype_folder(first_sim_folder)
         super(PymolVisPolyType, self).__init__(protein_path)
-        
-        self.type_folder = self.create_polytype_folder(self.db_folder)
 
     def create_polytype_folder(self, sim_path):
         '''Create the polytype folder in the first sim folder
@@ -179,6 +181,10 @@ class PymolVisJob(PymolVisualisation):
     """docstring for PymolVisJob"""
     def __init__(self, job, protein_path=None):
         self.sim = job
+        self._default_pdb_folder = self.sim.project.path.joinpath('static')
+        protein_path = self._init_protein_path(
+                        protein_path, 
+                        search_path=self._default_pdb_folder)
         self.db_folder = self.sim.db_path.parent.absolute().resolve()
         super(PymolVisJob, self).__init__(protein_path)
         
@@ -209,6 +215,56 @@ class PymolVisJob(PymolVisualisation):
         self.map_data.add(density_obj)
         return density_obj
 
+class PymolVisRun(PymolVisualisation):
+
+    def __init__(self, run, protein_path=None):
+        self.run = run
+        self.sim = run.job
+        self._default_pdb_folder = self.sim.project.path.joinpath('static')
+        protein_path = self._init_protein_path(
+                        protein_path, 
+                        search_path=self._default_pdb_folder)
+        self.db_folder = self.sim.db_path.parent.absolute().resolve()
+        super(PymolVisRun, self).__init__(protein_path)
+
+
+    def _create_polymer_pdb(self, state='end'):
+        if state in ['start', 'end', 'full']:
+            gen = self._poly_poses(self.sim, state=state)
+        else:
+            raise AttributeError("state supports only 'start' or 'end' as values.")
+        file_name = '%s__run_%d-%s_poses.pdb' % (self.sim.meta['id'], self.run.Id, state)
+        output_path = self.db_folder.joinpath(file_name).as_posix()
+        pymol_name = file_name[:-4]
+        with open('%s/pymol_polymer.tpl' % self._module_folder) as f:
+            template = ji.Template(f.read())
+        with open(output_path, 'w') as f2:
+            f2.write(template.render(pymol=gen))
+        return output_path, pymol_name
+    
+    def _poly_poses(self, sim, state='end'):
+        '''Create generator of data for polymer-pdb via the pymol_polymer.tpl
+        Each yield (run) the coordinates of the polymer are updated, while the constant
+        information is left unchanged
+        '''
+        mask = np.in1d(sim._parse.load_traj_type_order(), sim.particle_ids['polymer'])
+        pose_data = self._create_poly_pose_array(sim, mask)
+        if state in ['start', 'end']:
+            for run in [sim[self.run.Id]]:
+                np_help.copy_fields(pose_data, self.traj_data(run, state, mask))
+                yield pose_data
+        if state == 'full':
+            for step_data in self.run.trajectory():
+                pose_data['x'] = step_data['xyz'][0]
+                pose_data['y'] = step_data['xyz'][1]
+                pose_data['z'] = step_data['xyz'][2]
+                yield pose_data
+        else:
+            raise AttributeError("state must have value of 'start' or 'end'.")
+
+    def traj_data(self, run, state, mask):
+            return run.coordinates()[state][mask]
+        
 
 class DensityMap(object):
 

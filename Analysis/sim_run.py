@@ -1,5 +1,7 @@
 import numpy as np
 import plotting
+import pymol_visualisation as pym
+import itertools as it
 
 class Run(plotting.Run):
 
@@ -7,6 +9,7 @@ class Run(plotting.Run):
         self.job = parent
         self._parse = self.job._parse
         self.Id = Id
+        self.pymol = pym.PymolVisRun(self)
         self._distance = -1.0
         if not distance:
             self._distance = distance
@@ -41,6 +44,28 @@ class Run(plotting.Run):
         data = {'start': self._parse.xyz(self.Id, start=True),
                 'end': self._parse.xyz(self.Id)}
         return data
+
+    def _create_atom_type_filter(self, particle_order, monomer_id=None):
+        if monomer_id == None:
+            monomer_id = self.monomer_id
+        mask = np.in1d(particle_order, monomer_id)
+        iterator = it.cycle(mask)
+        def atom_type_filter(whatever):
+            return iterator.next()
+        return atom_type_filter
+
+    def polymer_trajectory(self):
+        particle_order = self.job._parse.load_traj_type_order()
+        type_filter = self._create_atom_type_filter(particle_order, 
+                            monomer_id=self.job.particle_ids['polymer'])
+        traj_iterator = self.job._parse.trajectory(self.Id)
+
+        monomer_coords = it.ifilter(type_filter, traj_iterator)
+        xyz = np.zeros(len(self.sequence()), dtype=[('type_', np.int), ('xyz', np.float,3)])
+        for coord in monomer_coords:
+            for i in xrange(len(self.sequence())):
+                xyz[i] = coord
+            yield xyz            
 
     def _distance_to_active_site(self):
         xyz = self.coordinates()['end']
@@ -87,7 +112,8 @@ class Run(plotting.Run):
             self._parse.open()
         return self._parse.distance_series(self.Id)
 
-    def _dist(self, a, b):
+    @staticmethod
+    def _dist(a, b):
         an = np.array([a['x'], a['y'], a['z']])
         bn = np.array([b['x'], b['y'], b['z']])
         c = an - bn

@@ -1,4 +1,4 @@
-import PolyLibScan.Analysis.pymol_visualisation as lmp_lys
+import PolyLibScan.Analysis.pymol_visualisation as pymol
 import pathlib2 as pl
 import mock
 import numpy as np
@@ -11,49 +11,24 @@ class TestPymolVis(ut.TestCase):
 
     def __init__(self, *args, **kwargs):
         super(TestPymolVis, self).__init__(*args, **kwargs)
-        box = np.array([[-10, -10, -10], [10, 10, 10]])
-        self.sim = mock.MagicMock()
-        self.sim.db_path = local_path.joinpath('data')
-        self.sim._calc_protein_box = mock.Mock(return_value=box)
-        self.sim.particle_ids = {'polymer': [1,2,3]}
+        job = mock.Mock()
+        self.pdb_file = local_path.joinpath('data', 'static', '4cha.pdb')
+        self.py_vis = pymol.PymolVisualisation(self.pdb_file)
 
-    def test_monomer_id_prop(self):
-        density = lmp_lys.dc.DensityContainer(self.sim, 1)
-        self.assertEqual(density.monomer_id[0], 1)
+    def test_protein_path(self):
+        self.assertEqual(str(self.py_vis.protein_path), str(self.pdb_file))
 
-        density2 = lmp_lys.dc.DensityContainer(self.sim, monomer_id=[1,2])
-        self.assertEqual(density2.monomer_id[0], 1)
-        self.assertEqual(density2.monomer_id[1], 2)
+    def test_init_protein_path(self):
+        results1 = self.py_vis._init_protein_path(self.pdb_file)
+        self.assertEqual(results1, self.pdb_file)
 
-        density3 = lmp_lys.dc.DensityContainer(self.sim, np.array([1]))
-        self.assertEqual(density3.monomer_id[0], 1)
+        results2 = self.py_vis._init_protein_path(None, search_path=self.pdb_file.parent)
+        self.assertEqual(results2, self.pdb_file)
 
-        with self.assertRaises(ValueError):
-            density4 = lmp_lys.dc.DensityContainer(self.sim, np.array([5]))
 
-        with self.assertRaises(ValueError):
-            density5 = lmp_lys.dc.DensityContainer(self.sim, '5')
-
-        density6 = lmp_lys.dc.DensityContainer(self.sim, 'all')
-        self.assertEqual(density6.monomer_id, [1,2,3])
-
-    def test_create_empty_map(self):
-        pass
-
-    def test_map_path(self):
-        pass
-
-    def test_create_atom_type_filter(self):
-        pass
-
-    def test_add_run_to_epitopsy_map(self):
-        pass
-
-    def test_create_epitopsy_map(self):
-        pass
-
-    def test_save(self):
-        pass
+    
+    # def test_poly_poses(self):
+    #     self.py_vis._poly_poses()
 
 if __name__ == '__main__':
     ut.main(verbosity=2)
