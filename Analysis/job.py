@@ -23,6 +23,7 @@ class Job(bayes.Job):
         self.Id = None
         self.meta = self._parse.meta('misc')
         self.lmp_parameters = self._parse.lmp_parameters()
+        self.trajectory_meta = self._parse.traj_meta()
         self.sequence = self._parse.sequence()
         self.weights = self._parse.weights()
         self.active_site = self._parse.active_site()
@@ -201,3 +202,4 @@ class Job(bayes.Job):
 
     def mean_energy(self):
         return np.mean(self.energies())
+

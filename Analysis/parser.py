@@ -108,6 +108,6 @@ class Parser(DB.Database):
             data = {key:val for key,val in self._load_table('/meta', 'parameter')}
         except DB.tb.NoSuchNodeError:
             # take default. This is sensible since old simulations had the same settings.
-            data = {'dielectric_par': 78, 'timestep': 1}
+            data = {'dielectric_par': 78, 'timesteps': 1}
         return data
 

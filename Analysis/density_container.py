@@ -220,3 +220,44 @@ class DensityContainer(object):
         path = self._map_path(root_folder).as_posix()
         dx_obj.write(path)
         return path
+
+
+class DensityMap(object):
+
+    def __init__(self, poly_type, sim_no, monomer_id, margin, resolution, path, norm):
+        self.poly_type = poly_type
+        self.sim_no = sim_no
+        self.monomer_id = monomer_id
+        self.margin = margin
+        self.resolution = resolution
+        self.norm = norm
+        self.path = path
+
+    @property
+    def pymol_map_name(self):
+        return self.path.name.rstrip('.dx')
+
+    @property
+    def name(self):
+        return "%s_density" % ('X'.join(map(str, [
+            self.poly_type,
+            self.sim_no,
+            self.monomer_id,
+            self.margin,
+            self.resolution,
+            self.norm])))
+
+    def to_tuple(self):
+        return (self.poly_type, self.sim_no, self.monomer_id, self.margin, self.resolution, self.norm)
+
+    def __eq__(self, other):
+        if self.to_tuple() == other.to_tuple():
+            return True
+        else:
+            return False
+
+    def __hash__(self):
+        return self.to_tuple().__hash__()
+
+    def __repr__(self):
+        return str(self.to_tuple())

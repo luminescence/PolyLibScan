@@ -62,10 +62,11 @@ class Run(plotting.Run):
 
         monomer_coords = it.ifilter(type_filter, traj_iterator)
         xyz = np.zeros(len(self.sequence()), dtype=[('type_', np.int), ('xyz', np.float,3)])
-        for coord in monomer_coords:
-            for i in xrange(len(self.sequence())):
+        full_time_steps = self.job.lmp_parameters['time_steps']/self.job.trajectory_meta['step_size']+1
+        for time_step in xrange(full_time_steps):
+            for i, coord in it.izip(xrange(len(self.sequence())), monomer_coords):
                 xyz[i] = coord
-            yield xyz            
+            yield xyz
 
     def _distance_to_active_site(self):
         xyz = self.coordinates()['end']
