@@ -1,8 +1,10 @@
 import os
+import numpy as np
 from lammps import lammps
 import Tools
 import Save
 import helpers.time as tm
+import itertools as it
 import tempfile as temp
 
 import helpers.git as _git
