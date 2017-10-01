@@ -221,7 +221,6 @@ class DensityContainer(object):
         dx_obj.write(path)
         return path
 
-
 class DensityMap(object):
 
     def __init__(self, poly_type, sim_no, monomer_id, margin, resolution, path, norm):

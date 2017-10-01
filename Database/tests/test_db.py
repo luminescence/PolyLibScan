@@ -1,5 +1,5 @@
 import unittest as ut
-import PolyLibScan.helpers.db
+import PolyLibScan.Database.db as db
 import pathlib2 as pl
 import os
 import numpy as np
@@ -16,25 +16,25 @@ class Test_database(ut.TestCase):
         self.db_file_name = self.data_folder.joinpath('db_test.h5')
 
     def test_open(self):
-        db_h5 = PolyLibScan.helpers.db.Database(self.db_file_name)
+        db_h5 = db.Database(self.db_file_name)
         self.assertTrue(db_h5._handle.isopen)
         db_h5.close()
-        db_h5 = PolyLibScan.helpers.db.Database(self.db_file_name.as_posix())
+        db_h5 = db.Database(self.db_file_name.as_posix())
         self.assertTrue(db_h5._handle.isopen)
         db_h5.close()
 
     def test_repr__(self):
-        db_h5 = PolyLibScan.helpers.db.Database(self.db_file_name)
+        db_h5 = db.Database(self.db_file_name)
         self.assertIsInstance(repr(db_h5), basestring)
         db_h5.close()
 
     def test_close(self):
-        db_h5 = PolyLibScan.helpers.db.Database(self.db_file_name)
+        db_h5 = db.Database(self.db_file_name)
         db_h5.close()
         self.assertFalse(db_h5._handle.isopen)
 
     def test_save_table(self):
-        db_h5 = PolyLibScan.helpers.db.Database(self.db_file_name, 'w')
+        db_h5 = db.Database(self.db_file_name, 'w')
         types = [('a', '<f8'), ('b', '|S10')]
         data = np.array([(3.14, 'huhu'), (2.72, 'asdf')], dtype=types)
         db_h5._save_table(data, '/', 'huhu')
@@ -44,7 +44,7 @@ class Test_database(ut.TestCase):
         db_h5.close()
 
     def test_save_array(self):
-        db_h5 = PolyLibScan.helpers.db.Database(self.db_file_name, 'w')
+        db_h5 = db.Database(self.db_file_name, 'w')
         data = np.ones([10,10])
         db_h5._save_array(data, '/', 'huhu2')
         self.assertTrue('huhu2' in db_h5._handle.root)
@@ -53,13 +53,13 @@ class Test_database(ut.TestCase):
         db_h5.close()
 
     def test_create_group(self):
-        db_h5 = PolyLibScan.helpers.db.Database(self.db_file_name, 'w')
+        db_h5 = db.Database(self.db_file_name, 'w')
         db_h5._create_group('test_group', '/')
         self.assertTrue('test_group' in db_h5._handle.root)
         db_h5.close()
 
     def test_load_table(self):
-        db_h5 = PolyLibScan.helpers.db.Database(self.db_file_name, 'w')
+        db_h5 = db.Database(self.db_file_name, 'w')
         data = np.ones([10,10])
         db_h5._save_array(data, '/', 'huhu2')
         db_data = db_h5._load_table('/', 'huhu2')

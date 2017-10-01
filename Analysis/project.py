@@ -16,7 +16,19 @@ import job as job_class
 warnings.filterwarnings("ignore")
 
 class Project(plotting.Project, bayes.Project):
-    def __init__(self, project_path, experimental_data=None, parameters=None, protein_path=None):
+    '''
+
+    with_pymol: Loads pymol visualisation option
+
+    Pymol:
+    you have to start pymol with the '-R' flag for this to function.
+    '''
+    def __init__(self, 
+                 project_path, 
+                 experimental_data=None, 
+                 parameters=None, 
+                 protein_path=None, 
+                 with_pymol=True):
         self.path = pl.Path(project_path)
         self._id_gen = idGen.IdGen()
         self._endstate_matrix = None
@@ -24,9 +36,10 @@ class Project(plotting.Project, bayes.Project):
         self._visualize = visualize.Visualize(self)
         # stores jobs in list (jobs)
         # and dict form (polymer_types); polymer_types stores jobs sorted by polymer type
-        self.jobs, self.polymer_types = self.read_jobs(self.path.joinpath('jobs'))
+        self.jobs, self.polymer_types = self.read_jobs(self.path.joinpath('jobs'), with_pymol=with_pymol)
         self.protein_path = self._init_protein(protein_path)
-        self.pymol = pym.PymolVisProject(self, self.protein_path)
+        if with_pymol:
+            self.pymol = pym.PymolVisProject(self, self.protein_path)
 
         # Experimental Data needs information from job objects
         self.experimental_data = self._init_experimental_data(experimental_data)
@@ -74,7 +87,7 @@ class Project(plotting.Project, bayes.Project):
                 print 'Inhibition file not specified and no file "%s" found in static folder.' % default_file_name 
                 return None
 
-    def read_jobs(self, path):
+    def read_jobs(self, path, with_pymol=True):
         '''Read in database files found in folders of project folder.
         The files are read in alphabetical order of their foldername.
         Each job receives an polymer type Id. The Id will stay the same 
@@ -91,13 +104,13 @@ class Project(plotting.Project, bayes.Project):
         for folder in tqdm.tqdm(job_path_list, desc='Reading Jobs'):
             if folder.is_dir() and folder.joinpath('jobdata.h5').exists():
                 # creating job and setting polymer type id
-                job = job_class.Job(self, folder.joinpath('jobdata.h5').as_posix())
+                job = job_class.Job(self, folder.joinpath('jobdata.h5').as_posix(), with_pymol=with_pymol)
                 poly_id = self._id_gen[job.meta['poly_name']]
                 job.Id = poly_id
                 # storing job in the two containers
                 jobs.append(job)
                 sims_by_type[job.meta['poly_name']].append(job)
-        polymer_types = {name: poly_type.PolymerTypeSims(self, sims) 
+        polymer_types = {name: poly_type.PolymerTypeSims(self, sims, with_pymol=with_pymol) 
                               for name, sims in sims_by_type.items()}
         return jobs, polymer_types
 

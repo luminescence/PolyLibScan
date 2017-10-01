@@ -14,11 +14,12 @@ warnings.filterwarnings("ignore")
 
 class Job(bayes.Job):
 
-    def __init__(self, project, db_path):
+    def __init__(self, project, db_path, with_pymol=True):
         self.project = project
         self.poly_type = None
         self.db_path = pl.Path(db_path)
-        self.pymol = pymol_visualisation.PymolVisJob(self)
+        if with_pymol:
+            self.pymol = pymol_visualisation.PymolVisJob(self)
         self._parse = parser.Parser(self.db_path, 'r')
         self.Id = None
         self.meta = self._parse.meta('misc')
@@ -27,7 +28,7 @@ class Job(bayes.Job):
         self.sequence = self._parse.sequence()
         self.weights = self._parse.weights()
         self.active_site = self._parse.active_site()
-        self._runs = self._read_runs()
+        self._runs = self._read_runs(with_pymol=with_pymol)
         self.particle_ids = self._get_particle_ids()
         self._charge = None
         self._parse.close()
@@ -91,7 +92,7 @@ class Job(bayes.Job):
             total_charge += self.project.parameters['Atoms'][monomer]['charge']
         return total_charge
 
-    def _read_runs(self):
+    def _read_runs(self, with_pymol=True):
         '''Reads in all runs from the database and 
         creates a run object. All runs are sorted by id.
         '''
@@ -99,9 +100,9 @@ class Job(bayes.Job):
         # get inputs
         for data in self._parse.end_state():
             if 'Distance' in data.dtype.names:
-                runs.append(sim_run.Run(self, data['ID'], data['Energy'], data["Distance"]))
+                runs.append(sim_run.Run(self, data['ID'], data['Energy'], data["Distance"], with_pymol=True))
             else:
-                runs.append(sim_run.Run(self, data['ID'], data['Energy']))
+                runs.append(sim_run.Run(self, data['ID'], data['Energy'], with_pymol=True))
         return sorted(runs, key=lambda x:x.Id)
 
     def distance_frequency():

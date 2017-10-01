@@ -66,7 +66,8 @@ class JobSave(object):
             self.db.start_trajectories_save(run.start_traj, run.ID)
             self.db.end_trajectories_save(run.end_traj, run.ID)
             if 'full_traj' in run.path:
-                self.db.trajectory_save(run.path['full_traj'].as_posix(), run.Id)
+                data = self.parse.trajectory(run.path['full_traj'].as_posix())
+                self.db.trajectory_save(data, run.Id)
             # Save Energy timeseries
             self.db.energie_ts_save(run.energy, run.Id)
             # Save Distance Timeseries
@@ -115,7 +116,8 @@ class JobSave(object):
             versions['LAMMPS'] = str(lmp_version)
         else:
             versions['LAMMPS'] = ''
-        self.db.save_versions(versions)
+        data = self.parser.version(versions)
+        self.db.save_versions(data)
 
     def remove_local(self):
         shutil.rmtree(self.config.lmp_path['local_root'])

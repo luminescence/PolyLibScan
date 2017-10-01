@@ -5,11 +5,12 @@ import itertools as it
 
 class Run(plotting.Run):
 
-    def __init__(self, parent, Id, energy, distance=None):
+    def __init__(self, parent, Id, energy, distance=None, with_pymol=True):
         self.job = parent
         self._parse = self.job._parse
         self.Id = Id
-        self.pymol = pym.PymolVisRun(self)
+        if with_pymol:
+            self.pymol = pym.PymolVisRun(self)
         self._distance = -1.0
         if not distance:
             self._distance = distance
@@ -53,6 +54,31 @@ class Run(plotting.Run):
         def atom_type_filter(whatever):
             return iterator.next()
         return atom_type_filter
+
+    def trajectory(self, molecule='full'):
+        particle_order = self.job._parse.load_traj_type_order()
+        ids = self.job.particle_ids
+        if molecule == 'protein':
+            type_filter = self._create_atom_type_filter(particle_order, 
+                            monomer_id=ids['protein'])
+        if molecule == 'polymer':
+            type_filter = self._create_atom_type_filter(particle_order, 
+                            monomer_id=ids['polymer'])
+        if molecule == 'full':
+            alll_ids = np.concatenate(ids['protein'], ids['polymer'])
+            type_filter = self._create_atom_type_filter(particle_order, 
+                            monomer_id=ids)
+        else:
+            raise AttributeError("molecule must be 'protein', 'polymer' or 'full'.")
+        traj_iterator = self.job._parse.trajectory(self.Id)
+
+        monomer_coords = it.ifilter(type_filter, traj_iterator)
+        time_step_coords = np.zeros(len(self.sequence()), dtype=[('type_', np.int), ('xyz', np.float,3)])
+        full_time_steps = self.job.lmp_parameters['time_steps']/self.job.trajectory_meta['step_size']+1
+        for time_step in xrange(full_time_steps):
+            for i, coord in it.izip(xrange(len(self.sequence())), monomer_coords):
+                time_step_coords[i] = coord
+            yield time_step_coords
 
     def polymer_trajectory(self):
         particle_order = self.job._parse.load_traj_type_order()

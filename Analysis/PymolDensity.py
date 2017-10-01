@@ -73,9 +73,3 @@ class Job(PymolDensity):
         self.map_data.add(density_obj)
         return density_obj
 
-
-class Run(PymolDensity):
-    """docstring for Run"""
-    def __init__(self, pymol_vis):
-        super(Run, self).__init__(pymol_vis)
-

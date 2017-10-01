@@ -11,7 +11,7 @@ import numerics
 class PolymerTypeSims(plotting.PolymerTypeSims, bayes.PolymerTypeSims):
     '''Stores all simulation runs of one polymer type.
     '''
-    def __init__(self, project, polymer_sims, ic50=None):
+    def __init__(self, project, polymer_sims, ic50=None, with_pymol=True):
         self.project = project
         self.sims = polymer_sims
         self.register(self.sims)
@@ -20,7 +20,8 @@ class PolymerTypeSims(plotting.PolymerTypeSims, bayes.PolymerTypeSims):
         self._energy_distance_distribution = None
         self.name = self.sims[0].meta['poly_name']
         self.weights = self.sims[0].weights
-        self.pymol = pym.PymolVisPolyType(self)
+        if with_pymol:
+            self.pymol = pym.PymolVisPolyType(self)
         super(PolymerTypeSims, self).__init__()
 
     def distance_probability():

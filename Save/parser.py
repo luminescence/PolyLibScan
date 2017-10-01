@@ -80,6 +80,11 @@ class Parser(object):
                 raise IndexError('Faulty format found in file %s' % file_path)
         return traj
 
+    def version(self, version_info):
+        np_format = [('program', '|S11'), ('version', '|S40')]
+        return np.array(version_info.items(), dtype=np_format)
+
+
     def particle_list(self, path):
         '''Extract particles from list
         '''
