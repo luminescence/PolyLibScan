@@ -90,7 +90,7 @@ class JobSave(object):
     def read_runs(self):
         runs = []
         input_files = self.path['input'].glob('*')
-        return [Run.from_id(self, self.path['output'], input_file.name) 
+        return [Run.from_id(self, self.path, input_file.name) 
                 for input_file in input_files]
 
     def get_Error(self):
@@ -106,10 +106,11 @@ class JobSave(object):
         '''
         slurm_error_file = self.path['logs'].joinpath('slurm.err')
         #Check last line
-        with open(slurm_error_file.as_posix()) as f:
-            last_line = f.readlines()[-1].strip()
-        if last_line.endswith('Finished simulations. Starting to clean up.Not'):
-            return True
+        if slurm_error_file.exists():
+            with open(slurm_error_file.as_posix()) as f:
+                last_line = f.readlines()[-1].strip()
+            if last_line.endswith('Finished simulations. Starting to clean up.Not'):
+                return True
         return False
 
     def save_versions(self, lmp_version=None):
@@ -130,7 +131,7 @@ class JobSave(object):
                 run.cleanup()
 
         if not self.has_error():
-            for file_ in ['log.lammps','meta.dat','log.lammps']:
+            for file_ in ['log.lammps', 'particle_list.npy']:
                 if self.root.joinpath(file_).exists():
                     self.root.joinpath(file_).unlink()
             for file_ in ['slurm.out','slurm.err']:
@@ -147,21 +148,25 @@ class Run(object):
     @classmethod
     def from_id(cls, job, path, str_ID):
         run_id = int(str_ID)
-        energy = path.joinpath('Energy'+str_ID)
-        start_traj = path.joinpath('trajectoryS%s.xyz' % str_ID)
-        end_traj = path.joinpath('trajectoryE%s.xyz' % str_ID)
-        distance_file = path.joinpath('distance_as_polymer%s' % str_ID)
+        out_path = path['output']
+        in_path = path['input']
+        start_file = in_path.joinpath(str_ID)
+        energy = out_path.joinpath('Energy'+str_ID)
+        start_traj = out_path.joinpath('trajectoryS%s.xyz' % str_ID)
+        end_traj = out_path.joinpath('trajectoryE%s.xyz' % str_ID)
+        distance_file = out_path.joinpath('distance_as_polymer%s' % str_ID)
         if not distance_file.exists():
             distance_file = None
-        traj_file = path.joinpath('full_trajectory%s.xyz.gz' % str_ID)
+        traj_file = out_path.joinpath('full_trajectory%s.xyz.gz' % str_ID)
         if not traj_file.exists():
             traj_file = None
-        return cls(job, run_id, energy, start_traj, end_traj, distance_file, traj_file)
+        return cls(job, run_id, start_file, energy, start_traj, end_traj, distance_file, traj_file)
 
-    def __init__(self, job, ID, energy, start_traj, end_traj, distance=None, full_traj=None):
+    def __init__(self, job, ID, start_file, energy, start_traj, end_traj, distance=None, full_traj=None):
         self.parent = job
         self.Id = ID
         self.path = {}
+        self.path['start_file'] = start_file
         self.path['energy'] =  energy
         self.path['start_traj'] = start_traj
         self.path['end_traj'] = end_traj
