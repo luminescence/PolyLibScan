@@ -1,3 +1,5 @@
+import numpy as np
+
 class AtomType(object):
     
     def __init__(self, name, parameters, unique=False):
@@ -10,6 +12,7 @@ class AtomType(object):
         self.hydrophobicity = 0.0
         self.surface_energy = 0.0
         self._interacting = True
+        self.position = [0,0,0]
         self.unique = unique
         self.set_parameters(parameters)
 
@@ -18,9 +21,17 @@ class AtomType(object):
         to the object.
         '''
         parameter_names = ['mass', 'radius', 'interacting', 'charge', 'hydrophobicity',
-                           'surface_energy']
+                           'surface_energy', 'position']
         for key in filter(lambda x:x in parameters.keys(), parameter_names):
             setattr(self, key, parameters[key])
+
+    @property
+    def position(self):
+        return self._position
+
+    @position.setter
+    def position(self, value):
+        self._position = np.array(value)
 
     def mass():
         doc = "The mass property."
@@ -93,7 +104,10 @@ class AtomType(object):
             return False
 
     def __repr__(self):
-        return 'AtomType | Name: %s - Atom-Id: %d - Mass: %f' % (self.name, self.Id, self.mass)
+        if self.Id:
+            return 'AtomType | Name: %s - Atom-Id: %d - Mass: %f' % (self.name, self.Id, self.mass)
+        else:
+            return 'AtomType | Name: %s - Atom-Id: N/A - Mass: %f' % (self.name, self.mass)
 
 
 class ArchType(object):

@@ -66,8 +66,10 @@ class Environment(object):
             self.pair_type[name] = PairType.from_dict(pair_parameters, name=name)
 
     def load_atom_types(self, config):
-        for name, values in config.items():
-            self.atom_type.define_type(name, AtomType(name, values))
+        for name, particle in config.items():
+            for subname, parameter in particle.items():
+                combinedname = name + '_' + subname
+                self.atom_type.define_type(combinedname, AtomType(combinedname, parameter))
 
     def load_bond_types(self, config):
         for name, values in config.items():

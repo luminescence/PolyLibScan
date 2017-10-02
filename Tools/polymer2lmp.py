@@ -65,13 +65,15 @@ class PolymerCreator(LmpCreator):
             weights = helpers.normalize(self._weights)
         elif self.weights == None:
             weights = None
+        else:
+            raise AttributeError('weights type not "list" or None.')
             
         if self.length != None:
             for monomer in np.random.choice(self.pattern, size=self.length, p=weights):
                 yield monomer
         else:
             for monomer in np.random.choice(self.pattern, size=len(self.pattern), p=weights):
-                    yield monomer
+                yield monomer
 
     def _generator_cyclic(self):
         '''creates a generator that yields a repeating series of 
@@ -106,8 +108,8 @@ class PolymerCreator(LmpCreator):
             coords = polymer[-1].position + np.array([4.0, 0.0, 0.0])
         new_id = self.env.new_id['particle']
         res_id = (element, 'A', (' ', new_id, ' '))
-        return Particle(lmpObj, new_id, lmpObj.env.atom_type[element], res_id, coords)
-        
+        #return Particle(lmpObj, new_id, lmpObj.env.atom_type[element], res_id, coords)
+        return Monomer(name, coords, mono_parameters)
 
     def create_polymer_bonds(self, molecule):
         '''links all the particles to 
