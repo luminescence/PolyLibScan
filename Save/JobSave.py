@@ -36,8 +36,8 @@ class JobSave(object):
 
     def save(self):
         self.save_meta_data(self.config)
-        self.save_trajectory_meta(self.runs[0].full_traj.as_posix())
-        self.save_particle_list(self.path['p_list'])
+        self.save_trajectory_meta(self.runs[0].path['full_traj'].as_posix())
+        self.save_particle_list(self.path['p_list'].as_posix())
         self.save_runs(self.runs)
         self.save_endstates(self.runs)
         self.saved = True
@@ -63,8 +63,8 @@ class JobSave(object):
         polymer_ids = np.array(np.unique(self.db.sequence['ID']))
         active_site_pos = self.db.active_site['xyz']
         for run in runs:
-            self.db.start_trajectories_save(run.start_traj, run.ID)
-            self.db.end_trajectories_save(run.end_traj, run.ID)
+            self.db.start_trajectories_save(run.start_traj, run.Id)
+            self.db.end_trajectories_save(run.end_traj, run.Id)
             if 'full_traj' in run.path:
                 data = self.parse.trajectory(run.path['full_traj'].as_posix())
                 self.db.trajectory_save(data, run.Id)
@@ -72,9 +72,11 @@ class JobSave(object):
             self.db.energie_ts_save(run.energy, run.Id)
             # Save Distance Timeseries
             if 'distance' in run.path:
-                self.distance_ts_save(run.distance, run.Id)
+                self.db.distance_ts_save(run.distance, run.Id)
 
     def save_endstates(self, runs):
+        polymer_ids = np.array(np.unique(self.db.sequence['ID']))
+        active_site_pos = self.db.active_site['xyz']
         endstates = np.zeros(len(runs), dtype=[('ID', '>i2'), 
                                                ('Energy', '>f4'), 
                                                ('TotalEnergy', '>f4'), 
@@ -116,8 +118,8 @@ class JobSave(object):
             versions['LAMMPS'] = str(lmp_version)
         else:
             versions['LAMMPS'] = ''
-        data = self.parser.version(versions)
-        self.db.save_versions(data)
+        data = self.parse.version(versions)
+        self.db.versions = data
 
     def remove_local(self):
         shutil.rmtree(self.config.lmp_path['local_root'])
@@ -158,7 +160,7 @@ class Run(object):
 
     def __init__(self, job, ID, energy, start_traj, end_traj, distance=None, full_traj=None):
         self.parent = job
-        self.ID = ID
+        self.Id = ID
         self.path = {}
         self.path['energy'] =  energy
         self.path['start_traj'] = start_traj
@@ -179,4 +181,4 @@ class Run(object):
                 path.unlink()
 
     def __repr__(self):
-        return 'LammpsRun - id %d' % self.ID
+        return 'LammpsRun - id %d' % self.Id

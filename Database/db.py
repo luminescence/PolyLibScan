@@ -33,7 +33,7 @@ class JobDataBase(object):
 
     @property
     def active_site(self):
-        return self.db._load_table('/meta', 'sequence')
+        return self.db._load_table('/meta', 'active_site')
     
     @active_site.setter
     def active_site(self, value):
@@ -89,11 +89,11 @@ class JobDataBase(object):
 
     @property
     def traj_type_order(self):
-        return self.db._load_table('/meta/trajectory/', 'type_order')
+        return self.db._load_ctable('/meta/trajectory/', 'type_order')
 
     @traj_type_order.setter
     def traj_type_order(self, value):
-        self.db._save_table(value, '/meta/trajectory/', 'type_order')
+        self.db._save_array(value, '/meta/trajectory/', 'type_order')
 
     @property
     def traj_info(self):
