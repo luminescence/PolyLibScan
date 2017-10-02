@@ -19,8 +19,8 @@ class Container(object):
         
     def __repr__(self):
         out = ['Type Category: %s' % self.name]
-        for type_ in self._types.values():
-            out.append(repr(type_))
+        for key, type_ in self._types.iteritems():
+            out.append('%s: %s' % (key, repr(type_)))
         return '\n'.join(out)
 
     def __getitem__(self, key):
@@ -83,6 +83,9 @@ class Container(object):
 
     def items(self):
         return self._types.items()
+
+    def iteritems(self):
+        return key,value in self._types.iteritems()
 
     def _idGenerator(self):
         '''generate ids of an infinite loop

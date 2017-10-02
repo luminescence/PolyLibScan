@@ -102,9 +102,9 @@ class ProteinCreator(LmpCreator):
         '''
         def has_right_id(search_particle):
             return (search_particle.residue != None 
-                    and search_particle.residue[1]==pdb_residue_id[0]      # chain
-                    and search_particle.residue[2][1]==pdb_residue_id[1]   # id
-                    and search_particle.residue[2][2]== pdb_residue_id[2]) # iCode
+                    and search_particle.residue.chain==pdb_residue_id[0]      # chain
+                    and search_particle.residue.id[1]==pdb_residue_id[1]   # id
+                    and search_particle.residue.id[2]== pdb_residue_id[2]) # iCode
 
         particle = filter(has_right_id, molecule.data['particles'])
         if len(particle)>1:
@@ -242,7 +242,7 @@ class ProteinCreator(LmpCreator):
         g_particles = np.empty(len(lmp_obj.data['particles']), dtype=object)
         g_bonds = []
         for i, real_particle in enumerate(lmp_obj.data['particles']):
-            res_id = ('ghost', real_particle.residue.chain, ('ghost', ' ',  ' '))
+            res_id = ('ghost', real_particle.residue.chain, ('ghost', real_particle.residue.id[1], real_particle.residue.id[2]))
             g_particles[i] = Particle(lmp_obj, self.env.new_id['particle'],
                                     lmp_obj.env.atom_type['BB_ghost'],
                                     res_id,

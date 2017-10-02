@@ -201,7 +201,7 @@ class EnvManipulator(object):
         active_site_database = pd.HDFStore(active_site_path)
         AS_residues = active_site_database['/%s' % pdb_id.upper()]
         active_site_database.close()
-        particle_ids = [self._find_particle_by_pdb_id((resi.chain, resi.ID, resi.iCode), protein).Id
+        particle_ids = [self._find_particle_by_pdb_id((resi.chain, ' ', resi.ID, resi.iCode), protein).Id
                          for resi in AS_residues.itertuples()]
         results = np.array(zip(particle_ids, AS_residues['chain'], AS_residues['ID'], AS_residues['iCode']), 
                  dtype=[('xyz', '<i2'), ('chain', '|S1'), ('pdb_id', '<i2'), ('iCode', '|S1')])
@@ -251,7 +251,7 @@ class EnvManipulator(object):
         proteins = filter(lambda x:x.mol_type == 'protein', self.molecules.values())
         for protein in filter(lambda x:x.pdb_id == pdb_id, proteins):
             for chain,res_id,iCode,type_,value in affinities: 
-                residue_id = (chain, res_id, iCode) 
+                residue_id = (chain, ' ', res_id, iCode) 
                 particle = self._find_particle_by_pdb_id(residue_id, protein) 
                 if not particle.type_.unique: 
                     new_type_name = '%s|%s%d|%d' % (particle.residue[0], particle.residue[1],  
@@ -268,9 +268,8 @@ class EnvManipulator(object):
         '''
         def has_right_id(search_particle):
             return (search_particle.residue != None 
-                    and search_particle.residue[1]==pdb_residue_id[0]      # chain
-                    and search_particle.residue[2][1]==pdb_residue_id[1]   # id
-                    and search_particle.residue[2][2]== pdb_residue_id[2]) # iCode
+                    and search_particle.residue.chain==pdb_residue_id[0]      # chain
+                    and search_particle.residue.id ==pdb_residue_id[1:])      # id
 
         particle = filter(has_right_id, molecule.data['particles'])
         if len(particle)>1:
