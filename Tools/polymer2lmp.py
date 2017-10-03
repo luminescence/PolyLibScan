@@ -1,6 +1,7 @@
 import itertools as it
 import numpy as np
 from lmp_particlesAndInteractions import *
+import monomers as Mono
 from lmpObj import LmpObj
 from lmp_creator import LmpCreator
 import lmp_helpers as helpers
@@ -106,10 +107,7 @@ class PolymerCreator(LmpCreator):
             coords = np.array([0.0, 0.0, 0.0])
         else:
             coords = polymer[-1].position + np.array([4.0, 0.0, 0.0])
-        new_id = self.env.new_id['particle']
-        res_id = (element, 'A', (' ', new_id, ' '))
-        #return Particle(lmpObj, new_id, lmpObj.env.atom_type[element], res_id, coords)
-        return Monomer(name, coords, mono_parameters)
+        return Mono.Monomer(coords, element, self.env.monomer_type[element] ,self.env, lmpObj)
 
     def create_polymer_bonds(self, molecule):
         '''links all the particles to 

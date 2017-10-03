@@ -1,5 +1,28 @@
 import numpy as np
 
+class MonomerType(object):
+    """docstring for MonomerType"""
+    def __init__(self, name, parameters):
+        super(MonomerType, self).__init__()
+        self.Id = None
+        self.name = name
+        self.particles = parameters['Part']
+        self.bonds = parameters['Bonds']
+        self.angles = parameters['Angles']
+        self.dihedrals = parameters['Dihedrals']
+
+    def __eq__(self, other):
+        if self.name == other.name and self.Id == other.Id:
+            return True
+        else:
+            return False
+
+    def __ne__(self, other):
+        if self.name != other.name or self.Id != other.Id:
+            return True
+        else:
+            return False
+
 class AtomType(object):
     
     def __init__(self, name, parameters, unique=False):
