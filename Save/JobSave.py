@@ -52,6 +52,7 @@ class JobSave(object):
         meta_data = self.parse.meta(config)
         self.db.sequence = meta_data['sequence']
         self.db.weights = meta_data['weights']
+        self.db.misc = meta_data['misc']
         self.db.active_site = meta_data['active_site']
         self.db.parameter = meta_data['parameter']
 
@@ -67,7 +68,7 @@ class JobSave(object):
             self.db.end_trajectories_save(run.end_traj, run.Id)
             if 'full_traj' in run.path:
                 data = self.parse.trajectory(run.path['full_traj'].as_posix())
-                self.db.trajectory_save(data, run.Id)
+                self.db.trajectory_save(data['xyz'], run.Id)
             # Save Energy timeseries
             self.db.energie_ts_save(run.energy, run.Id)
             # Save Distance Timeseries

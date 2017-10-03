@@ -75,7 +75,7 @@ class Parser(object):
             try:
                 lines = liner(f)
                 chunks = chunk_data(lines)
-                traj = np.array(list(it.chain.from_iterable([el[1]['xyz'] for el in chunks])))
+                traj = np.array(list(it.chain.from_iterable([el[1] for el in chunks])))
             except IndexError:
                 raise IndexError('Faulty format found in file %s' % file_path)
         return traj

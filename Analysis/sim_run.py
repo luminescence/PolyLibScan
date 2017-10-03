@@ -40,10 +40,10 @@ class Run(plotting.Run):
         return self.job.sequence
 
     def coordinates(self):
-        if not self._parse.is_open():
+        if not self._parse.db.is_open():
             self._parse.open()
-        data = {'start': self._parse.xyz(self.Id, start=True),
-                'end': self._parse.xyz(self.Id)}
+        data = {'start': self._parse.start_trajectories_load(self.Id),
+                'end': self._parse.end_trajectories_load(self.Id)}
         return data
 
     def _create_atom_type_filter(self, particle_order, monomer_id=None):
@@ -56,7 +56,7 @@ class Run(plotting.Run):
         return atom_type_filter
 
     def trajectory(self, molecule='full'):
-        particle_order = self.job._parse.load_traj_type_order()
+        particle_order = self.job.trajectory_order
         ids = self.job.particle_ids
         if molecule == 'protein':
             type_filter = self._create_atom_type_filter(particle_order, 
@@ -70,7 +70,7 @@ class Run(plotting.Run):
                             monomer_id=ids)
         else:
             raise AttributeError("molecule must be 'protein', 'polymer' or 'full'.")
-        traj_iterator = self.job._parse.trajectory(self.Id)
+        traj_iterator = self.job._parse.trajectory_load(self.Id)
 
         monomer_coords = it.ifilter(type_filter, traj_iterator)
         time_step_coords = np.zeros(len(self.sequence()), dtype=[('type_', np.int), ('xyz', np.float,3)])
@@ -81,13 +81,13 @@ class Run(plotting.Run):
             yield time_step_coords
 
     def polymer_trajectory(self):
-        particle_order = self.job._parse.load_traj_type_order()
+        particle_order = self.job.trajectory_order
         type_filter = self._create_atom_type_filter(particle_order, 
                             monomer_id=self.job.particle_ids['polymer'])
-        traj_iterator = self.job._parse.trajectory(self.Id)
+        traj_iterator = self.job._parse.trajectory_load(self.Id)
 
         monomer_coords = it.ifilter(type_filter, traj_iterator)
-        xyz = np.zeros(len(self.sequence()), dtype=[('type_', np.int), ('xyz', np.float,3)])
+        xyz = np.zeros(len(self.sequence()), dtype=[('xyz', np.float,3)])
         full_time_steps = self.job.lmp_parameters['time_steps']/self.job.trajectory_meta['step_size']+1
         for time_step in xrange(full_time_steps):
             for i, coord in it.izip(xrange(len(self.sequence())), monomer_coords):
@@ -110,34 +110,34 @@ class Run(plotting.Run):
         return min_dist
 
     def binding_energy(self):
-        if not self._parse.is_open():
+        if not self._parse.db.is_open():
             self._parse.open()
-        return self._parse.energy_series(self.Id, column='binding')
+        return self._parse.energie_ts_load(self.Id, col=[0,5])
 
     def total_energy(self):
-        if not self._parse.is_open():
+        if not self._parse.db.is_open():
             self._parse.open()
-        return self.job._parse.energy_series(self.Id, column='total')
+        return self.job._parse.energie_ts_load(self.Id, column=[1,5])
         
     def potential_energy(self):
-        if not self._parse.is_open():
+        if not self._parse.db.is_open():
             self._parse.open()
-        return self.job._parse.energy_series(self.Id, column='potential')
+        return self.job._parse.energie_ts_load(self.Id, column=[2,5])
 
     def kinetic_energy(self):
-        if not self._parse.is_open():
+        if not self._parse.db.is_open():
             self._parse.open()
-        return self.job._parse.energy_series(self.Id, column='kinetic')
+        return self.job._parse.energie_ts_load(self.Id, column=[3,5])
 
     def temperature(self):
-        if not self._parse.is_open():
+        if not self._parse.db.is_open():
             self._parse.open()
-        return self.job._parse.energy_series(self.Id, column='temperature')
+        return self.job._parse.energie_ts_load(self.Id, column=[4,5])
 
     def distance_time_series(self):
-        if not self._parse.is_open():
+        if not self._parse.db.is_open():
             self._parse.open()
-        return self._parse.distance_series(self.Id)
+        return self._parse.distance_ts_load(self.Id)
 
     @staticmethod
     def _dist(a, b):
