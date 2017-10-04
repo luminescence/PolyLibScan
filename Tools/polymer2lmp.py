@@ -46,10 +46,11 @@ class PolymerCreator(LmpCreator):
     # _create_types() is implemented in parent class
     
     def _create_particles_and_interactions(self, molecule):
-        molecule.data['particles'] =  self.create_polymer(molecule)
+        molecule.data['monomers'] = self.create_polymer(molecule)
+        molecule.data['particles'] = self.create_particles(molecule)
         molecule.data['bonds'] = self.create_polymer_bonds(molecule)
         molecule.data['angles'] = self.create_polymer_angles(molecule)
-        molecule.data['dihedrals'] = [] # not implemented
+        molecule.data['dihedrals'] = self.create_polymer_dihedrals(molecule)
 
     def _create_custom(self, molecule):
         if self.auto_repulsion:
@@ -95,14 +96,21 @@ class PolymerCreator(LmpCreator):
         is reached
         '''
         raise NotImplementedError('Something clearly went wrong. Set mode to "cycle" or "random"')
+
+    def create_particles(self, molecule):
+        particles = set([])
+        for mono in molecule.data['monomers']:
+            for particle, value in mono.particles.items():
+                 particles.add(value)
+        return sorted(list(particles), key=lambda x:x.Id)
     
     def create_polymer(self, molecule):
         polymer = []
         for element in self.polymer_list():
-            polymer.append(self.add_particle(element, polymer, molecule))
+            polymer.append(self.add_monomer(element, polymer, molecule))
         return polymer
     
-    def add_particle(self, element, polymer, lmpObj):
+    def add_monomer(self, element, polymer, lmpObj):
         if len(polymer) == 0:
             coords = np.array([0.0, 0.0, 0.0])
         else:
@@ -110,21 +118,49 @@ class PolymerCreator(LmpCreator):
         return Mono.Monomer(coords, element, self.env.monomer_type[element] ,self.env, lmpObj)
 
     def create_polymer_bonds(self, molecule):
-        '''links all the particles to 
+        '''links all the monomers to 
         one string together.
         '''
-        bonds = []
-        for i, monomer in enumerate(molecule.data['particles'][:-1], 1):
-            bonds.append(Bond(self.env.new_id['bond'], molecule.env.bond_type['polymer'], [monomer, molecule.data['particles'][i]]))
-        return bonds
+        molecule.data['monomers'][0].bind_with(molecule.data['monomers'][1])
+        for current_element,next_element in zip(molecule.data['monomers'][1:-1],
+            molecule.data['monomers'][2:]):
+            current_element.bind_with(next_element)
+        
+        bonds = set([])
+        for mono in molecule.data['monomers']:
+            for bond in mono.bonds:
+                bonds.add(bond)
+        return sorted(list(bonds), key=lambda x:x.Id)
     
     def create_polymer_angles(self, molecule):
-        angles = []
-        for i, monomer in enumerate(molecule.data['particles'][:-2], 1):
-            angles += [Angle(self.env.new_id['angle'], molecule.env.angle_type['polymer'], 
-                            [monomer, molecule.data['particles'][i], molecule.data['particles'][i+1]])]
-        return angles
+        molecule.data['monomers'][0].angle_with(molecule.data['monomers'][1])
+        for previous_element, current_element, next_element in zip(molecule.data['monomers'][:-2], 
+            molecule.data['monomers'][1:-1], molecule.data['monomers'][2:]):
+            current_element.angle_with(previous_element)
+            current_element.angle_with(next_element)
+            current_element.bb_angle_with(previous_element, next_element)
+        molecule.data['monomers'][-1].angle_with(molecule.data['monomers'][-2])
 
+        angles = set([])
+        for mono in molecule.data['monomers']:
+            for angle in mono.angles:
+                angles.add(angle)
+        return sorted(list(angles), key=lambda x:x.Id)
+
+    def create_polymer_dihedrals(self, molecule):
+        for previous_element, current_element, next_element, after_next_element in zip(molecule.data['monomers'][:-3], 
+            molecule.data['monomers'][1:-2],molecule.data['monomers'][2:-1], 
+            molecule.data['monomers'][3:]):
+            current_element.dihedral_with(previous_element)
+            current_element.bb_dihedral_with(previous_element, next_element, after_next_element)
+        molecule.data['monomers'][-1].dihedral_with(molecule.data['monomers'][-2])
+        molecule.data['monomers'][-2].dihedral_with(molecule.data['monomers'][-3])
+
+        dihedrals = set([])
+        for mono in molecule.data['monomers']:
+            for dihedral in mono.dihedrals:
+                dihedrals.add(dihedral)
+        return sorted(list(dihedrals), key=lambda x:x.Id)
 
     def add_auto_repulsion(self, lmpObj, repulsion_value=None):
         '''Make all monomers repulse each other.
