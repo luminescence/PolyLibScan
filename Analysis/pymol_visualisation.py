@@ -25,7 +25,7 @@ class PymolVisualisation(object):
             if len(potential_pdb_location) == 1:
                 return potential_pdb_location[0].absolute().resolve()
             else:
-                raise AttributeError('Could not find pdb file at %s.' % search_path)
+                raise AttributeError('Found more that one pdb file at %s.' % search_path)
         else:
             raise AttributeError('No pdb file or file location given')
 
