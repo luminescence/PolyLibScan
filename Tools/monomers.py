@@ -3,7 +3,7 @@ import lmp_particlesAndInteractions as PaI
 
 class Monomer(object):
     def __init__(self, position, name, type_, env, molecule):
-        self.name = name 
+        self.name = name
         self.position = np.array(position)
         self.type_ = type_
         self.env = env
@@ -19,11 +19,11 @@ class Monomer(object):
     def create_particles(self):
         part = {}
         for name in self.type_.particles:
-            particle_name = self.combined_name(name)
-            atom_parameters = self.env.atom_type[particle_name]
+            #particle_name = self.combined_name(name)
+            atom_parameters = self.env.atom_type[name]
             id_ = self.env.new_id['particle']
             part[name] = PaI.Particle(self.molecule, id_, atom_parameters, 
-                                      (particle_name, 'A', (' ',id_,' ')), 
+                                      (name, 'A', (' ',id_,' ')), 
                                       self.position + atom_parameters.position)
         return part
         
@@ -36,7 +36,7 @@ class Monomer(object):
     
     def bind_with(self, monomer):
         bb_bond = PaI.Bond(self.env.new_id['bond'], self.env.bond_type['polymer'], 
-                                   [self.particles['bb'], monomer.particles['bb']])
+                                   [self.particles['mono_bb'], monomer.particles['mono_bb']])
         self.bonds.append(bb_bond)
         monomer.bonds.append(bb_bond)
         
@@ -50,18 +50,21 @@ class Monomer(object):
 
     def bb_angle_with(self, monomer, monomer2):
         bb_angle = PaI.Angle(self.env.new_id['angle'], self.env.angle_type['polymer'],
-                            [monomer.particles['bb'], self.particles['bb'], 
-                             monomer2.particles['bb']])
+                            [monomer.particles['mono_bb'], self.particles['mono_bb'], 
+                             monomer2.particles['mono_bb']])
         self.angles.append(bb_angle)
         monomer.angles.append(bb_angle)
         monomer2.angles.append(bb_angle)
         
     def angle_with(self, monomer):
-        new_angle = PaI.Angle(self.env.new_id['angle'], self.env.angle_type['polymer'], 
-                            [self.particles['sc'], self.particles['bb'],
-                             monomer.particles['bb']])
-        self.angles.append(new_angle)
-        monomer.angles.append(new_angle)
+    	if len(monomer.particles) > 1:
+        	new_angle = PaI.Angle(self.env.new_id['angle'], self.env.angle_type['polymer'], 
+                            	[self.particles[self.combined_name('sc')], self.particles['mono_bb'],
+                             	monomer.particles['mono_bb']])
+        	self.angles.append(new_angle)
+        	monomer.angles.append(new_angle)
+        else:
+        	pass
         
     def make_internal_dihedrals(self):
         dihedral = []
@@ -74,16 +77,19 @@ class Monomer(object):
         
     def bb_dihedral_with(self, monomer, monomer2, monomer3):
         bb_dihedral = PaI.Dihedral(self.env.new_id['dihedral'], self.env.dihedral_type['polymer'],
-                            [self.particles['bb'], monomer.particles['bb'], 
-                             monomer2.particles['bb'], monomer3.particles['bb']])
+                            [self.particles['mono_bb'], monomer.particles['mono_bb'], 
+                             monomer2.particles['mono_bb'], monomer3.particles['mono_bb']])
         self.dihedrals.append(bb_dihedral)
         monomer.dihedrals.append(bb_dihedral)
         monomer2.dihedrals.append(bb_dihedral)
         monomer3.dihedrals.append(bb_dihedral)
             
     def dihedral_with(self, monomer):
-        new_dihedral = PaI.Dihedral(self.env.new_id['dihedral'], self.env.dihedral_type['polymer'], 
-                            [self.particles['sc'], self.particles['bb'], 
-                             monomer.particles['bb'], monomer.particles['sc']])
-        self.dihedrals.append(new_dihedral)
-        monomer.dihedrals.append(new_dihedral)
+    	if len(monomer.particles) > 1:
+        	new_dihedral = PaI.Dihedral(self.env.new_id['dihedral'], self.env.dihedral_type['polymer'], 
+                            	[self.particles[self.combined_name('sc')], self.particles['mono_bb'], 
+                             	monomer.particles['mono_bb'], monomer.particles[self.particles.keys()[1]]])
+        	self.dihedrals.append(new_dihedral)
+        	monomer.dihedrals.append(new_dihedral)
+        else:
+        	pass

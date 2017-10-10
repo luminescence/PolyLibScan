@@ -148,8 +148,10 @@ class PolymerCreator(LmpCreator):
         return sorted(list(angles), key=lambda x:x.Id)
 
     def create_polymer_dihedrals(self, molecule):
-        for previous_element, current_element, next_element, after_next_element in zip(molecule.data['monomers'][:-3], 
-            molecule.data['monomers'][1:-2],molecule.data['monomers'][2:-1], 
+        for previous_element, current_element, next_element, after_next_element in zip(
+            molecule.data['monomers'][:-3], 
+            molecule.data['monomers'][1:-2],
+            molecule.data['monomers'][2:-1], 
             molecule.data['monomers'][3:]):
             current_element.dihedral_with(previous_element)
             current_element.bb_dihedral_with(previous_element, next_element, after_next_element)
