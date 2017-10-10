@@ -88,7 +88,7 @@ class Monomer(object):
     	if len(monomer.particles) > 1:
         	new_dihedral = PaI.Dihedral(self.env.new_id['dihedral'], self.env.dihedral_type['polymer'], 
                             	[self.particles[self.combined_name('sc')], self.particles['mono_bb'], 
-                             	monomer.particles['mono_bb'], monomer.particles[self.particles.keys()[1]]])
+                             	monomer.particles['mono_bb'], monomer.particles[monomer.combined_name('sc')]])
         	self.dihedrals.append(new_dihedral)
         	monomer.dihedrals.append(new_dihedral)
         else:
