@@ -108,20 +108,27 @@ class Job(object):
             self.compactor.save()
             self.compactor.save_versions(lmp_version=lammps().version())
         finally:
-            self.compactor._db.close()
+            self.compactor.db.close()
 
     def clean_up(self):
         self.compactor.clean_up()
+
+    def set_variables(self, vars_, lmp_instance):
+        for name, val in vars_.items():
+            # lists are converted to strings
+            if isinstance(val, list):
+                val = ' '.join(map(str, val))
+            lmp_instance.command('variable %s string "%s"'% (name,val))
+
+    def set_fifos(self, fifos, lmp_instance):
+        for name,fifo in fifos.items():
+            lmp_instance.command(fifo.lammps_string())
 
     def lmps_run(self, Id, parameters, paths, fifos={}):
         self._start_fifo_capture(Id)
         lammps_sim = lammps()
         # submitting parameters
-        for name, val in parameters.items():
-            # lists are converted to strings
-            if isinstance(val, list):
-                val = ' '.join(map(str, val))
-            lammps_sim.command('variable %s string "%s"'% (name,val))
+        self.set_variables(parameters, lammps_sim)
         # submitting paths
         for name, path in paths.items():
             lammps_sim.command('variable %s string "%s"'% (name, path))
@@ -130,8 +137,7 @@ class Job(object):
         # starting script
         lammps_sim.file(paths['script'])
         # specify fifo dumps
-        for name,fifo in self.fifo.items():
-            lammps_sim.command(fifo.lammps_string())
+        self.set_fifos(self.fifo, lammps_sim)
         lammps_sim.command('run ${time_steps}')
         # write snapshot of end-comformation
         lammps_sim.command('write_dump solid xyz ${end_xyz}.xyz')

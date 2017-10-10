@@ -33,7 +33,7 @@ class JobDataBase(object):
 
     @property
     def active_site(self):
-        return self.db._load_table('/meta', 'sequence')
+        return self.db._load_table('/meta', 'active_site')
     
     @active_site.setter
     def active_site(self, value):
@@ -57,7 +57,10 @@ class JobDataBase(object):
 
     @property
     def misc(self):
-        return self.db._load_table('/meta', 'misc')
+        meta_data = {key: value 
+        for key,value in self.db._load_table('/meta', 'misc')}
+        meta_data['poly_name'] = meta_data['polymer_name'].replace('[x]', '')
+        return meta_data
     
     @misc.setter
     def misc(self, value):
@@ -85,19 +88,25 @@ class JobDataBase(object):
     
     @histogramm.setter
     def histogramm(self, value):
+        if self.db.is_open():
+            self.close()
+        self.db.open(mode='a')
         self.db._save_table(value, '/', 'histogramm')
+        self.close()
 
     @property
     def traj_type_order(self):
-        return self.db._load_table('/meta/trajectory/', 'type_order')
+        return self.db._load_ctable('/meta/trajectory/', 'type_order')
 
     @traj_type_order.setter
     def traj_type_order(self, value):
-        self.db._save_table(value, '/meta/trajectory/', 'type_order')
+        self.db._save_array(value, '/meta/trajectory/', 'type_order')
 
     @property
     def traj_info(self):
-        return self.db._load_table('/meta/trajectory/', 'info')
+        data = self.db._load_table('/meta/trajectory/', 'info')
+        meta_data = {key: value for key,value in data}
+        return meta_data
 
     @traj_info.setter
     def traj_info(self, value):
@@ -111,35 +120,38 @@ class JobDataBase(object):
     def end_states(self, value):
         self.db._save_table(value, '/', 'end_state')
 
-    def distance_ts_load(self, ID):
-        return self.db._load_table('/distances', 'd%d' % ID)
+    def distance_ts_load(self, Id):
+        return self.db._load_table('/distances', 'd%d' % Id)
 
-    def distance_ts_save(self, distance_ts, ID):
-        self.db._save_table(distance_ts, '/distances', 'd%d' % ID)
+    def distance_ts_save(self, distance_ts, Id):
+        self.db._save_table(distance_ts, '/distances', 'd%d' % Id)
 
-    def energie_ts_load(self, ID):
-        return self.db._load_ctable('/energies', 'd%d' % ID)
+    def energie_ts_load(self, Id, col=-1):
+        if col != -1:
+            return self.db._load_ctable('/energies', 'd%d' % Id, col=col)
+        else:
+            return self.db._load_ctable('/energies', 'd%d' % Id)
 
-    def energie_ts_save(self, energie_ts, ID):
-        self.db._save_array(energie_ts, '/energies', 'd%d' % ID)
+    def energie_ts_save(self, energie_ts, Id):
+        self.db._save_array(energie_ts, '/energies', 'd%d' % Id)
 
-    def start_trajectories_load(self, ID):
-        return self.db._load_table('/start_trajectories', 't%d' % ID)
+    def start_trajectories_load(self, Id):
+        return self.db._load_table('/start_trajectories', 't%d' % Id)
 
-    def start_trajectories_save(self, trajectorie, ID):
-        self.db._save_table(trajectorie, '/start_trajectories', 't%d' % ID)
+    def start_trajectories_save(self, trajectorie, Id):
+        self.db._save_table(trajectorie, '/start_trajectories', 't%d' % Id)
 
-    def end_trajectories_load(self, ID):
-        return self.db._load_table('/end_trajectories', 't%d' % ID)
+    def end_trajectories_load(self, Id):
+        return self.db._load_table('/end_trajectories', 't%d' % Id)
 
-    def end_trajectories_save(self, trajectorie, ID):
-        self.db._save_table(trajectorie, '/end_trajectories', 't%d' % ID)
+    def end_trajectories_save(self, trajectorie, Id):
+        self.db._save_table(trajectorie, '/end_trajectories', 't%d' % Id)
 
-    def trajectory_load(self):
+    def trajectory_load(self, Id):
         return self.db._load_ctable('/trajectories', 'traj_%d' % Id, as_iterator=True)
 
-    def trajectory_save(self, data, ID):
-        self.db._save_array(data, '/trajectories', 'traj_%d' % ID, compress=True)
+    def trajectory_save(self, data, Id):
+        self.db._save_array(data, '/trajectories', 'traj_%d' % Id, compress=True)
 
 
 class Database(object):

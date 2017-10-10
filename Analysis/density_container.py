@@ -173,10 +173,10 @@ class DensityContainer(object):
         """
         if not monomer_id:
             monomer_id = self.monomer_id
-        particle_order = sim._parse.load_traj_type_order()
+        particle_order = sim.trajectory_order
         type_filter = self._create_atom_type_filter(particle_order, monomer_id=monomer_id)
         offset = self.box[0]
-        traj_iterator = sim._parse.trajectory(run_id)
+        traj_iterator = sim._parse.trajectory_load(run_id)
         monomer_coords = it.ifilter(type_filter, traj_iterator)
         for coord in it.ifilter(lambda x:numerics.in_box(x, self.box), monomer_coords):
             idx = np.around(((coord - offset) / self.resolution)).astype(np.int)

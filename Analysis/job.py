@@ -1,4 +1,4 @@
-import parser
+#import parser
 import numpy as np
 import pathlib2 as pl
 import pandas as pd
@@ -9,6 +9,7 @@ import itertools as it
 import pymol_visualisation
 import sim_run
 import numerics as num_
+import PolyLibScan.Database.db as DB
 
 warnings.filterwarnings("ignore")
 
@@ -20,14 +21,15 @@ class Job(bayes.Job):
         self.db_path = pl.Path(db_path)
         if with_pymol:
             self.pymol = pymol_visualisation.PymolVisJob(self)
-        self._parse = parser.Parser(self.db_path, 'r')
+        self._parse = DB.JobDataBase(self.db_path, 'r')
         self.Id = None
-        self.meta = self._parse.meta('misc')
-        self.lmp_parameters = self._parse.lmp_parameters()
-        self.trajectory_meta = self._parse.traj_meta()
-        self.sequence = self._parse.sequence()
-        self.weights = self._parse.weights()
-        self.active_site = self._parse.active_site()
+        self.meta = self._parse.misc
+        self.lmp_parameters = {key:val for key,val in self._parse.parameter}
+        self.trajectory_meta = self._parse.traj_info
+        self.trajectory_order = self._parse.traj_type_order
+        self.sequence = self._parse.sequence
+        self.weights = dict(self._parse.weights)
+        self.active_site = self._parse.active_site
         self._runs = self._read_runs(with_pymol=with_pymol)
         self.particle_ids = self._get_particle_ids()
         self._charge = None
@@ -98,7 +100,7 @@ class Job(bayes.Job):
         '''
         runs = []
         # get inputs
-        for data in self._parse.end_state():
+        for data in self._parse.end_states:
             if 'Distance' in data.dtype.names:
                 runs.append(sim_run.Run(self, data['ID'], data['Energy'], data["Distance"], with_pymol=True))
             else:
@@ -113,8 +115,9 @@ class Job(bayes.Job):
                     results = self._parse.hist_data()
                 except parser.DB.tb.NoSuchNodeError:
                     results = self._calc_distance_density(self)
-                    self._parse.save_hist_data(results,
-                                               results)
+                    hist_array = self._parse_hist_data(results[['distance', 'frequency']],
+                                               results[ 'energy'])
+                    self._parse.histogram = hist_array
                 self._distance_frequency = results[['distance', 'frequency']]
                 self._energy_distance_distribution = results[['distance', 'energy']]
             return self._distance_frequency
@@ -133,8 +136,9 @@ class Job(bayes.Job):
                     results = self._parse.hist_data()
                 except parser.DB.tb.NoSuchNodeError:
                     results = self._calc_distance_density(self)
-                    self._parse.save_hist_data(results[['distance', 'frequency']],
+                    hist_array = self._parse_hist_data(results[['distance', 'frequency']],
                                                results[ 'energy'])
+                    self._parse.histogram = hist_array
                 self._distance_frequency = results[['distance', 'frequency']]
                 self._energy_distance_distribution = results[['distance', 'energy']]
             return self._energy_distance_distribution
@@ -144,6 +148,23 @@ class Job(bayes.Job):
             self._energy_distance_distribution = None
         return locals()
     energy_distance_distribution = property(**energy_distance_distribution())
+
+    def _parse_hist_data(self, distance, energy):
+        '''Save the observables of distance and energy to the database.
+
+        Since this involves writing to the database, it opens the 
+        database in write mode and writes to the /histogram table.
+        The timestep information is in the distance argument.
+        '''
+        
+        results_dtype = [('distance', np.float), ('frequency', np.int),
+                         ('energy', np.float)]
+        data = np.empty(distance.shape[0], results_dtype)
+        data['distance'] = distance['distance']
+        data['frequency'] = distance['frequency']
+        data['energy'] = energy['energy']
+        return data
+
 
     def _calc_distance_density(self, runs):
         dist_v = np.zeros(2000, dtype=[('count', np.int), ('energy', np.float)])
@@ -165,9 +186,9 @@ class Job(bayes.Job):
         return results
 
     def to_dataFrame(self):
-        if self._parse.is_open():
+        if self._parse.db.is_open():
             self._parse.open()
-        data = pd.DataFrame(self._parse.end_state())
+        data = pd.DataFrame(self._parse.end_states)
         data = data.set_index('ID')
         data.set_index([[self.Id for i in xrange(data.shape[0])], data.index], inplace=True)
         data.index.names = ['PolymerId', 'RunId']
@@ -186,8 +207,8 @@ class Job(bayes.Job):
         Output:
             box -- 2x3 numpy array
         """
-        protein_mask = np.in1d(self._parse.load_traj_type_order(), self.particle_ids['protein'])
-        trajectory_iterator = self._parse.trajectory(0)
+        protein_mask = np.in1d(self.trajectory_order, self.particle_ids['protein'])
+        trajectory_iterator = self._parse.trajectory_load(0)
         protein_coords = np.array(list(it.islice(trajectory_iterator, len(protein_mask))))[protein_mask]
         box = num_.calc_box(protein_coords, margin=margin)
         discrete_box = np.zeros((2,3))

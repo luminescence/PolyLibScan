@@ -75,7 +75,7 @@ class Parser(object):
             try:
                 lines = liner(f)
                 chunks = chunk_data(lines)
-                traj = np.array(list(it.chain.from_iterable([el[1]['xyz'] for el in chunks])))
+                traj = np.array(list(it.chain.from_iterable([el[1] for el in chunks])))
             except IndexError:
                 raise IndexError('Faulty format found in file %s' % file_path)
         return traj
@@ -88,7 +88,7 @@ class Parser(object):
     def particle_list(self, path):
         '''Extract particles from list
         '''
-        dtype = [('xyz', np.int), ('p_id', np.int), ('name', 'S3'), 
+        dtype = [('xyz', np.int), ('p_id', np.int), ('name', 'S6'), 
                  ('chain', 'S1'), ('atom', 'S6'), ('res_id', np.int), ('iCode', 'S1')]
         return np.fromfile(path, dtype=dtype)
 
@@ -109,7 +109,7 @@ class Parser(object):
         return type_list, step_size
 
     def traj_info(self, file_path):
-        type_list, step_size = self.trajectory_meta(path)
+        type_list, step_size = self.trajectory_meta(file_path)
         data = np.array([('particle_number', len(type_list)),
                          ('step_size', step_size)], dtype=[('key', '|S15'),
                                                            ('value', np.int)])

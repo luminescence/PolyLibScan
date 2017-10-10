@@ -28,7 +28,7 @@ class PymolPose(object):
         '''
         if state not in ['start', 'end']:
             raise AttributeError("state must have value of 'start' or 'end'.")
-        mask = np.in1d(sim._parse.load_traj_type_order(), sim.particle_ids[molecule])
+        mask = np.in1d(sim.trajectory_order, sim.particle_ids[molecule])
         pose_data = self._create_pose_array(sim, mask)
         for run in sim:
             np_help.copy_fields(pose_data, self.traj_data(run, state, mask), ['x','y', 'z'])
@@ -79,6 +79,7 @@ class Type(PymolPose):
     """docstring for PymolVisPolyType"""
     def __init__(self, pymol):
         super(Type, self).__init__(pymol)
+        self.sims = self.pymol.sims
         self.output_folder = self.pymol.type_folder
 
     def pdb_data(self, molecule='polymer', state='end'):
@@ -90,7 +91,7 @@ class Type(PymolPose):
 
     def file_name(self, molecule, state):
         return '%s_%s_%s_poses.pdb' % (
-                    self.poly_type.name, 
+                    self.sim.poly_type.name, 
                     molecule, 
                     state)
 
@@ -99,16 +100,16 @@ class Job(PymolPose):
     """docstring for PymolVisJob"""
     def __init__(self, pymol):
         super(Job, self).__init__(pymol)
+        self.sim = self.pymol.sim
         self.output_folder = self.pymol.db_folder
 
     def pdb_data(self, molecule='polymer', state='end'):
         return self._poses(self.sim, molecule=molecule, state=state)
 
     def file_name(self, molecule, state):
-        return '%s_%d_%d_%s_%s_poses.pdb' % (
-                    self.poly_type.name, 
+        return '%s_%d_%s_%s_poses.pdb' % (
+                    self.sim.poly_type.name, 
                     self.sim.Id, 
-                    self.run.Id,
                     molecule, 
                     state)
 
@@ -126,24 +127,24 @@ class Run(PymolPose):
 
     def file_name(self, molecule, state):
         return '%s_%d_%d_%s_%s_poses.pdb' % (
-                    self.poly_type.name, 
+                    self.sim.poly_type.name, 
                     self.sim.Id, 
                     self.run.Id,
                     molecule, 
                     state)
     
-    def _poses(self, sim, molecule='polymer' ,state='full'):
+    def _poses(self, sim, molecule='polymer', state='full'):
         '''Create generator of data for polymer-pdb via the pymol_polymer.tpl
         Each yield (run) the coordinates of the polymer are updated, while the constant
         information is left unchanged
         '''
-        mask = np.in1d(sim._parse.load_traj_type_order(), sim.particle_ids[molecule])
+        mask = np.in1d(sim.trajectory_order, sim.particle_ids[molecule])
         pose_data = self._create_pose_array(sim, mask)
         if state in ['start', 'end']:
             for run in [sim[self.run.Id]]:
-                np_help.copy_fields(pose_data, self.traj_data(run, state, mask))
+                np_help.copy_fields(pose_data, self.traj_data(run, state, mask), ['x','y', 'z'])
                 yield pose_data
-        if state == 'full':
+        elif state == 'full':
             for step_data in self.run.polymer_trajectory():
                 pose_data['x'] = step_data['xyz'][:,0]
                 pose_data['y'] = step_data['xyz'][:,1]

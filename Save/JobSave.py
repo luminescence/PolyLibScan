@@ -36,8 +36,8 @@ class JobSave(object):
 
     def save(self):
         self.save_meta_data(self.config)
-        self.save_trajectory_meta(self.runs[0].full_traj.as_posix())
-        self.save_particle_list(self.path['p_list'])
+        self.save_trajectory_meta(self.runs[0].path['full_traj'].as_posix())
+        self.save_particle_list(self.path['p_list'].as_posix())
         self.save_runs(self.runs)
         self.save_endstates(self.runs)
         self.saved = True
@@ -52,6 +52,7 @@ class JobSave(object):
         meta_data = self.parse.meta(config)
         self.db.sequence = meta_data['sequence']
         self.db.weights = meta_data['weights']
+        self.db.misc = meta_data['misc']
         self.db.active_site = meta_data['active_site']
         self.db.parameter = meta_data['parameter']
 
@@ -63,18 +64,20 @@ class JobSave(object):
         polymer_ids = np.array(np.unique(self.db.sequence['ID']))
         active_site_pos = self.db.active_site['xyz']
         for run in runs:
-            self.db.start_trajectories_save(run.start_traj, run.ID)
-            self.db.end_trajectories_save(run.end_traj, run.ID)
+            self.db.start_trajectories_save(run.start_traj, run.Id)
+            self.db.end_trajectories_save(run.end_traj, run.Id)
             if 'full_traj' in run.path:
                 data = self.parse.trajectory(run.path['full_traj'].as_posix())
-                self.db.trajectory_save(data, run.Id)
+                self.db.trajectory_save(data['xyz'], run.Id)
             # Save Energy timeseries
             self.db.energie_ts_save(run.energy, run.Id)
             # Save Distance Timeseries
             if 'distance' in run.path:
-                self.distance_ts_save(run.distance, run.Id)
+                self.db.distance_ts_save(run.distance, run.Id)
 
     def save_endstates(self, runs):
+        polymer_ids = np.array(np.unique(self.db.sequence['ID']))
+        active_site_pos = self.db.active_site['xyz']
         endstates = np.zeros(len(runs), dtype=[('ID', '>i2'), 
                                                ('Energy', '>f4'), 
                                                ('TotalEnergy', '>f4'), 
@@ -88,7 +91,7 @@ class JobSave(object):
     def read_runs(self):
         runs = []
         input_files = self.path['input'].glob('*')
-        return [Run.from_id(self, self.path['output'], input_file.name) 
+        return [Run.from_id(self, self.path, input_file.name) 
                 for input_file in input_files]
 
     def get_Error(self):
@@ -104,10 +107,11 @@ class JobSave(object):
         '''
         slurm_error_file = self.path['logs'].joinpath('slurm.err')
         #Check last line
-        with open(slurm_error_file.as_posix()) as f:
-            last_line = f.readlines()[-1].strip()
-        if last_line.endswith('Finished simulations. Starting to clean up.Not'):
-            return True
+        if slurm_error_file.exists():
+            with open(slurm_error_file.as_posix()) as f:
+                last_line = f.readlines()[-1].strip()
+            if last_line.endswith('Finished simulations. Starting to clean up.Not'):
+                return True
         return False
 
     def save_versions(self, lmp_version=None):
@@ -116,8 +120,8 @@ class JobSave(object):
             versions['LAMMPS'] = str(lmp_version)
         else:
             versions['LAMMPS'] = ''
-        data = self.parser.version(versions)
-        self.db.save_versions(data)
+        data = self.parse.version(versions)
+        self.db.versions = data
 
     def remove_local(self):
         shutil.rmtree(self.config.lmp_path['local_root'])
@@ -128,7 +132,7 @@ class JobSave(object):
                 run.cleanup()
 
         if not self.has_error():
-            for file_ in ['log.lammps','meta.dat','log.lammps']:
+            for file_ in ['log.lammps', 'particle_list.npy']:
                 if self.root.joinpath(file_).exists():
                     self.root.joinpath(file_).unlink()
             for file_ in ['slurm.out','slurm.err']:
@@ -145,21 +149,25 @@ class Run(object):
     @classmethod
     def from_id(cls, job, path, str_ID):
         run_id = int(str_ID)
-        energy = path.joinpath('Energy'+str_ID)
-        start_traj = path.joinpath('trajectoryS%s.xyz' % str_ID)
-        end_traj = path.joinpath('trajectoryE%s.xyz' % str_ID)
-        distance_file = path.joinpath('distance_as_polymer%s' % str_ID)
+        out_path = path['output']
+        in_path = path['input']
+        start_file = in_path.joinpath(str_ID)
+        energy = out_path.joinpath('Energy'+str_ID)
+        start_traj = out_path.joinpath('trajectoryS%s.xyz' % str_ID)
+        end_traj = out_path.joinpath('trajectoryE%s.xyz' % str_ID)
+        distance_file = out_path.joinpath('distance_as_polymer%s' % str_ID)
         if not distance_file.exists():
             distance_file = None
-        traj_file = path.joinpath('full_trajectory%s.xyz.gz' % str_ID)
+        traj_file = out_path.joinpath('full_trajectory%s.xyz.gz' % str_ID)
         if not traj_file.exists():
             traj_file = None
-        return cls(job, run_id, energy, start_traj, end_traj, distance_file, traj_file)
+        return cls(job, run_id, start_file, energy, start_traj, end_traj, distance_file, traj_file)
 
-    def __init__(self, job, ID, energy, start_traj, end_traj, distance=None, full_traj=None):
+    def __init__(self, job, ID, start_file, energy, start_traj, end_traj, distance=None, full_traj=None):
         self.parent = job
-        self.ID = ID
+        self.Id = ID
         self.path = {}
+        self.path['start_file'] = start_file
         self.path['energy'] =  energy
         self.path['start_traj'] = start_traj
         self.path['end_traj'] = end_traj
@@ -179,4 +187,4 @@ class Run(object):
                 path.unlink()
 
     def __repr__(self):
-        return 'LammpsRun - id %d' % self.ID
+        return 'LammpsRun - id %d' % self.Id
