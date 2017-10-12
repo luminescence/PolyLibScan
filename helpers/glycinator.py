@@ -35,6 +35,17 @@ class Residue(object):
                 atom.update()
                 self.add(atom)
     
+    @property
+    def res_id(self):
+        return self._res_id
+
+    @res_id.setter
+    def res_id(self, value):
+        self._res_id = value
+        for atom in self.atoms:
+            atom.res_id = self.res_id
+            atom.update()
+
     def __repr__(self):
         out = []
         for atom in self.atoms:
@@ -128,3 +139,5 @@ class Glycinator(object):
     def write(self, path):
         with open(path, 'w') as f:
             f.write(repr(self.protein))
+            f.write('\nTER')
+            f.write('\nEND')
