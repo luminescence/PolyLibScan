@@ -112,11 +112,11 @@ class Job(bayes.Job):
         def fget(self):
             if self._energy_distance_distribution == None:
                 try:
-                    results = self._parse.hist_data()
-                except parser.DB.tb.NoSuchNodeError:
+                    results = self._parse.histogramm
+                except DB.tb.NoSuchNodeError:
                     results = self._calc_distance_density(self)
                     hist_array = self._parse_hist_data(results[['distance', 'frequency']],
-                                               results[ 'energy'])
+                                               results['energy'])
                     self._parse.histogram = hist_array
                 self._distance_frequency = results[['distance', 'frequency']]
                 self._energy_distance_distribution = results[['distance', 'energy']]
@@ -162,7 +162,7 @@ class Job(bayes.Job):
         data = np.empty(distance.shape[0], results_dtype)
         data['distance'] = distance['distance']
         data['frequency'] = distance['frequency']
-        data['energy'] = energy['energy']
+        data['energy'] = energy
         return data
 
 
