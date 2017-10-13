@@ -29,6 +29,9 @@ class Environment(object):
             self.atom_type.register(field)
         self.load_atom_types(config['Atoms'])
         
+        self.monomer_type = container.Container('monomer')
+        self.load_monomer_types(config['Monomers'])
+
         self.bond_type = container.Container('bond')
         self.load_bond_types(config['Bonds'])
 
@@ -65,9 +68,15 @@ class Environment(object):
         for name, pair_parameters in config.items():
             self.pair_type[name] = PairType.from_dict(pair_parameters, name=name)
 
-    def load_atom_types(self, config):
+    def load_monomer_types(self, config):
         for name, values in config.items():
-            self.atom_type.define_type(name, AtomType(name, values))
+            self.monomer_type.define_type(name, MonomerType(name, values))
+
+    def load_atom_types(self, config):
+        for name, particle in config.items():
+            for subname, parameter in particle.items():
+                combinedname = name + '_' + subname
+                self.atom_type.define_type(combinedname, AtomType(combinedname, parameter))
 
     def load_bond_types(self, config):
         for name, values in config.items():
