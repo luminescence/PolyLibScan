@@ -12,7 +12,7 @@ def _get_pdb_template():
 class PymolPose(object):
     '''Parent class of pymol Visualisation
     '''
-    atom_names = ['C', 'N', 'O', 'S', 'H']
+    atom_names = ['C', 'N', 'O', 'S', 'H', 'P']
     
     template = _get_pdb_template()
 
