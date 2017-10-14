@@ -20,7 +20,7 @@ def get_summary(data):
     return data[summary_line+2:summary_line+end_of_summary]
 
 def parse_summary(summary):
-    resn = '(?P<resn>[A-Z-]+)'
+    resn = '(?P<resn>[A-Z-+]+)'
     resi = '(?P<resi>\d{1,3})'
     chain = '(?P<chain>[A-Z])'
     pka = '(?P<pka>\d+\.\d+)'
