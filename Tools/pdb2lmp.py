@@ -1,5 +1,5 @@
 import numpy as np
-import itertools as itt
+import itertools as it
 import Bio.PDB as PDB
 import yaml
 from lmp_types import *
@@ -26,7 +26,7 @@ class ProteinCreator(LmpCreator):
     '''
     def __init__(self, environment, pdb_path, cg_lvl='backbone', 
                  with_ions=False, with_ghosts=True, add_protein_binding=True,
-                 surface_file=''):
+                 surface_file='', protonation_file='', ph=8.0):
         super(ProteinCreator, self).__init__(environment)
         self.mol_type = 'protein'
         self.pdb_path = pdb_path
@@ -37,6 +37,8 @@ class ProteinCreator(LmpCreator):
         self._with_ions = with_ions
         self._with_ghosts = with_ghosts
         self.surface_file = surface_file
+        self.protonation_file = protonation_file
+        self.ph = ph
 
     def __str__(self):
         string  = ['Molecule Factory creates: %s' % (self.mol_type.upper())]
@@ -62,6 +64,9 @@ class ProteinCreator(LmpCreator):
         if self.surface_file:
             surface_data = self.get_surface_data(self.surface_file, molecule.pdb_id)
             self.add_surface_energies(molecule, surface_data)
+        if self.protonation_file:
+            protonation_data = self.get_protonation_data(self.protonation_file, molecule.pdb_id)
+            self.add_protonation(molecule, protonation_data, self.ph)
         if self.with_ghosts:
             g_particles, g_bonds = self.add_ghost_particles(molecule)
             molecule.data['particles'] = np.append(
@@ -76,6 +81,10 @@ class ProteinCreator(LmpCreator):
         surface_db = DB.Database(path)
         return surface_db._load_table('/', pdb_id)
 
+    def get_protonation_data(self, path, pdb_id):
+        surface_db = DB.Database(path)
+        return surface_db._load_table('/protonation', pdb_id)
+
     def add_surface_energies(self, molecule, surface_data, area_energy=False):
         if area_energy:
             e_id = 'areaParameter'
@@ -83,37 +92,67 @@ class ProteinCreator(LmpCreator):
             #singleParameter column
             e_id = 'singleParameter'
 
-        for atom_id,surface_energy in itt.izip(surface_data[['chain', 'id', 'iCode']], surface_data[e_id]):
+        for atom_id,surface_energy in it.izip(surface_data[['chain', 'id', 'iCode']], surface_data[e_id]):
             self.add_surface_energy(atom_id, surface_energy, molecule)
+
+    @staticmethod
+    def _calc_protonation_change(res_name, ph, pka):
+        # Residues that get protonated below their pKa
+        if res_name in ['N+', 'GLU', 'ASP', 'HIS']:
+            change = (1,0)
+        # Residues that get deprotonated above their pKa
+        elif res_name in ['LYS', 'ARG', 'TYR', 'CYS', 'C-']:
+            change = (0,-1)
+        # Weird case
+        else:
+            raise ValueError("for some reason you want to change the protonation of %s" % res_name)
+        if ph < pka:
+            return change[0]
+        elif ph > pka:
+            return change[1]
+        else:
+            return 0
+
+    def add_protonation(self, molecule, protonation_data, ph=8.0):
+        for res_name, atom_id,pka in it.izip(protonation_data['resn'],
+                                             protonation_data[['chain', 'resi', 'iCode']], 
+                                             protonation_data['pka']):
+            protonation_change = self._calc_protonation_change(res_name, ph, pka)
+            if protonation_change != 0:
+                particle = self._find_particle_by_pdb_id(atom_id, molecule)
+                self._change_protonation(particle, protonation_change)
+
+    def _change_protonation(self, particle, protonation_change):
+        if not particle.type_.unique: 
+            self._make_particle_unique(particle) 
+        particle.type_.charge += protonation_change
 
     def add_surface_energy(self, atom_id, surface_energy, molecule):
         particle = self._find_particle_by_pdb_id(atom_id, molecule)
         if not particle.type_.unique: 
-            new_type_name = '%s|%s%d|%d' % (particle.residue[0], particle.residue[1], 
-                                            particle.residue[2][1], particle.type_.Id) 
-            protein_particle_type = self._make_particle_unique(particle, new_type_name) 
+            protein_particle_type = self._make_particle_unique(particle) 
         particle.type_.surface_energy = surface_energy
 
     def _find_particle_by_pdb_id(self, pdb_residue_id, molecule):
         '''Finds the id of the particle in the molecule object based on the 
         pdb internal id. 
-        TODO: Since just the single integer (id) is used and not the 
-              entire tuple. This could be unstable.
         '''
         def has_right_id(search_particle):
             return (search_particle.residue != None 
-                    and search_particle.residue.chain==pdb_residue_id[0]      # chain
-                    and search_particle.residue.id[1]==pdb_residue_id[1]   # id
+                    and search_particle.residue.chain== pdb_residue_id[0]  # chain
+                    and search_particle.residue.id[0]==' '
+                    and search_particle.residue.id[1]== pdb_residue_id[1]  # id
                     and search_particle.residue.id[2]== pdb_residue_id[2]) # iCode
 
         particle = filter(has_right_id, molecule.data['particles'])
         if len(particle)>1:
-            raise Exception('Found more than one particle. Check your pdb file for duplicate entries.')
+            raise Exception('Found more than one particle: %s \nCheck your pdb file for duplicate entries.' % (
+                [p.residue for p in particle]))
         elif len(particle)==0:
             raise Exception("There is no particle with chain %s, id %d and iCode '%s'" % pdb_residue_id)
         return particle[0]
 
-    def _make_particle_unique(self, particle, type_name):
+    def _make_particle_unique(self, particle):
         '''assigns new, unique particle-type to given particle.
         The new particle type has the same properties as the old one,
         but is uniquely assigned to just this particle.
@@ -121,13 +160,14 @@ class ProteinCreator(LmpCreator):
 
         Input:
             particle:  [Particle Obj]
-            type_name: [String]
 
         Output:
             [atom_type]
         '''
+        new_type_name = '%s|%s|%d|%d' % (particle.residue.name, particle.residue.chain, 
+                                        particle.residue.id[1], particle.type_.Id) 
         old_type = self.env.atom_type[particle.type_.name]
-        self.env.atom_type[type_name] = AtomType(type_name, 
+        self.env.atom_type[new_type_name] = AtomType(new_type_name, 
                                                  {'mass': old_type.mass,
                                                   'radius': old_type.radius, 
                                                   'charge': old_type.charge,
@@ -136,8 +176,8 @@ class ProteinCreator(LmpCreator):
                                                   'interacting': old_type.interacting},
                                                   unique=True)
         # change particle type to newly created
-        particle.type_ = self.env.atom_type[type_name]
-        return self.env.atom_type[type_name]
+        particle.type_ = self.env.atom_type[new_type_name]
+        return self.env.atom_type[new_type_name]
 
 
     def coarse_grain_particles(self, lmp_obj):
@@ -268,15 +308,15 @@ class ProteinCreator(LmpCreator):
         filter_non_aa = lambda x: x.residue.id[0]==' '
         amino_acids = filter(filter_non_aa, protein.data['particles'])
 
-        for particle1,particle2 in itt.izip(amino_acids[:-1], amino_acids[1:]):
+        for particle1,particle2 in it.izip(amino_acids[:-1], amino_acids[1:]):
                 if particle1.mol_id == particle2.mol_id:
                     bonds.append(Bond(self.env.new_id['bond'], protein.env.bond_type['peptide'], 
                                  [particle1, particle2]))
-        for particle1,particle2,particle3 in itt.izip(amino_acids[:-2], amino_acids[1:-1], amino_acids[2:]):
+        for particle1,particle2,particle3 in it.izip(amino_acids[:-2], amino_acids[1:-1], amino_acids[2:]):
                 if particle1.mol_id == particle2.mol_id and particle2.mol_id == particle3.mol_id:
                     angles.append(Angle(self.env.new_id['angle'], protein.env.angle_type['peptide'], 
                                          [particle1, particle2, particle3]))
-        for particle1,particle2,particle3,particle4 in itt.izip(amino_acids[:-3], amino_acids[1:-2], amino_acids[2:-1], amino_acids[3:]):
+        for particle1,particle2,particle3,particle4 in it.izip(amino_acids[:-3], amino_acids[1:-2], amino_acids[2:-1], amino_acids[3:]):
                 if particle1.mol_id == particle2.mol_id and particle1.mol_id == particle3.mol_id and particle1.mol_id == particle4.mol_id:
                     dihedrals.append(Dihedral(self.env.new_id['dihedral'], protein.env.dihedral_type['peptide'], 
                                             [particle1, particle2, particle3, particle4]))
