@@ -6,6 +6,7 @@ import Save
 import helpers.time as tm
 import itertools as it
 import tempfile as temp
+import yaml
 
 import helpers.git as _git
 __git_hash__ = _git.get_git_hash(__file__)
@@ -15,7 +16,11 @@ class Job(object):
     def __init__(self, config_path):
         super(Job, self).__init__()
         self.config = self.read_config(config_path)
-        
+        setup_config_path = os.path.join(os.path.dirname(config_path), 'config_with_setup.yml')
+        if os.path.exists(setup_config_path):
+            with open(setup_config_path) as f:
+                setup_config = yaml.load(f)
+            self.config.sim_parameter['named_sequence'] = setup_config['sim_parameter']['named_sequence']
         self.config.sim_path['sim_list'] = os.path.join(self.config.sim_path['root'], 'sim.list')
         open(self.config.sim_path['sim_list'], 'a').close()
         if self.config.sim_parameter['local'] == 1:
