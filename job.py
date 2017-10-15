@@ -52,7 +52,6 @@ class Job(object):
             )
         
         self.protein = self.protein_creator.create()
-        self.protein_creator.change_to_res_based(self.protein)
         # Polymer
         if 'named_sequence' in self.config.sim_parameter:
             self.polymer_creator = Tools.PolymerCreator(self.env, self.config.sim_parameter['named_sequence'], mode='cycle')

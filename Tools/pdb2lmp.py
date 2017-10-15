@@ -61,6 +61,7 @@ class ProteinCreator(LmpCreator):
         molecule.pdb_id = self.pdb_path.split('/')[-1].split('.')[0] # this has to be changed in the long run.
 
     def _create_custom(self, molecule):
+        self.change_to_res_based(molecule)
         if self.surface_file:
             surface_data = self.get_surface_data(self.surface_file, molecule.pdb_id)
             self.add_surface_energies(molecule, surface_data)
