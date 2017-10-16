@@ -103,7 +103,7 @@ class Job(object):
             fifo.terminate()
 
     def setup_job_save(self):
-        self.compactor = Save.JobSave(self.config.sim_path['root'])
+        self.compactor = Save.JobSave(self.config.lmp_path)
 
     def save(self):
         '''Save the data of the completed simulations to HDF5 database.

@@ -12,13 +12,12 @@ class JobSave(object):
 
     __git_hash__ = sys.modules['PolyLibScan'].__git_hash__
 
-    def __init__(self, root_path, db_name='jobdata.h5', overwrite=False):
-        self.root = pl.Path(root_path)
-        setup = self.root.joinpath('config_with_setup.yml')
-        self.config = cfg.JobConfig(setup.as_posix())
-        self.path = self._set_paths(self.root)
+    def __init__(self, paths, db_name='jobdata.h5', overwrite=False):
+        self.path = self._set_paths(paths)
+        setup_path = self.path['root'].joinpath('config_with_setup.yml')
+        self.config = cfg.JobConfig(setup_path.as_posix())
         self.parse = parser.Parser()
-        self.db_path = pl.Path(root_path).joinpath(db_name)
+        self.db_path = self.path['root'].joinpath(db_name)
         if overwrite:
             self.db = DB.JobDataBase(self.db_path, mode='w')
         else:
@@ -27,11 +26,12 @@ class JobSave(object):
         self.saved = False
         self.runs = self.read_runs()
 
-    def _set_paths(self, root_path):
-        path = {dir_name: root_path.joinpath(dir_name)
-                        for dir_name in ['input', 'output', 'logs', 'fifo']}
-        path['meta'] = root_path.joinpath('config_with_setup.yml')
-        path['p_list'] = root_path.joinpath('particle_list.npy')
+    def _set_paths(self, input_paths):
+        path = {dir_name: pl.Path(input_paths[dir_name])
+                        for dir_name in ['input', 'output', 'logs', 
+                                         'fifo', 'root', 'local_root']}
+        path['meta'] = path['root'].joinpath('config_with_setup.yml')
+        path['p_list'] = path.joinpath('particle_list.npy')
         return path
 
     def save(self):
@@ -133,8 +133,8 @@ class JobSave(object):
 
         if not self.has_error():
             for file_ in ['log.lammps', 'particle_list.npy']:
-                if self.root.joinpath(file_).exists():
-                    self.root.joinpath(file_).unlink()
+                if self.path['root'].joinpath(file_).exists():
+                    self.path['root'].joinpath(file_).unlink()
             for file_ in ['slurm.out','slurm.err']:
                 if self.path['logs'].joinpath(file_).exists():
                     self.path['logs'].joinpath(file_).unlink()    
