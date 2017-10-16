@@ -170,7 +170,7 @@ class Job(object):
             self._mark_complete(-1)
         self.terminate_fifos()
 
-    def create_local_env(self, local_dir='/data/ohl/'):
+    def create_local_env(self, local_dir='/data/marius/'):
         '''Create unique local job-folder and create the 
         '''
         name_comp = self.config.sim_path['root'].split('/')[-3:]
