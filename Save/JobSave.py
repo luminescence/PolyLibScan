@@ -31,7 +31,7 @@ class JobSave(object):
                         for dir_name in ['input', 'output', 'logs', 
                                          'fifo', 'root', 'local_root']}
         path['meta'] = path['root'].joinpath('config_with_setup.yml')
-        path['p_list'] = path.joinpath('particle_list.npy')
+        path['p_list'] = path['root'].joinpath('particle_list.npy')
         return path
 
     def save(self):
@@ -145,7 +145,7 @@ class JobSave(object):
             for dir_ in ['input', 'output', 'logs', 'fifo']:
                 if self.path[dir_].exists():
                     self.path[dir_].rmdir()
-            if self.config.sim_parameter['local'] == 1:
+            if self.path['local_root'] == 1:
                 self.remove_local()
 
 class Run(object):
