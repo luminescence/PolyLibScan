@@ -1,4 +1,5 @@
 import os
+import getpass
 import numpy as np
 from lammps import lammps
 import Tools
@@ -21,6 +22,9 @@ class Job(object):
             with open(setup_config_path) as f:
                 setup_config = yaml.load(f)
             self.config.sim_parameter['named_sequence'] = setup_config['sim_parameter']['named_sequence']
+
+        self.username = getpass.getuser()
+
         self.config.sim_path['sim_list'] = os.path.join(self.config.sim_path['root'], 'sim.list')
         open(self.config.sim_path['sim_list'], 'a').close()
         if self.config.sim_parameter['local'] == 1:
@@ -43,14 +47,14 @@ class Job(object):
         self.env = Tools.Environment(self.config.sim_path['config'])
         # Protein
         self.protein_creator = Tools.ProteinCreator(
-            self.env, 
-            self.config.sim_path['protein'], 
-            with_ions=True, 
+            self.env,
+            self.config.sim_path['protein'],
+            with_ions=True,
             surface_file=self.config.sim_path['surface_db'],
-            protonation_file=self.config.sim_path['protonation_db'], 
+            protonation_file=self.config.sim_path['protonation_db'],
             ph=self.config.sim_parameter['pH']
             )
-        
+
         self.protein = self.protein_creator.create()
         # Polymer
         if 'named_sequence' in self.config.sim_parameter:
@@ -173,7 +177,7 @@ class Job(object):
             self._mark_complete(-1)
         self.terminate_fifos()
 
-    def create_local_env(self, local_dir='/data/ohl/'):
+    def create_local_env(self, local_dir='/data/'):
         '''Create unique local job-folder and create the 
         '''
         name_comp = self.config.sim_path['root'].split('/')[-3:]
@@ -182,7 +186,8 @@ class Job(object):
         else:
             del name_comp[0]
         folder_name = '-'.join(name_comp)
-        local_folder = os.path.join(local_dir, folder_name)
+        local_userdir = os.path.join(local_dir, self.username)
+        local_folder = os.path.join(local_userdir, folder_name)
         if not os.path.exists(local_folder):
             os.mkdir(local_folder)
         new_paths = self.create_folders(local_folder)
