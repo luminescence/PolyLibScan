@@ -186,7 +186,10 @@ class Job(object):
         else:
             del name_comp[0]
         folder_name = '-'.join(name_comp)
-        local_userdir = os.path.join(local_dir, self.username)
+        if 'local_root' in self.config.sim_path and self.config.sim_path['local_root'] != '':
+            local_userdir = self.config.sim_path['local_root']
+        else:
+            local_userdir = os.path.join(local_dir, self.username)
         local_folder = os.path.join(local_userdir, folder_name)
         if not os.path.exists(local_folder):
             os.mkdir(local_folder)
