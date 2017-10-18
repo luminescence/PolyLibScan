@@ -31,7 +31,7 @@ class JobSave(object):
                         for dir_name in ['input', 'output', 'logs', 
                                          'fifo', 'root', 'local_root']}
         path['meta'] = path['root'].joinpath('config_with_setup.yml')
-        path['p_list'] = path.joinpath('particle_list.npy')
+        path['p_list'] = path['root'].joinpath('particle_list.npy')
         return path
 
     def save(self):
