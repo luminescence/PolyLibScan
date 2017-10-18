@@ -117,6 +117,10 @@ class Job(object):
             self.compactor.db.close()
 
     def clean_up(self):
+        try:
+            self.terminate_fifos()
+        except OSError:
+            pass
         self.compactor.clean_up()
 
     def set_variables(self, vars_, lmp_instance):
@@ -171,7 +175,6 @@ class Job(object):
             # mark job as completed
         if start_idx != -1:
             self._mark_complete(-1)
-        self.terminate_fifos()
 
     def create_local_env(self, local_dir='/data/ohl/'):
         '''Create unique local job-folder and create the 
