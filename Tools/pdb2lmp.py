@@ -2,13 +2,115 @@ import numpy as np
 import itertools as it
 import Bio.PDB as PDB
 import yaml
+
 from lmp_types import *
 from lmp_particlesAndInteractions import *
 from lmpObj import LmpObj
 from lmp_creator import LmpCreator
 import PolyLibScan.Database.db as DB
 
-class ProteinCreator(LmpCreator):
+
+class particle_methods_bundled:
+    def _find_particle_by_pdb_id(self, pdb_residue_id, molecule):
+        '''Finds the id of the particle in the molecule object based on the
+        pdb internal id.
+        '''
+        def has_right_id(search_particle):
+            return (search_particle.residue != None
+                    and search_particle.residue.chain== pdb_residue_id[0]  # chain
+                    and search_particle.residue.id[0]==' '
+                    and search_particle.residue.id[1]== pdb_residue_id[1]  # id
+                    and search_particle.residue.id[2]== pdb_residue_id[2]) # iCode
+
+        particle = filter(has_right_id, molecule.data['particles'])
+        if len(particle)>1:
+            raise Exception('Found more than one particle: %s \nCheck your pdb file for duplicate entries.' % (
+                [p.residue for p in particle]))
+        elif len(particle)==0:
+            raise Exception("There is no particle with chain %s, id %d and iCode '%s'" % pdb_residue_id)
+        return particle[0]
+
+    def _make_particle_unique(self, particle):
+        '''assigns new, unique particle-type to given particle.
+        The new particle type has the same properties as the old one,
+        but is uniquely assigned to just this particle.
+        Returns the newly created atom type.
+
+        Input:
+            particle:  [Particle Obj]
+
+        Output:
+            [atom_type]
+        '''
+        new_type_name = '%s|%s|%d|%d' % (particle.residue.name, particle.residue.chain,
+                                        particle.residue.id[1], particle.type_.Id)
+        old_type = self.env.atom_type[particle.type_.name]
+        self.env.atom_type[new_type_name] = AtomType(new_type_name,
+                                                 {'mass': old_type.mass,
+                                                  'radius': old_type.radius,
+                                                  'charge': old_type.charge,
+                                                  'hydrophobicity': old_type.hydrophobicity,
+                                                  'surface_energy': old_type.surface_energy,
+                                                  'interacting': old_type.interacting},
+                                                  unique=True)
+        # change particle type to newly created
+        particle.type_ = self.env.atom_type[new_type_name]
+        return self.env.atom_type[new_type_name]
+
+
+class protonation_methods_bundled(particle_methods_bundled):
+    def add_protonation(self, molecule, protonation_data, ph=8.0):
+        for res_name, atom_id,pka in it.izip(protonation_data['resn'],
+                                             protonation_data[['chain', 'resi', 'iCode']],
+                                             protonation_data['pka']):
+            protonation_change = self._calc_protonation_change(res_name, ph, pka)
+            if protonation_change != 0:
+                particle = self._find_particle_by_pdb_id(atom_id, molecule)
+                self._change_protonation(particle, protonation_change)
+
+    @staticmethod
+    def _calc_protonation_change(res_name, ph, pka):
+        # Residues that get protonated below their pKa
+        if res_name in ['N+', 'GLU', 'ASP', 'HIS']:
+            change = (1,0)
+        # Residues that get deprotonated above their pKa
+        elif res_name in ['LYS', 'ARG', 'TYR', 'CYS', 'C-']:
+            change = (0,-1)
+        # Weird case
+        else:
+            raise ValueError("for some reason you want to change the protonation of %s" % res_name)
+        if ph < pka:
+            return change[0]
+        elif ph > pka:
+            return change[1]
+        else:
+            return 0
+
+    def _change_protonation(self, particle, protonation_change):
+        if not particle.type_.unique:
+            self._make_particle_unique(particle)
+        particle.type_.charge += protonation_change
+
+
+class surface_methods_bundled(particle_methods_bundled):
+    def add_surface_energy(self, atom_id, surface_energy, molecule):
+        particle = self._find_particle_by_pdb_id(atom_id, molecule)
+        if not particle.type_.unique:
+            protein_particle_type = self._make_particle_unique(particle)
+        particle.type_.surface_energy = surface_energy
+
+    def add_surface_energies(self, molecule, surface_data, area_energy=False):
+        if area_energy:
+            e_id = 'areaParameter'
+        else:
+            #singleParameter column
+            e_id = 'singleParameter'
+
+        for atom_id,surface_energy in it.izip(surface_data[['chain', 'id', 'iCode']], surface_data[e_id]):
+            self.add_surface_energy(atom_id, surface_energy, molecule)
+
+
+class ProteinCreator(LmpCreator, protonation_methods_bundled, surface_methods_bundled):
     '''
     input:
         pdb_path:            string  | path to pdb file 
@@ -85,101 +187,6 @@ class ProteinCreator(LmpCreator):
     def get_protonation_data(self, path, pdb_id):
         surface_db = DB.Database(path)
         return surface_db._load_table('/protonation', pdb_id)
-
-    def add_surface_energies(self, molecule, surface_data, area_energy=False):
-        if area_energy:
-            e_id = 'areaParameter'
-        else:
-            #singleParameter column
-            e_id = 'singleParameter'
-
-        for atom_id,surface_energy in it.izip(surface_data[['chain', 'id', 'iCode']], surface_data[e_id]):
-            self.add_surface_energy(atom_id, surface_energy, molecule)
-
-    @staticmethod
-    def _calc_protonation_change(res_name, ph, pka):
-        # Residues that get protonated below their pKa
-        if res_name in ['N+', 'GLU', 'ASP', 'HIS']:
-            change = (1,0)
-        # Residues that get deprotonated above their pKa
-        elif res_name in ['LYS', 'ARG', 'TYR', 'CYS', 'C-']:
-            change = (0,-1)
-        # Weird case
-        else:
-            raise ValueError("for some reason you want to change the protonation of %s" % res_name)
-        if ph < pka:
-            return change[0]
-        elif ph > pka:
-            return change[1]
-        else:
-            return 0
-
-    def add_protonation(self, molecule, protonation_data, ph=8.0):
-        for res_name, atom_id,pka in it.izip(protonation_data['resn'],
-                                             protonation_data[['chain', 'resi', 'iCode']], 
-                                             protonation_data['pka']):
-            protonation_change = self._calc_protonation_change(res_name, ph, pka)
-            if protonation_change != 0:
-                particle = self._find_particle_by_pdb_id(atom_id, molecule)
-                self._change_protonation(particle, protonation_change)
-
-    def _change_protonation(self, particle, protonation_change):
-        if not particle.type_.unique: 
-            self._make_particle_unique(particle) 
-        particle.type_.charge += protonation_change
-
-    def add_surface_energy(self, atom_id, surface_energy, molecule):
-        particle = self._find_particle_by_pdb_id(atom_id, molecule)
-        if not particle.type_.unique: 
-            protein_particle_type = self._make_particle_unique(particle) 
-        particle.type_.surface_energy = surface_energy
-
-    def _find_particle_by_pdb_id(self, pdb_residue_id, molecule):
-        '''Finds the id of the particle in the molecule object based on the 
-        pdb internal id. 
-        '''
-        def has_right_id(search_particle):
-            return (search_particle.residue != None 
-                    and search_particle.residue.chain== pdb_residue_id[0]  # chain
-                    and search_particle.residue.id[0]==' '
-                    and search_particle.residue.id[1]== pdb_residue_id[1]  # id
-                    and search_particle.residue.id[2]== pdb_residue_id[2]) # iCode
-
-        particle = filter(has_right_id, molecule.data['particles'])
-        if len(particle)>1:
-            raise Exception('Found more than one particle: %s \nCheck your pdb file for duplicate entries.' % (
-                [p.residue for p in particle]))
-        elif len(particle)==0:
-            raise Exception("There is no particle with chain %s, id %d and iCode '%s'" % pdb_residue_id)
-        return particle[0]
-
-    def _make_particle_unique(self, particle):
-        '''assigns new, unique particle-type to given particle.
-        The new particle type has the same properties as the old one,
-        but is uniquely assigned to just this particle.
-        Returns the newly created atom type.
-
-        Input:
-            particle:  [Particle Obj]
-
-        Output:
-            [atom_type]
-        '''
-        new_type_name = '%s|%s|%d|%d' % (particle.residue.name, particle.residue.chain, 
-                                        particle.residue.id[1], particle.type_.Id) 
-        old_type = self.env.atom_type[particle.type_.name]
-        self.env.atom_type[new_type_name] = AtomType(new_type_name, 
-                                                 {'mass': old_type.mass,
-                                                  'radius': old_type.radius, 
-                                                  'charge': old_type.charge,
-                                                  'hydrophobicity': old_type.hydrophobicity,
-                                                  'surface_energy': old_type.surface_energy,
-                                                  'interacting': old_type.interacting},
-                                                  unique=True)
-        # change particle type to newly created
-        particle.type_ = self.env.atom_type[new_type_name]
-        return self.env.atom_type[new_type_name]
-
 
     def coarse_grain_particles(self, lmp_obj):
         '''
