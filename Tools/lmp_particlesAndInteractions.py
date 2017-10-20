@@ -10,7 +10,25 @@ class Particle(object):
         self.position = position
         self.mol = molecule
         self.residue = res_id
-    
+        self.charge = self.type_.charge
+
+    @property
+    def type_(self):
+        return self._type_
+
+    @type_.setter
+    def type_(self, new_type):
+        """raise Warning if the atom type is truly changed, i.e. if it's not just about making the particle unique or changing from backbone to amino acid"""
+
+        particle_already_had_type_ = hasattr(self, 'type_')
+        if particle_already_had_type_:
+            allowed_type_changes = ['BB', new_type.name, new_type.name.split('|')[0]]
+            if self.type_.name not in allowed_type_changes:
+                raise Warning('Trying to change type, this would require redoing the protonation and checking the charge! Implement it!')
+
+        self._type_ = new_type
+
+
     @property
     def residue(self):
         return self._residue
@@ -28,7 +46,7 @@ class Particle(object):
         return self.mol.Id
 
     def __repr__(self):
-        return 'Particle | Id: %d - %s' % (self.Id, self.type_)
+        return 'Particle | Id: %d - %s | Charge: %d' % (self.Id, self.type_, self.charge)
 
 class Bond(object):
 

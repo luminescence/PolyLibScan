@@ -42,6 +42,7 @@ class particle_methods_bundled:
         Output:
             [atom_type]
         '''
+
         new_type_name = '%s|%s|%d|%d' % (particle.residue.name, particle.residue.chain,
                                         particle.residue.id[1], particle.type_.Id)
         old_type = self.env.atom_type[particle.type_.name]
@@ -53,10 +54,10 @@ class particle_methods_bundled:
                                                   'surface_energy': old_type.surface_energy,
                                                   'interacting': old_type.interacting},
                                                   unique=True)
+
         # change particle type to newly created
         particle.type_ = self.env.atom_type[new_type_name]
         return self.env.atom_type[new_type_name]
-
 
 class protonation_methods_bundled(particle_methods_bundled):
     def add_protonation(self, molecule, protonation_data, ph=8.0):
@@ -87,9 +88,7 @@ class protonation_methods_bundled(particle_methods_bundled):
             return 0
 
     def _change_protonation(self, particle, protonation_change):
-        if not particle.type_.unique:
-            self._make_particle_unique(particle)
-        particle.type_.charge += protonation_change
+        particle.charge = particle.type_.charge + protonation_change
 
 
 class surface_methods_bundled(particle_methods_bundled):
