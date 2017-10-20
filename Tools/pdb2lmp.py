@@ -26,7 +26,8 @@ class ProteinCreator(LmpCreator):
     '''
     def __init__(self, environment, pdb_path, cg_lvl='backbone', 
                  with_ions=False, with_ghosts=True, add_protein_binding=True,
-                 surface_file='', protonation_file='', ph=8.0):
+                 surface_file='', protonation_file='', 
+                 use_amino_acids=True, ph=8.0):
         super(ProteinCreator, self).__init__(environment)
         self.mol_type = 'protein'
         self.pdb_path = pdb_path
@@ -36,6 +37,7 @@ class ProteinCreator(LmpCreator):
         self._add_protein_binding = add_protein_binding
         self._with_ions = with_ions
         self._with_ghosts = with_ghosts
+        self._with_amino_acids = use_amino_acids
         self.surface_file = surface_file
         self.protonation_file = protonation_file
         self.ph = ph
@@ -61,7 +63,8 @@ class ProteinCreator(LmpCreator):
         molecule.pdb_id = self.pdb_path.split('/')[-1].split('.')[0] # this has to be changed in the long run.
 
     def _create_custom(self, molecule):
-        self.change_to_res_based(molecule)
+        if self._with_amino_acids:
+            self.change_to_res_based(molecule)
         if self.surface_file:
             surface_data = self.get_surface_data(self.surface_file, molecule.pdb_id)
             self.add_surface_energies(molecule, surface_data)
@@ -141,7 +144,7 @@ class ProteinCreator(LmpCreator):
         def has_right_id(search_particle):
             return (search_particle.residue != None 
                     and search_particle.residue.chain== pdb_residue_id[0]  # chain
-                    and search_particle.residue.id[0]==' '
+                    and search_particle.residue.id[0]==' '                 # exclude Ghost particles
                     and search_particle.residue.id[1]== pdb_residue_id[1]  # id
                     and search_particle.residue.id[2]== pdb_residue_id[2]) # iCode
 

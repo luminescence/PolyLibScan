@@ -1,6 +1,7 @@
 from PolyLibScan.Tools.pdb2lmp import ProteinCreator
 from PolyLibScan.Tools.environment import Environment
 import pathlib2 as pl
+import yaml
 
 import mock
 import unittest as ut
@@ -11,50 +12,8 @@ class TestProtein_Maker(ut.TestCase):
 
     def __init__(self, *args, **kwargs):
         super(TestProtein_Maker, self).__init__(*args, **kwargs)
-        self.cfg_data = {}
-        self.cfg_data['Bonds'] = {'peptide': {'kind': 'harmonic',
-                                                'coef1': 120,
-                                                'coef2': 4.0},
-                                    'ghost': {'kind': 'harmonic',
-                                                'coef1': 120,
-                                                'coef2': 4.0}}
-        self.cfg_data['Angles'] = {'peptide': {'kind': 'harmonic',
-                                                'coef1': 120,
-                                                'coef2': 4.0}}
-        self.cfg_data['Dihedrals'] = {'peptide': {'kind': 'harmonic',
-                                                    'coef1': 120,
-                                                    'coef2': 4.0}}
-        self.cfg_data['Atoms'] = {'BB': {
-                                    'mass': 10.0,
-                                    'radius': 2.0},
-                                  'BB_ghost': {
-                                    'mass': 10.0,
-                                    'radius': 2.0},
-                                  'BP': {
-                                    'mass': 10.0,
-                                    'radius': 2.0}
-                                    }
-        self.cfg_data['Pairs'] = {'lj': {
-                                    'kind': 'morse',
-                                    'repulsive_only': 0,
-                                    'single_type_parametrised': True,
-                                    'cutoff': 45,
-                                    'coef1': 0.0,
-                                    'coef2': 0.4},
-                                  'affinity': {
-                                    'kind': 'morse',
-                                    'repulsive_only': 0,
-                                    'single_type_parametrised': True,
-                                    'cutoff': 45,
-                                    'coef1': 0.0,
-                                    'coef2': 0.4}
-                                    }
-        self.cfg_data['globals'] = {'affinity_file': local_path.joinpath('data/affinities_Originals2.h5'),
-                                    'atom_style': 'angle',
-                                    'bond_style': 'harmonic',
-                                    'angle_style': 'harmonic',
-                                    'pair_style': 'hybrid',
-                                    'box_margin': 30}
+        with open(local_path.joinpath('data', 'parameters_hp.yml').as_posix()) as f:
+            self.cfg_data = yaml.load(f)    
         Environment._get_config = mock.MagicMock(return_value=self.cfg_data)
         self.env = Environment('dummy.cfg')
 
@@ -73,13 +32,14 @@ class TestProtein_Maker(ut.TestCase):
         '''compared to the default protein creation, there are 28 new atoms 
         from the inhibitor of the 1LYA model.
         '''
-        protein = ProteinCreator(self.env, local_path.joinpath('data/1LYA.pdb').as_posix(), with_ions=True).create()
+        protein = ProteinCreator(self.env, local_path.joinpath('data/1LYA.pdb').as_posix(), with_ions=True,
+                                 use_amino_acids=False).create()
         self.isProtein(protein)
         self.assertEqual(len(protein.data['particles']), 2*(338+28))
 
     def test_ghost_option_non_valid(self):
         p_creator = ProteinCreator(self.env, local_path.joinpath('data/1LYA.pdb').as_posix(), 
-            with_ghosts='non-valid string')
+            with_ghosts='non-valid string', use_amino_acids=False)
         self.assertRaises(ValueError)
 
     def test_ghost_option(self):
@@ -107,16 +67,16 @@ class TestProtein_Maker(ut.TestCase):
 
     def test_change_to_resBased(self):
         p_creator = ProteinCreator(self.env, local_path.joinpath('data/1LYA.pdb').as_posix(), 
+                                  use_amino_acids=False,
                                   cg_lvl='geometric_center')
         protein = p_creator.create()
         p_creator.change_to_res_based(protein, local_path.joinpath('data/amino_acids.yml').as_posix())
 
         self.isProtein(protein)
-        self.assertEqual(protein.data['particles'][0].residue[0], protein.data['particles'][0].type_.name)
+        self.assertEqual(protein.data['particles'][0].residue.name, protein.data['particles'][0].type_.name)
         self.assertIn('BB', protein.env.atom_type)
         self.assertIn('BB_ghost', protein.env.atom_type)
         self.assertIn('BP', protein.env.atom_type)
-        self.assertEqual(len(protein.env.atom_type._defined_types), 23)
         # BP was never used
         self.assertEqual(len(protein.env.atom_type), 22)
 
@@ -165,8 +125,9 @@ class TestProtein_Maker(ut.TestCase):
 
     def test_ion_bonds(self):
         protein = ProteinCreator(self.env, local_path.joinpath('data/1LYA.pdb').as_posix(), 
-                                  add_protein_binding=True, with_ghosts=True, with_ions=True).create()
-        bonds = [bond for bond in protein.data['bonds'] if bond.members[1].residue[2][0]=='H_NAG']
+                                  add_protein_binding=True, with_ghosts=True, with_ions=True,
+                                  use_amino_acids=False).create()
+        bonds = [bond for bond in protein.data['bonds'] if bond.members[1].residue.id[0]=='H_NAG']
         self.assertEqual(len(bonds), 28)
         bond_types = set([bond.type_ for bond in bonds])
         self.assertEqual(len(bond_types), 1)
@@ -179,7 +140,7 @@ class TestProtein_Maker(ut.TestCase):
                                   add_protein_binding=False, with_ghosts=False, with_ions=False)
         protein = creator.create()
         self.assertTrue(protein.data['particles'][0].type_.name, 'BB')
-        creator._make_particle_unique(protein.data['particles'][0], 'huhu')
+        creator._make_particle_unique(protein.data['particles'][0])
         self.assertTrue(protein.data['particles'][0].type_.name, 'huhu')
 
     def test_find_residue(self):
@@ -188,16 +149,16 @@ class TestProtein_Maker(ut.TestCase):
         protein = creator.create()
         pdb_id = ('B', 346, ' ')
         resi = creator._find_particle_by_pdb_id(pdb_id, protein)
-        self.assertEqual(resi.residue[1], pdb_id[0])
-        self.assertEqual(resi.residue[2][1], pdb_id[1])
-        self.assertEqual(resi.residue[2][2], pdb_id[2])
+        self.assertEqual(resi.residue.chain, pdb_id[0])
+        self.assertEqual(resi.residue.id[1], pdb_id[1])
+        self.assertEqual(resi.residue.id[2], pdb_id[2])
 
     def test_surface_energy_add(self):
         creator = ProteinCreator(self.env, local_path.joinpath('data/1LYA.pdb').as_posix(), 
                                   add_protein_binding=False, with_ghosts=False, with_ions=False)
         protein = creator.create()
         test_particle = protein.data['particles'][1]
-        pdb_id = (test_particle.residue[1], test_particle.residue[2][1], test_particle.residue[2][2])
+        pdb_id = (test_particle.residue.chain, test_particle.residue.id[1], test_particle.residue.id[2])
         energy = 1337.0
         self.assertEqual(test_particle.type_.surface_energy, 0.0)
         creator.add_surface_energy(pdb_id, energy, protein)
@@ -207,7 +168,7 @@ class TestProtein_Maker(ut.TestCase):
         surface_path = local_path.joinpath('data/hydrophobic_parameters.h5').as_posix()
         protein = ProteinCreator(self.env, local_path.joinpath('data/1LYA.pdb').as_posix(), 
                                   add_protein_binding=True, with_ghosts=True, with_ions=True,
-                                  surface_file=surface_path).create()
+                                  use_amino_acids=False, surface_file=surface_path).create()
         count = sum([1 for resi in protein.data['particles'] 
                      if resi.type_.surface_energy > 0.0])
         self.assertEqual(count, 121)

@@ -12,14 +12,20 @@ class Test_JobSave(ut.TestCase):
 
 	def __init__(self, *args, **kwargs):
 		super(Test_JobSave, self).__init__(*args, **kwargs)
-		self.path = local_path.joinpath('data/jobs/abcd')
-		self.db_file1 = self.path.joinpath('test.h5')
-		self.db_file2 = self.path.joinpath('test2.h5')
+		self.path = {'input': local_path.joinpath('data', 'jobs', 'abcd', 'input').as_posix(),
+		'output': local_path.joinpath('data', 'jobs', 'abcd', 'output').as_posix(),
+		'root': local_path.joinpath('data', 'jobs', 'abcd').as_posix(),
+		'script': local_path.joinpath('data', 'static', 'cluster.in').as_posix(),
+		'logs': local_path.joinpath('data', 'jobs', 'abcd', 'logs').as_posix(),
+		'fifo': local_path.joinpath('data', 'jobs', 'abcd', 'fifo').as_posix(),
+		'local_root': ''}
+		self.db_file1 = pl.Path(self.path['root']).joinpath('test.h5')
+		self.db_file2 = pl.Path(self.path['root']).joinpath('test2.h5')
 
 	def test_set_paths(self):
 		if self.db_file2.exists():
 			self.db_file2.unlink()
-		obj = js.JobSave(self.path.as_posix(), db_name='test2.h5')
+		obj = js.JobSave(self.path, db_name='test2.h5')
 		results = obj._set_paths(self.path)
 		self.assertIn('meta', results)
 		self.assertIn('input', results)
@@ -38,7 +44,7 @@ class Test_JobSave(ut.TestCase):
 	def test_run(self):
 		if self.db_file2.exists():
 			self.db_file2.unlink()
-		js_obj = js.JobSave(self.path.as_posix(), db_name='test2.h5')
+		js_obj = js.JobSave(self.path, db_name='test2.h5')
 		self.assertEqual(len(js_obj.runs), 1)
 		js_obj.db.close()
 		self.db_file2.unlink()
@@ -46,13 +52,13 @@ class Test_JobSave(ut.TestCase):
 	def test_get_version(self):
 		if self.db_file2.exists():
 			self.db_file2.unlink()
-		js_obj = js.JobSave(self.path.as_posix(), db_name='test2.h5')
+		js_obj = js.JobSave(self.path, db_name='test2.h5')
 		self.assertTrue(len(js_obj.__git_hash__), 20)
 
 	# def test_has_error(self):
 	# 	#if self.db_file2.exists():
 	# 	#	self.db_file2.unlink()
-	# 	obj = js.JobSave(self.path.as_posix(), db_name='test2.h5')
+	# 	obj = js.JobSave(self.path, db_name='test2.h5')
 	# 	self.assertFalse(obj.has_error())
 
 	# 	obj.db.close()
@@ -60,7 +66,7 @@ class Test_JobSave(ut.TestCase):
 
 	# def test_overwrite(self):
 	# 	with self.assertRaises(Exception):
-	# 		js_obj = js.JobSave(self.path.as_posix(), db_name='test.h5')
+	# 		js_obj = js.JobSave(self.path, db_name='test.h5')
 
 	def test_git_hashes(self):
 		'''since the hashes and versions will change in the future,
@@ -68,7 +74,7 @@ class Test_JobSave(ut.TestCase):
 		'''
 		if self.db_file2.exists():
 			self.db_file2.unlink()
-		js_obj = js.JobSave(self.path.as_posix(), db_name='test2.h5')
+		js_obj = js.JobSave(self.path, db_name='test2.h5')
 		self.assertNotEqual(js_obj.__git_hash__, ' ')
 		js_obj.db.close()
 		js_obj.db_path.unlink()
