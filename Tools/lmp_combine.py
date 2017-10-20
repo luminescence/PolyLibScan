@@ -8,8 +8,9 @@ import itertools as it
 import sets
 import pandas as pd
 import PolyLibScan.Database.db as db
+from pdb2lmp import particle_methods_bundled
 
-class EnvManipulator(object):
+class EnvManipulator(object, particle_methods_bundled):
     '''LmpObj constructor is not used here!!
     '''
     def __init__(self, environment, randomize_positions=True, auto_repulsion=True, 
@@ -254,9 +255,7 @@ class EnvManipulator(object):
                 residue_id = (chain, ' ', res_id, iCode) 
                 particle = self._find_particle_by_pdb_id(residue_id, protein) 
                 if not particle.type_.unique: 
-                    new_type_name = '%s|%s%d|%d' % (particle.residue[0], particle.residue[1],  
-                                                    particle.residue[2][1], particle.type_.Id) 
-                    protein_particle_type = self._make_particle_unique(particle, new_type_name) 
+                    protein_particle_type = self._make_particle_unique(particle)
      
                 self.env.ff['affinity'][(particle.type_, self.env.atom_type[monomer_name])].epsilon = value 
 
@@ -277,29 +276,6 @@ class EnvManipulator(object):
         elif len(particle)==0:
             raise Exception("There is no particle with chain %s, id %d and iCode %s" % pdb_residue_id)
         return particle[0]
-
-    def _make_particle_unique(self, particle, type_name):
-        '''assigns new, unique particle-type to given particle.
-        The new particle type has the same properties as the old one,
-        but is uniquely assigned to just this particle.
-        Returns the newly created atom type.
-
-        Input:
-            particle:  [Particle Obj]
-            type_name: [String]
-
-        Output:
-            [atom_type]
-        '''
-        old_type = self.env.atom_type[particle.type_.name]
-        self.env.atom_type[type_name] = AtomType(type_name, 
-                                                 {'mass': old_type.mass,
-                                                  'radius': old_type.radius}, 
-                                                 unique=True)
-        # change particle type to newly created
-        particle.type_ = self.env.atom_type[type_name]
-        return self.env.atom_type[type_name]
-
 
     def add_auto_repulsion(self, lmpObj, repulsion_value):
         if not 'affinity' in self.env.ff:
