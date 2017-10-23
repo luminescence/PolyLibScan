@@ -11,23 +11,30 @@ import PolyLibScan.Database.db as DB
 
 
 class particle_methods_bundled:
-    def _find_particle_by_pdb_id(self, pdb_residue_id, molecule):
+    def _find_particle_by_pdb_id(self, pdb_residue_id, molecule, consider_ghost_atoms=False):
         '''Finds the id of the particle in the molecule object based on the
         pdb internal id.
         '''
+        #reformat pdb_residue_id
+        pdb_residue_id = list(pdb_residue_id)
+        pdb_residue_chain = pdb_residue_id.pop(0)
+        pdb_residue_id = [' '] + pdb_residue_id # 'real' particles have ' ' in the first position, 'ghost' atoms have 'ghost'
+        pdb_residue_id = tuple(pdb_residue_id)
+
+        if consider_ghost_atoms:
+            NotImplementedError('Finding ghost particles by Id is not implemented yet!')
+
         def has_right_id(search_particle):
             return (search_particle.residue != None
-                    and search_particle.residue.chain== pdb_residue_id[0]  # chain
-                    and search_particle.residue.id[0]==' '
-                    and search_particle.residue.id[1]== pdb_residue_id[1]  # id
-                    and search_particle.residue.id[2]== pdb_residue_id[2]) # iCode
+                    and search_particle.residue.chain== pdb_residue_chain  # chain
+                    and search_particle.residue.id == pdb_residue_id)   # all other information
 
         particle = filter(has_right_id, molecule.data['particles'])
         if len(particle)>1:
             raise Exception('Found more than one particle: %s \nCheck your pdb file for duplicate entries.' % (
                 [p.residue for p in particle]))
         elif len(particle)==0:
-            raise Exception("There is no particle with chain %s, id %d and iCode '%s'" % pdb_residue_id)
+            raise Exception("There is no particle with chain %s, id %d, iCode '%s' and ghost status %d" % pdb_residue_chain, pdb_residue_id[1:], pdb_residue_id[0])
         return particle[0]
 
     def _make_particle_unique(self, particle):
