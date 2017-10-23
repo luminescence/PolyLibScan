@@ -1,5 +1,7 @@
 import collections as col
 
+from lmp_types import AtomType
+
 Particle_id = col.namedtuple('Particle_id', 'name, chain, id')
 
 class Particle(object):
@@ -83,3 +85,60 @@ class Dihedral(object):
 
     def __repr__(self):
         return 'Dihedral | Id: %d - %s' % (self.Id, self.type_)
+
+
+class particle_methods_bundled:
+    def _find_particle_by_pdb_id(self, pdb_residue_id, molecule, consider_ghost_atoms=False):
+        '''Finds the id of the particle in the molecule object based on the
+        pdb internal id.
+        '''
+        #reformat pdb_residue_id
+        pdb_residue_id = list(pdb_residue_id)
+        pdb_residue_chain = pdb_residue_id.pop(0)
+        pdb_residue_id = [' '] + pdb_residue_id # 'real' particles have ' ' in the first position, 'ghost' atoms have 'ghost'
+        pdb_residue_id = tuple(pdb_residue_id)
+
+        if consider_ghost_atoms:
+            NotImplementedError('Finding ghost particles by Id is not implemented yet!')
+
+        def has_right_id(search_particle):
+            return (search_particle.residue != None
+                    and search_particle.residue.chain== pdb_residue_chain  # chain
+                    and search_particle.residue.id == pdb_residue_id)   # all other information
+
+        particle = filter(has_right_id, molecule.data['particles'])
+        if len(particle)>1:
+            raise Exception('Found more than one particle: %s \nCheck your pdb file for duplicate entries.' % (
+                [p.residue for p in particle]))
+        elif len(particle)==0:
+            raise Exception("There is no particle with chain %s, id %d, iCode '%s' and ghost status %d" % pdb_residue_chain, pdb_residue_id[1:], pdb_residue_id[0])
+        return particle[0]
+
+    def _make_particle_unique(self, particle):
+        '''assigns new, unique particle-type to given particle.
+        The new particle type has the same properties as the old one,
+        but is uniquely assigned to just this particle.
+        Returns the newly created atom type.
+
+        Input:
+            particle:  [Particle Obj]
+
+        Output:
+            [atom_type]
+        '''
+
+        new_type_name = '%s|%s|%d|%d' % (particle.residue.name, particle.residue.chain,
+                                        particle.residue.id[1], particle.type_.Id)
+        old_type = self.env.atom_type[particle.type_.name]
+        self.env.atom_type[new_type_name] = AtomType(new_type_name,
+                                                 {'mass': old_type.mass,
+                                                  'radius': old_type.radius,
+                                                  'charge': old_type.charge,
+                                                  'hydrophobicity': old_type.hydrophobicity,
+                                                  'surface_energy': old_type.surface_energy,
+                                                  'interacting': old_type.interacting},
+                                                  unique=True)
+
+        # change particle type to newly created
+        particle.type_ = self.env.atom_type[new_type_name]
+        return self.env.atom_type[new_type_name]

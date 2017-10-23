@@ -8,7 +8,7 @@ import itertools as it
 import sets
 import pandas as pd
 import PolyLibScan.Database.db as db
-from pdb2lmp import particle_methods_bundled
+
 
 class EnvManipulator(object, particle_methods_bundled):
     '''LmpObj constructor is not used here!!
