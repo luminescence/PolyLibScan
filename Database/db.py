@@ -84,7 +84,9 @@ class JobDataBase(object):
 
     @property
     def histogramm(self):
-        return self.db._load_table('/', 'histogramm')
+        histogramm_data = self.db._load_table('/', 'histogramm')
+        self.close()
+        return histogramm_data
     
     @histogramm.setter
     def histogramm(self, value):

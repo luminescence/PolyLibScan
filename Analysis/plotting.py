@@ -139,7 +139,7 @@ class Project(object):
             poly_type.distance_histogram(max_distance_range=max_distance_range, cumulative=cumulative, ax=ax)
         ax.set_xlabel('Distance $\AA$', size=20)
         ax.set_ylabel('Probability Density', size=20)
-        ax.legend()
+        ax.legend(loc=2, ncol=2)
         if save_path:
             plt.savefig(save_path)
 
@@ -267,6 +267,7 @@ class PolymerTypeSims(object):
             density = num_.cumulative_bins(self.distance_probability['density'])
         else:
             density = self.distance_probability['density']
+
         ax.plot(self.distance_probability['distance'][:max_distance_range], 
                 density[:max_distance_range], 
                 alpha=0.6, linestyle=line_style, lw=3,
