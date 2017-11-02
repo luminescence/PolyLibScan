@@ -116,7 +116,7 @@ class TestCombine_Maker(ut.TestCase):
 		molecule = env.molecules.values()[0]
 		particle = molecule.data['particles'][0]
 		old_type = particle.type_
-		new_type = env_manager._make_particle_unique(particle, 'testingUniqueAType')
+		new_type = env_manager._make_particle_unique(particle)
 		new_type = particle.type_
 		self.assertTrue(new_type.name in env.atom_type)
 		self.assertEqual(new_type.Id, particle.type_.Id)

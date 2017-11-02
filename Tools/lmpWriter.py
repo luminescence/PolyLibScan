@@ -163,12 +163,12 @@ class LmpWriter(object):
                     return '{:> 7d}{:> 4d}{:> 10.3f}{:> 10.3f}{:> 10.3f}{:> 4d}{:> 6.2f}'.format(
                         particle.Id, particle.type_.Id, 
                         particle.position[0], particle.position[1], particle.position[2], 
-                        particle.mol_id, particle.type_.charge)
+                        particle.mol_id, particle.charge)
                 elif molecule.globals['atom_substyle1'] == 'charge' and molecule.globals['atom_substyle2'] == 'angle':
                     return '{:> 7d}{:> 4d}{:> 10.3f}{:> 10.3f}{:> 10.3f}{:> 6.2f}{:> 4d}'.format(
                         particle.Id, particle.type_.Id, 
                         particle.position[0], particle.position[1], particle.position[2], 
-                        particle.type_.charge, particle.mol_id)
+                        particle.charge, particle.mol_id)
                 else:
                     raise Exception('Something is wrong here... style: %s, substyle1: %s, substyle2: %s'%(
                         molecule.globals['atom_style'], molecule.globals['atom_substyle1'], molecule.globals['atom_substyle2']))

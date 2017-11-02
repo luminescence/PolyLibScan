@@ -15,13 +15,16 @@ class JobDataBase(object):
     def create_groups(self):
         '''Creates the default groups in the database.
         '''
-        self.db._create_group('energies', self.db._handle.root)
-        self.db._create_group('distances', self.db._handle.root)
-        self.db._create_group('start_trajectories', self.db._handle.root)
-        self.db._create_group('end_trajectories', self.db._handle.root)
-        self.db._create_group('meta', self.db._handle.root)
-        self.db._create_group('trajectory', '/meta')
-        self.db._create_group('trajectories', self.db._handle.root)
+        try:
+            self.db._create_group('energies', self.db._handle.root)
+            self.db._create_group('distances', self.db._handle.root)
+            self.db._create_group('start_trajectories', self.db._handle.root)
+            self.db._create_group('end_trajectories', self.db._handle.root)
+            self.db._create_group('meta', self.db._handle.root)
+            self.db._create_group('trajectory', '/meta')
+            self.db._create_group('trajectories', self.db._handle.root)
+        except tb.NodeError:
+            raise tb.NodeError('Trying to create groups for a database that already contains them, i.e. the database already exists! Be cautious not to overwrite a database containing valuable data. If it is not needed anymore, delete it!')
 
     @property
     def particle_list(self):
