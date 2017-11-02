@@ -14,12 +14,12 @@ class TestCombine_Maker(ut.TestCase):
 
 	def __init__(self, *args, **kwargs):
 		super(TestCombine_Maker, self).__init__(*args, **kwargs)
-		env = Environment(local_path.joinpath('data', 'parameters_hp.yml').as_posix())
+		env = Environment(local_path.joinpath('data', 'updated_parameters8.yml').as_posix())
 		self.protein = ProteinCreator(env, local_path.joinpath('data/1LYA.pdb').as_posix())
 		self.polymer = PolymerCreator(env, ['ED', 'BP', 'CBS'], length=20, mode='random')
 
 	def test_random_start_position(self):
-		env = Environment(local_path.joinpath('data', 'parameters_hp.yml').as_posix())
+		env = Environment(local_path.joinpath('data', 'updated_parameters8.yml').as_posix())
 		self.protein.env = env
 		self.polymer.env = env
 		self.protein.create()
@@ -37,7 +37,7 @@ class TestCombine_Maker(ut.TestCase):
 
 	def test_overlap(self):
 		# Setup system
-		env = Environment(local_path.joinpath('data', 'parameters_hp.yml').as_posix())
+		env = Environment(local_path.joinpath('data', 'updated_parameters8.yml').as_posix())
 		self.protein.env = env
 		self.polymer.env = env
 		self.protein.create()
@@ -66,7 +66,7 @@ class TestCombine_Maker(ut.TestCase):
 												 env.molecules[keys[1]].data['particles']))
 
 	def test_random_start_position_distance(self):
-		env = Environment(local_path.joinpath('data', 'parameters_hp.yml').as_posix())
+		env = Environment(local_path.joinpath('data', 'updated_parameters8.yml').as_posix())
 		self.protein.env = env
 		self.polymer.env = env
 		self.protein.create()
@@ -84,30 +84,30 @@ class TestCombine_Maker(ut.TestCase):
 
 		self.assertLess(distance, polymer_radius+protein_radius)
 
-	def test_affinities(self):
-		env = Environment(local_path.joinpath('data', 'parameters_hp.yml').as_posix())
-		self.protein.env = env
-		self.polymer.env = env
-		self.protein.create()
-		self.polymer.create()
-		env_manager = EnvManipulator(env)
+	# def test_affinities(self):
+	# 	env = Environment(local_path.joinpath('data', 'updated_parameters8.yml').as_posix())
+	# 	self.protein.env = env
+	# 	self.polymer.env = env
+	# 	self.protein.create()
+	# 	self.polymer.create()
+	# 	env_manager = EnvManipulator(env)
 
-		mols = env.molecules
-		affinities = env.ff['affinity']
+	# 	mols = env.molecules
+	# 	affinities = env.ff['affinity']
 
-		number_of_atomsTypes_before = len(env.atom_type)
-		env_manager.add_affinities(affinity_file=local_path.joinpath('data/affinities_Originals2.h5').as_posix())
-		number_of_atomsTypes_after = len(env.atom_type)
+	# 	number_of_atomsTypes_before = len(env.atom_type)
+	# 	env_manager.add_affinities(affinity_file=local_path.joinpath('data/affinities_Originals2.h5').as_posix())
+	# 	number_of_atomsTypes_after = len(env.atom_type)
 
-		self.assertNotEqual(number_of_atomsTypes_before, number_of_atomsTypes_after)
+	# 	self.assertNotEqual(number_of_atomsTypes_before, number_of_atomsTypes_after)
 
-		sorted_atypes = sorted(env.atom_type.values(), key=lambda x:x.Id, reverse=True)
-		for i, a_type1 in enumerate(sorted_atypes):
-			for a_type2 in sorted_atypes:
-				self.assertTrue((a_type1, a_type2) in affinities)
+	# 	sorted_atypes = sorted(env.atom_type.values(), key=lambda x:x.Id, reverse=True)
+	# 	for i, a_type1 in enumerate(sorted_atypes):
+	# 		for a_type2 in sorted_atypes:
+	# 			self.assertTrue((a_type1, a_type2) in affinities)
 
 	def test_make_particle_unique(self):
-		env = Environment(local_path.joinpath('data', 'parameters_hp.yml').as_posix())
+		env = Environment(local_path.joinpath('data', 'updated_parameters8.yml').as_posix())
 		self.protein.env = env
 		self.polymer.env = env
 		self.protein.create()

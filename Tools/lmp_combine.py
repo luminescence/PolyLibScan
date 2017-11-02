@@ -13,7 +13,7 @@ import PolyLibScan.Database.db as db
 class EnvManipulator(object, particle_methods_bundled):
     '''LmpObj constructor is not used here!!
     '''
-    def __init__(self, environment, randomize_positions=True, auto_repulsion=True, 
+    def __init__(self, environment, randomize_positions=True, auto_repulsion=False, 
                  include_affinities=False, affinity_file=None):
         self.env = environment
         self.molecules = self.env.molecules

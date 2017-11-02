@@ -1,5 +1,5 @@
 import collections as col
-
+import warnings
 from lmp_types import AtomType
 
 Particle_id = col.namedtuple('Particle_id', 'name, chain, id')
@@ -35,9 +35,9 @@ class Particle(LmpObj):
 
         particle_already_had_type_ = hasattr(self, 'type_')
         if particle_already_had_type_:
-            allowed_type_changes = ['BB', new_type.name, new_type.name.split('|')[0]]
+            allowed_type_changes = ['BB_bb', new_type.name, new_type.name.split('|')[0]]
             if self.type_.name not in allowed_type_changes:
-                raise Warning('Trying to change type, this would require redoing the protonation and checking the charge! Implement it!')
+                warnings.warn('Trying to change type, this would require redoing the protonation and checking the charge! Implement it!')
 
         self._type_ = new_type
 
@@ -142,7 +142,7 @@ class particle_methods_bundled:
         '''
 
         new_type_name = '%s|%s|%d|%d' % (particle.residue.name, particle.residue.chain,
-                                        particle.residue.id[1], particle.type_.Id)
+                                         particle.residue.id[1], particle.type_.Id)
         old_type = self.env.atom_type[particle.type_.name]
         self.env.atom_type[new_type_name] = AtomType(new_type_name,
                                                  {'mass': old_type.mass,

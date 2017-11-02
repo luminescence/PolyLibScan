@@ -76,11 +76,16 @@ class Environment(object):
         for name, particle in config.items():
             for subname, parameter in particle.items():
                 combinedname = name + '_' + subname
-                self.atom_type.define_type(combinedname, AtomType(combinedname, parameter))
+                try:
+                    self.atom_type.define_type(combinedname, AtomType(combinedname, parameter))
+                except AttributeError as e:
+                    raise AttributeError('%s did not work.' % config)
+                
 
     def load_bond_types(self, config):
         for name, values in config.items():
             self.bond_type.define_type(name, BondType.from_dict(values, name=name))
+            
     def load_angle_types(self, config):
         for name, values in config.items():
             self.angle_type.define_type(name, AngleType.from_dict(values, name=name))

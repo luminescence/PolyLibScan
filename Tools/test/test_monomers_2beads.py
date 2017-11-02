@@ -15,7 +15,7 @@ class Test_Monomers(ut.TestCase):
     def __init__(self, *args, **kwargs):
         super(Test_Monomers, self).__init__(*args, **kwargs)
         self.env = Environment(local_path.joinpath('data', 
-            'updated_parameters8.yaml').as_posix())
+            'updated_parameters8.yml').as_posix())
 
     def test_bind_to(self):
         mono1 = Monomer([0, 0, 0], 'CBS', self.env.monomer_type['CBS'], 

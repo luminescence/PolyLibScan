@@ -45,6 +45,8 @@ class AtomType(object):
         '''
         parameter_names = ['mass', 'radius', 'interacting', 'charge', 'hydrophobicity',
                            'surface_energy', 'position']
+        if not isinstance(parameters, dict):
+            raise AttributeError('%s is not a dict' % parameters)
         for key in filter(lambda x:x in parameters.keys(), parameter_names):
             setattr(self, key, parameters[key])
 

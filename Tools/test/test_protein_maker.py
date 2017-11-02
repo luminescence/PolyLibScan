@@ -12,10 +12,11 @@ class TestProtein_Maker(ut.TestCase):
 
     def __init__(self, *args, **kwargs):
         super(TestProtein_Maker, self).__init__(*args, **kwargs)
-        with open(local_path.joinpath('data', 'parameters_hp.yml').as_posix()) as f:
-            self.cfg_data = yaml.load(f)    
-        Environment._get_config = mock.MagicMock(return_value=self.cfg_data)
-        self.env = Environment('dummy.cfg')
+        self.cfg_path = local_path.joinpath('data', 'updated_parameters8.yml')
+        self.env = Environment(self.cfg_path.as_posix())
+
+    def test_correct_path(self):
+        self.assertTrue(self.cfg_path.exists())
 
     def isProtein(self, molecule):
         self.assertTrue(hasattr(molecule, 'data'))
@@ -73,12 +74,11 @@ class TestProtein_Maker(ut.TestCase):
         p_creator.change_to_res_based(protein, local_path.joinpath('data/amino_acids.yml').as_posix())
 
         self.isProtein(protein)
-        self.assertEqual(protein.data['particles'][0].residue.name, protein.data['particles'][0].type_.name)
-        self.assertIn('BB', protein.env.atom_type)
-        self.assertIn('BB_ghost', protein.env.atom_type)
-        self.assertIn('BP', protein.env.atom_type)
-        # BP was never used
-        self.assertEqual(len(protein.env.atom_type), 22)
+        self.assertEqual(protein.data['particles'][0].residue.name + '_bb', 
+                         protein.data['particles'][0].type_.name)
+        self.assertIn('BB_bb', protein.env.atom_type)
+        self.assertIn('BB_ghost_bb', protein.env.atom_type)
+        self.assertNotIn('BP_bb', protein.env.atom_type)
 
     def test_cg_lvl_backbone(self):
         protein = ProteinCreator(self.env, local_path.joinpath('data/1LYA.pdb').as_posix(), 
@@ -134,14 +134,13 @@ class TestProtein_Maker(ut.TestCase):
         self.assertEqual(list(bond_types)[0].name, 'ghost')
 
     def test_make_unique(self):
-        Environment._get_config = mock.MagicMock(return_value=self.cfg_data)
-        env = Environment('dummy.cfg')
+        env = Environment(self.cfg_path.as_posix())
         creator = ProteinCreator(env, local_path.joinpath('data/1LYA.pdb').as_posix(), 
                                   add_protein_binding=False, with_ghosts=False, with_ions=False)
         protein = creator.create()
-        self.assertTrue(protein.data['particles'][0].type_.name, 'BB')
+        self.assertEqual(protein.data['particles'][0].type_.name, 'GLY_bb')
         creator._make_particle_unique(protein.data['particles'][0])
-        self.assertTrue(protein.data['particles'][0].type_.name, 'huhu')
+        self.assertEqual(protein.data['particles'][0].type_.name, 'GLY|A|1|2')
 
     def test_find_residue(self):
         creator = ProteinCreator(self.env, local_path.joinpath('data/1LYA.pdb').as_posix(), 
@@ -162,7 +161,7 @@ class TestProtein_Maker(ut.TestCase):
         energy = 1337.0
         self.assertEqual(test_particle.type_.surface_energy, 0.0)
         creator.add_surface_energy(pdb_id, energy, protein)
-        self.assertAlmostEqual(protein.data['particles'][1].type_.surface_energy, 1337.0)
+        self.assertAlmostEqual(test_particle.type_.surface_energy, 1337.0)
 
     def test_surface_energy_full(self):
         surface_path = local_path.joinpath('data/hydrophobic_parameters.h5').as_posix()
