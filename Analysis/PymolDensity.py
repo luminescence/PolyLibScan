@@ -66,7 +66,7 @@ class Job(PymolDensity):
         dx_path = density._map_path(self.pymol.db_folder)
         if not dx_path.exists():
             density.create_epitopsy_map(norm=norm)
-            density.save(self.db_folder)
+            density.save(self.pymol.db_folder)
         self.pymol_handle.load(dx_path.as_posix())
         density_obj = dc.DensityMap(self.pymol.sim.poly_type.name, self.pymol.sim.Id, 
                                  monomer_id, margin, resolution, dx_path, norm)

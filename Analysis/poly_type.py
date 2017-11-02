@@ -29,8 +29,8 @@ class PolymerTypeSims(plotting.PolymerTypeSims, bayes.PolymerTypeSims):
         def fget(self):
             if self._energy_distance_distribution == None:
                 results = self._calc_distance_distribution(self.sims)
-                self._distance_probability = results[['distance', 'density']]
-                self._energy_distance_distribution = results[['distance', 'energy']]
+                self.distance_probability = results[['distance', 'density']]
+                self.energy_distance_distribution = results[['distance', 'energy']]
             return self._distance_probability
         def fset(self, value):
             self._distance_probability = value
@@ -45,8 +45,8 @@ class PolymerTypeSims(plotting.PolymerTypeSims, bayes.PolymerTypeSims):
         def fget(self):
             if self._energy_distance_distribution == None:
                 results = self._calc_distance_distribution(self.sims)
-                self._distance_probability = results[['distance', 'density']]
-                self._energy_distance_distribution = results[['distance', 'energy']]
+                self.distance_probability = results[['distance', 'density']]
+                self.energy_distance_distribution = results[['distance', 'energy']]
             return self._energy_distance_distribution
         def fset(self, value):
             self._energy_distance_distribution = value

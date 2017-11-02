@@ -6,6 +6,7 @@ import Save
 import helpers.time as tm
 import itertools as it
 import tempfile as temp
+import time
 import yaml
 
 import helpers.git as _git
@@ -53,8 +54,8 @@ class Job(object):
         
         self.protein = self.protein_creator.create()
         # Polymer
-        if 'named_sequence' in self.config.sim_parameter:
-            self.polymer_creator = Tools.PolymerCreator(self.env, self.config.sim_parameter['named_sequence'], mode='cycle')
+        if 'poly_sequence' in self.config.sim_parameter:
+            self.polymer_creator = Tools.PolymerCreator(self.env, self.config.sim_parameter['poly_sequence'], mode='cycle')
         else:
             self.polymer_creator = Tools.PolymerCreator(self.env, 
                 self.config.sim_parameter['monomers'], weights=self.config.sim_parameter['weights'], 
@@ -66,6 +67,7 @@ class Job(object):
         self.setup_writer = Tools.LmpWriter(self.env)
 
         # Update Lammps Parameters
+        self.config.sim_parameter['poly_sequence'] = [monomers.type_.name for monomers in self.poly.data['monomers']]
         self.config.sim_parameter['named_sequence'] = [particle.type_.name for particle in self.poly.data['particles']]
         self.config.sim_parameter['id_sequence'] = [particle.type_.Id for particle in self.poly.data['particles']]
         as_data = self.sim.activeSiteParticles(self.protein, self.config.sim_path['active_site'])
@@ -108,6 +110,7 @@ class Job(object):
     def save(self):
         '''Save the data of the completed simulations to HDF5 database.
         '''
+        time.sleep(30)
         if not hasattr(self, 'compactor'):
             self.setup_job_save()
         try:
@@ -176,7 +179,7 @@ class Job(object):
         if start_idx != -1:
             self._mark_complete(-1)
 
-    def create_local_env(self, local_dir='/data/ohl/'):
+    def create_local_env(self, local_dir='/data/marius/'):
         '''Create unique local job-folder and create the 
         '''
         name_comp = self.config.sim_path['root'].split('/')[-3:]

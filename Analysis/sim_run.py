@@ -117,22 +117,22 @@ class Run(plotting.Run):
     def total_energy(self):
         if not self._parse.db.is_open():
             self._parse.open()
-        return self.job._parse.energie_ts_load(self.Id, column=[1,5])
+        return self.job._parse.energie_ts_load(self.Id, col=[1,5])
         
     def potential_energy(self):
         if not self._parse.db.is_open():
             self._parse.open()
-        return self.job._parse.energie_ts_load(self.Id, column=[2,5])
+        return self.job._parse.energie_ts_load(self.Id, col=[2,5])
 
     def kinetic_energy(self):
         if not self._parse.db.is_open():
             self._parse.open()
-        return self.job._parse.energie_ts_load(self.Id, column=[3,5])
+        return self.job._parse.energie_ts_load(self.Id, col=[3,5])
 
     def temperature(self):
         if not self._parse.db.is_open():
             self._parse.open()
-        return self.job._parse.energie_ts_load(self.Id, column=[4,5])
+        return self.job._parse.energie_ts_load(self.Id, col=[4,5])
 
     def distance_time_series(self):
         if not self._parse.db.is_open():

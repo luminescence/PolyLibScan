@@ -237,7 +237,7 @@ class ProteinCreator(LmpCreator):
         particles = []
         for i, p in enumerate(particle_data):
             particles.append(Particle(lmp_obj, self.env.new_id['particle'], 
-                                      lmp_obj.env.atom_type['BB'], 
+                                      lmp_obj.env.atom_type['BB_bb'], 
                                       (p[1], p[2], p[3]),
                                       p[0].copy()))
         return particles        
@@ -288,7 +288,7 @@ class ProteinCreator(LmpCreator):
         for i, real_particle in enumerate(lmp_obj.data['particles']):
             res_id = ('ghost', real_particle.residue.chain, ('ghost', real_particle.residue.id[1], real_particle.residue.id[2]))
             g_particles[i] = Particle(lmp_obj, self.env.new_id['particle'],
-                                    lmp_obj.env.atom_type['BB_ghost'],
+                                    lmp_obj.env.atom_type['BB_ghost_bb'],
                                     res_id,
                                     real_particle.position.copy())
         
@@ -356,9 +356,9 @@ class ProteinCreator(LmpCreator):
             for name, config_type in type_data.items():
                 molecule.env.atom_type.define_type(name, AtomType(name, config_type))
         ## read particle res and change restype
-        real_particle = np.extract([x.type_.name !='BB_ghost' for x in molecule.data['particles']], molecule.data['particles'])
+        real_particle = np.extract([x.type_.name !='BB_ghost_bb' for x in molecule.data['particles']], molecule.data['particles'])
         for i, particle in enumerate(real_particle):
-            if particle.residue.name in molecule.env.atom_type:
+            if particle.residue.name + '_bb' in molecule.env.atom_type:
                 if particle.type_.unique:
                     # in case the particle type is already unique, the resi
                     # specific properties are copied over.
@@ -368,7 +368,7 @@ class ProteinCreator(LmpCreator):
                     for prop in properties:
                         setattr(unique_particle_type, prop, getattr(res_based_type, prop))
                 else:
-                    particle.type_ = molecule.env.atom_type[particle.residue.name]
+                    particle.type_ = molecule.env.atom_type[particle.residue.name + '_bb']
             else:
                 raise ValueError('particle type %s not found in types.' % particle.residue.name)
 
