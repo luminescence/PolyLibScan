@@ -154,28 +154,75 @@ class Project(object):
         if save_path:
             plt.savefig(save_path)
 
-    def plot_bars(self, distance_cutoff=5, ax=None, save_path=None):
+    def plot_bars(self, distance_cutoff=10, ax=None, save_path=None):
         if not ax:
             fig, ax = plt.subplots(figsize=(18,12))
             ax.set_title('%s (PDB: %s)' % (self.jobs[0].meta['protein_name'], self.jobs[0].meta['protein']), size=20)
-        width = 0.35
-        index = np.arange(len(self.polymer_types.keys()))
-        inhib_polys = filter(lambda x:self.polymer_types[x].ic50>=0,self.polymer_types.keys())
-        non_inhib_polys = filter(lambda x:np.isnan(self.polymer_types[x].ic50),self.polymer_types.keys())
-        poly_by_inhib = sorted(inhib_polys, key=lambda x:self.polymer_types[x].ic50, reverse=True) + non_inhib_polys
-        ic_50s = [self.polymer_types[poly_name].ic50 for poly_name in poly_by_inhib]
-        # experimental Data
-        experimental = ax.bar(index, ic_50s, width)
-        binding = [self.polymer_types[poly_name].cumulative_binding_probability(distance_cutoff) 
-                    for poly_name in poly_by_inhib]
-        # simulation data
-        simulation = ax.bar(index + width, binding, width)
-        ax.set_xticks(index + width / 2)
-        ax.set_xticklabels(poly_by_inhib, rotation=45, ha='right')
+        
+        model_inhibition = self._inhibition_series(distance_cutoff)
+        ic50_data = self._ic50_series()
+        
+        combined = pd.DataFrame(data={'model': model_inhibition, 'ic50': ic50_data})
+        combined.sort(columns=['ic50'], ascending=False, inplace=True)
+        
+        colors = self.bar_colors(combined)
+        # set unknowns (marked with -1) to NaN
+        combined.loc[combined['ic50']==-1, 'ic50'] = np.nan
+        
+        combined.plot(kind='bar', ax=ax, color=colors)
         ax.set_xlabel('Polymer Types', size=20)
         ax.set_ylabel('Inhibition/Binding', size=20)
-        ax.legend([experimental, simulation], [r'$ic50^{-1}$ (Experiment)', 'Binding (Simulation)'],
-                   loc='best')
+        if save_path:
+            plt.savefig(save_path)
+
+    def bar_colors(self, data):
+        ic50_inhibitor_color = 'steelblue'
+        inhibitor_color = 'g'
+        non_inhibitors = 'r'
+        unknowns = 'k'
+        color_list = []
+        for name,d in data.iterrows():
+            if d.ic50 > 0:
+                color_list.append(ic50_inhibitor_color)
+                color_list.append(inhibitor_color)
+            elif np.isnan(d.ic50):
+                color_list.append(non_inhibitors)
+                color_list.append(non_inhibitors)
+            else:
+                color_list.append(unknowns)
+                color_list.append(unknowns)
+        return color_list
+
+    def _ic50_series(self):
+        ic_50s = {poly_name: self.polymer_types[poly_name].ic50 for poly_name in self.polymer_types}
+        return pd.Series(ic_50s).sort(inplace=False, ascending=False)
+
+    def _inhibition_series(self, distance_cutoff):
+        data = {name: polytype.cumulative_binding_probability(distance_cutoff) 
+                    for name,polytype in self.polymer_types.iteritems()}
+        return pd.Series(data)
+
+    def plot_inhibition(self, distance=10 ,ax=None, save_path=None):
+        if not ax:
+            fig, ax = plt.subplots(figsize=(18,12))
+            ax.set_title('%s (PDB: %s)' % (self.jobs[0].meta['protein_name'], 
+                                           self.jobs[0].meta['protein']), size=20)
+        data = self._inhibition_series(distance_cutoff=distance)
+        data.plot(kind='bar', ax=ax)
+        if save_path:
+            plt.savefig(save_path)
+
+    def plot_ic50(self, ax=None, save_path=None):
+        if not ax:
+            fig, ax = plt.subplots(figsize=(18,12))
+            ax.set_title('%s (PDB: %s)' % (self.jobs[0].meta['protein_name'], 
+                                           self.jobs[0].meta['protein']), size=20)
+        
+        data = self._ic50_series()
+        data_with_experimental_value = data[data!=-1]
+        if len(data_with_experimental_value) == 0:
+            raise ValueError('No PolymerTypes with known inhibition in project.')
+        data_with_experimental_value.plot(kind='bar', ax=ax)
         if save_path:
             plt.savefig(save_path)
 

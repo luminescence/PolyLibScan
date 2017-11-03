@@ -45,7 +45,10 @@ class Project(plotting.Project, bayes.Project):
         self.experimental_data = self._init_experimental_data(experimental_data)
         if self.experimental_data is not None:
             for p_type in self.polymer_types.values():
-                p_type.ic50 = self.experimental_data[p_type.name]
+                if p_type.name in self.experimental_data:
+                    p_type.ic50 = self.experimental_data[p_type.name]
+                else:
+                    p_type.ic50 = -1
 
     def search_static(self, file_name):
         file_list = list(self.path.joinpath('static').glob(file_name))
