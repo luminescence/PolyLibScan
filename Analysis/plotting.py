@@ -165,7 +165,7 @@ class Project(object):
         combined = pd.DataFrame(data={'model': model_inhibition, 'ic50': ic50_data})
         combined.sort(columns=['ic50'], ascending=False, inplace=True)
         
-        colors = self.bar_colors(combined)
+        colors = self._bar_colors(combined)
         # set unknowns (marked with -1) to NaN
         combined.loc[combined['ic50']==-1, 'ic50'] = np.nan
         
@@ -175,7 +175,7 @@ class Project(object):
         if save_path:
             plt.savefig(save_path)
 
-    def bar_colors(self, data):
+    def _bar_colors(self, data):
         ic50_inhibitor_color = 'steelblue'
         inhibitor_color = 'g'
         non_inhibitors = 'r'
