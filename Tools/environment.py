@@ -79,9 +79,8 @@ class Environment(object):
                 try:
                     self.atom_type.define_type(combinedname, AtomType(combinedname, parameter))
                 except AttributeError as e:
-                    raise AttributeError('%s did not work.' % config)
+                    raise AttributeError('%s did not work.' % combinedname)
                 
-
     def load_bond_types(self, config):
         for name, values in config.items():
             self.bond_type.define_type(name, BondType.from_dict(values, name=name))

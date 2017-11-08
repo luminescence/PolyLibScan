@@ -47,7 +47,7 @@ class PymolVisualisation(object):
     def set_protein_detail(self, level='cg'):
         if not level in ['full', 'cg']:
             raise AttributeError("level must be either 'cg' or 'full'")
-        protein_name = _os.path.base_name(self.protein)[:-4]
+        protein_name = self.protein_path.name[:-4]
         if level == 'cg':
             self.pymol_handle.select('backbone', protein_name + ' and name ca')
             self.pymol_handle.hide('(%s)' % protein_name)
