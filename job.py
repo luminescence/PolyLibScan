@@ -18,11 +18,11 @@ class Job(object):
     def __init__(self, config_path):
         super(Job, self).__init__()
         self.config = self.read_config(config_path)
-        setup_config_path = os.path.join(os.path.dirname(config_path), 'config_with_setup.yml')
-        if os.path.exists(setup_config_path):
-            with open(setup_config_path) as f:
+        self.config_with_setup = os.path.join(os.path.dirname(config_path), 'config_with_setup.yml')
+        if os.path.exists(self.config_with_setup):
+            with open(self.config_with_setup) as f:
                 setup_config = yaml.load(f)
-            self.config.sim_parameter['named_sequence'] = setup_config['sim_parameter']['named_sequence']
+            self.config.sim_parameter['poly_sequence'] = setup_config['sim_parameter']['poly_sequence']
 
         self.username = getpass.getuser()
 
@@ -89,8 +89,7 @@ class Job(object):
         self.config.lmp_parameter['bb_id'] = self.env.atom_type['BB_bb'].Id
         self.config.lmp_parameter['ghost_id'] = self.env.atom_type['BB_ghost_bb'].Id
         # the config with added information is always saved to the root directory
-        config_with_setup = os.path.join(self.config.sim_path['root'], 'config_with_setup.yml')
-        self.config.save(config_with_setup)
+        self.config.save(self.config_with_setup)
         # save particle list
         p_list_path = os.path.join(self.config.sim_path['root'], 'particle_list.npy')
         self.save_particle_list(p_list_path)
