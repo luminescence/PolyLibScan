@@ -121,42 +121,52 @@ class PolymerCreator(LmpCreator):
         '''links all the monomers to 
         one string together.
         '''
-        molecule.data['monomers'][0].bind_with(molecule.data['monomers'][1])
-        for current_element,next_element in zip(molecule.data['monomers'][1:-1],
-            molecule.data['monomers'][2:]):
-            current_element.bind_with(next_element)
+        monomers = molecule.data['monomers']
+        if len(monomers) < 2:
+            return []
+        for current_mono,next_mono in zip(monomers[0:-1], monomers[1:]):
+            current_mono.bind_with(next_mono)
         
         bonds = set([])
-        for mono in molecule.data['monomers']:
+        for mono in monomers:
             for bond in mono.bonds:
                 bonds.add(bond)
         return sorted(list(bonds), key=lambda x:x.Id)
     
     def create_polymer_angles(self, molecule):
-        molecule.data['monomers'][0].angle_with(molecule.data['monomers'][1])
-        for previous_element, current_element, next_element in zip(molecule.data['monomers'][:-2], 
-            molecule.data['monomers'][1:-1], molecule.data['monomers'][2:]):
-            current_element.angle_with(previous_element)
-            current_element.angle_with(next_element)
-            current_element.bb_angle_with(previous_element, next_element)
-        molecule.data['monomers'][-1].angle_with(molecule.data['monomers'][-2])
+        monomers = molecule.data['monomers']
+        if len(monomers) >= 2:
+            monomers[0].angle_with(monomers[1])
+            monomers[-1].angle_with(monomers[-2])
+        if len(monomers) >= 3:
+            for previous_element, current_element, next_element in zip(
+                                                    monomers[:-2], 
+                                                    monomers[1:-1], 
+                                                    monomers[2:]):
+                current_element.angle_with(previous_element)
+                current_element.angle_with(next_element)
+                current_element.bb_angle_with(previous_element, next_element)
 
         angles = set([])
-        for mono in molecule.data['monomers']:
+        for mono in monomers:
             for angle in mono.angles:
                 angles.add(angle)
         return sorted(list(angles), key=lambda x:x.Id)
 
     def create_polymer_dihedrals(self, molecule):
-        for previous_element, current_element, next_element, after_next_element in zip(
-            molecule.data['monomers'][:-3], 
-            molecule.data['monomers'][1:-2],
-            molecule.data['monomers'][2:-1], 
-            molecule.data['monomers'][3:]):
-            current_element.dihedral_with(previous_element)
-            current_element.bb_dihedral_with(previous_element, next_element, after_next_element)
-        molecule.data['monomers'][-1].dihedral_with(molecule.data['monomers'][-2])
-        molecule.data['monomers'][-2].dihedral_with(molecule.data['monomers'][-3])
+        monomers = molecule.data['monomers']
+        if len(monomers) >= 2:
+            molecule.data['monomers'][-1].dihedral_with(molecule.data['monomers'][-2])
+        if len(monomers) >= 3:
+            molecule.data['monomers'][-2].dihedral_with(molecule.data['monomers'][-3])
+        if len(monomers) >= 4:
+            for previous_element, current_element, next_element, after_next_element in zip(
+                molecule.data['monomers'][:-3], 
+                molecule.data['monomers'][1:-2],
+                molecule.data['monomers'][2:-1], 
+                molecule.data['monomers'][3:]):
+                current_element.dihedral_with(previous_element)
+                current_element.bb_dihedral_with(previous_element, next_element, after_next_element)
 
         dihedrals = set([])
         for mono in molecule.data['monomers']:

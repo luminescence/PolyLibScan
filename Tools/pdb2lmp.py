@@ -114,6 +114,8 @@ class ProteinCreator(LmpCreator, protonation_methods_bundled, surface_methods_bu
         molecule.pdb_id = self.pdb_path.split('/')[-1].split('.')[0] # this has to be changed in the long run.
 
     def _create_custom(self, molecule):
+        if self.with_ghosts:
+            self.add_ghost_particles(molecule)
         if self._with_amino_acids:
             self.change_to_res_based(molecule)
         if self.surface_file:
@@ -122,11 +124,7 @@ class ProteinCreator(LmpCreator, protonation_methods_bundled, surface_methods_bu
         if self.protonation_file:
             protonation_data = self.get_protonation_data(self.protonation_file, molecule.pdb_id)
             self.add_protonation(molecule, protonation_data, self.ph)
-        if self.with_ghosts:
-            g_particles, g_bonds = self.add_ghost_particles(molecule)
-            molecule.data['particles'] = np.append(
-                molecule.data['particles'], g_particles)
-            molecule.data['bonds'] += g_bonds
+            
         
         if self.add_protein_binding:
             self.add_protein_properties(molecule)
@@ -255,7 +253,9 @@ class ProteinCreator(LmpCreator, protonation_methods_bundled, surface_methods_bu
             g_bonds += [Bond(self.env.new_id['bond'],
                            lmp_obj.env.bond_type['ghost'],
                            [g_particles[i], real_particle])]
-        return g_particles, g_bonds
+        lmp_obj.data['particles'] = np.append(
+                lmp_obj.data['particles'], g_particles)
+        lmp_obj.data['bonds'] += g_bonds
 
     def add_protein_properties(self, protein):
         '''Adds the bonds, angles and dihedrals to the particles that
@@ -324,7 +324,9 @@ class ProteinCreator(LmpCreator, protonation_methods_bundled, surface_methods_bu
                     for prop in properties:
                         setattr(unique_particle_type, prop, getattr(res_based_type, prop))
                 else:
-                    particle.type_ = molecule.env.atom_type[particle.residue.name + '_bb']
+                    new_type = molecule.env.atom_type[particle.residue.name + '_bb']
+                    particle.type_ = new_type
+                    particle.charge = new_type.charge
             else:
                 raise ValueError('particle type %s not found in types.' % particle.residue.name)
 

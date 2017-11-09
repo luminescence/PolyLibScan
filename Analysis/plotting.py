@@ -31,12 +31,16 @@ class Project(object):
         '''
         if not ax:
             fig, ax = plt.subplots(figsize=(18,12))
-            ax.set_title('%s (PDB: %s)' % (self.jobs[0].meta['protein_name'], self.jobs[0].meta['protein'].upper()), size=20)
+            ax.set_title('%s (PDB: %s)' % (self.jobs[0].meta['protein_name'], 
+                                           self.jobs[0].meta['protein'].upper()), size=20)
         
-        results = self._scatter_data(subset=subset, with_errors=with_errors, with_labels=with_labels, 
-                                         with_crossvalidation=with_crossvalidation, 
-                                         confidence_interval=confidence_interval, min_dist_to_ac=min_dist_to_ac,
-                                         ignore_experiment=ignore_experiment)
+        results = self._scatter_data(subset=subset, 
+                                     with_errors=with_errors, 
+                                     with_labels=with_labels, 
+                                     with_crossvalidation=with_crossvalidation, 
+                                     confidence_interval=confidence_interval, 
+                                     min_dist_to_ac=min_dist_to_ac,
+                                     ignore_experiment=ignore_experiment)
 
         if with_errors:
             error = results['dist_max_error'].max()
@@ -85,7 +89,8 @@ class Project(object):
     def histogramm(self, min_dist_to_ac=5, ax=None, save_path=None):
         if not ax:
             fig, ax = plt.subplots(figsize=(18,12))
-            ax.set_title('%s (PDB: %s)' % (self.jobs[0].meta['protein_name'], self.jobs[0].meta['protein']), size=20)
+            ax.set_title('%s (PDB: %s)' % (self.jobs[0].meta['protein_name'], 
+                                           self.jobs[0].meta['protein']), size=20)
         if self.experimental_data is not None:
             near_active_site = self.endstate_matrix.stack(0).loc[self.endstate_matrix.stack(0)['Distance']<min_dist_to_ac, :].unstack()['Energy']
             a = near_active_site.loc[:, self.experimental_data[near_active_site.columns].isnull()].mean()
@@ -106,7 +111,8 @@ class Project(object):
     def multibox_plot(self, experimental_data=None, ax=None, save_path=None):
         if not ax:
             fig, ax = plt.subplots(figsize=(18,12))
-            ax.set_title('%s (PDB: %s)' % (self.jobs[0].meta['protein_name'], self.jobs[0].meta['protein']), size=20)
+            ax.set_title('%s (PDB: %s)' % (self.jobs[0].meta['protein_name'], 
+                                           self.jobs[0].meta['protein']), size=20)
         if experimental_data is None:
             experimental = self.experimental_data
         else:
@@ -134,7 +140,8 @@ class Project(object):
     def plot_distance_density(self, cumulative=False, max_distance_range=None, ax=None, save_path=None):
         if not ax:
             fig, ax = plt.subplots(figsize=(18,12))
-            ax.set_title('%s (PDB: %s)' % (self.jobs[0].meta['protein_name'], self.jobs[0].meta['protein']), size=20)
+            ax.set_title('%s (PDB: %s)' % (self.jobs[0].meta['protein_name'], 
+                                           self.jobs[0].meta['protein']), size=20)
         for name, poly_type in self.polymer_types.items():
             poly_type.distance_histogram(max_distance_range=max_distance_range, cumulative=cumulative, ax=ax)
         ax.set_xlabel('Distance $\AA$', size=20)
@@ -157,7 +164,8 @@ class Project(object):
     def plot_bars(self, distance_cutoff=10, ax=None, save_path=None):
         if not ax:
             fig, ax = plt.subplots(figsize=(18,12))
-            ax.set_title('%s (PDB: %s)' % (self.jobs[0].meta['protein_name'], self.jobs[0].meta['protein']), size=20)
+            ax.set_title('%s (PDB: %s)' % (self.jobs[0].meta['protein_name'], 
+                                           self.jobs[0].meta['protein']), size=20)
         
         model_inhibition = self._inhibition_series(distance_cutoff)
         ic50_data = self._ic50_series()
@@ -193,6 +201,20 @@ class Project(object):
                 color_list.append(unknowns)
         return color_list
 
+    def plot_experimental_model_comparison(self, distance, ax=None, save_path=None):
+        if not ax:
+            fig, ax = plt.subplots(figsize=(18,12))
+            ax.set_title('%s (PDB: %s)' % (self.jobs[0].meta['protein_name'], 
+                                           self.jobs[0].meta['protein']), size=20)
+        
+        model_inhibition = self._inhibition_series(distance)
+        ic50_data = self._ic50_series()
+        
+        combined = pd.DataFrame(data={'model': model_inhibition, 'ic50': ic50_data})
+        combined.plot(kind='scatter', x='ic50', y='model')
+        if save_path:
+            plt.savefig(save_path)
+
     def _ic50_series(self):
         ic_50s = {poly_name: self.polymer_types[poly_name].ic50 for poly_name in self.polymer_types}
         return pd.Series(ic_50s).sort(inplace=False, ascending=False)
@@ -202,7 +224,7 @@ class Project(object):
                     for name,polytype in self.polymer_types.iteritems()}
         return pd.Series(data)
 
-    def plot_inhibition(self, distance=10 ,ax=None, save_path=None):
+    def plot_inhibition(self, distance=10, ax=None, save_path=None):
         if not ax:
             fig, ax = plt.subplots(figsize=(18,12))
             ax.set_title('%s (PDB: %s)' % (self.jobs[0].meta['protein_name'], 

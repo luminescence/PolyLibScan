@@ -18,11 +18,11 @@ class Job(object):
     def __init__(self, config_path):
         super(Job, self).__init__()
         self.config = self.read_config(config_path)
-        setup_config_path = os.path.join(os.path.dirname(config_path), 'config_with_setup.yml')
-        if os.path.exists(setup_config_path):
-            with open(setup_config_path) as f:
+        self.config_with_setup = os.path.join(os.path.dirname(config_path), 'config_with_setup.yml')
+        if os.path.exists(self.config_with_setup):
+            with open(self.config_with_setup) as f:
                 setup_config = yaml.load(f)
-            self.config.sim_parameter['named_sequence'] = setup_config['sim_parameter']['named_sequence']
+            self.config.sim_parameter['poly_sequence'] = setup_config['sim_parameter']['poly_sequence']
 
         self.username = getpass.getuser()
 
@@ -43,6 +43,15 @@ class Job(object):
             data['path'] = os.path.join(self.config.lmp_path['fifo'], data['path'])
             fifo[name] = Tools.FiFo.create_from_dict(name, self, data)
         return fifo
+
+    def set_active_site(self):
+        as_data = self.sim.activeSiteParticles(self.protein, self.config.sim_path['active_site'])
+        # the mapping ensures that vanilla python objects are used as the initial data is numpy-based.
+        return  {'xyz': map(int, as_data['xyz']), 
+                'chain': map(str, as_data['chain']), 
+                'pdb_id': map(int, as_data['pdb_id']), 
+                'iCode': map(str, as_data['iCode'])}
+        
 
     def setup_env(self):
         self.env = Tools.Environment(self.config.sim_path['config'])
@@ -74,17 +83,13 @@ class Job(object):
         self.config.sim_parameter['poly_sequence'] = [monomers.type_.name for monomers in self.poly.data['monomers']]
         self.config.sim_parameter['named_sequence'] = [particle.type_.name for particle in self.poly.data['particles']]
         self.config.sim_parameter['id_sequence'] = [particle.type_.Id for particle in self.poly.data['particles']]
-        as_data = self.sim.activeSiteParticles(self.protein, self.config.sim_path['active_site'])
-        # the mapping ensures that vanilla python objects are used as the initial data is numpy-based.
-        self.config.sim_parameter['active_site'] = {'xyz': map(int, as_data['xyz']), 
-                                                    'chain': map(str, as_data['chain']), 
-                                                    'pdb_id': map(int, as_data['pdb_id']), 
-                                                    'iCode': map(str, as_data['iCode'])}
+        self.config.sim_parameter['active_site'] = self.set_active_site()
         self.config.lmp_parameter['active_site_ids'] = self.config.sim_parameter['active_site']['xyz']
         self.config.lmp_parameter['monomer_ids'] = self._get_monomer_ids()
+        self.config.lmp_parameter['bb_id'] = self.env.atom_type['BB_bb'].Id
+        self.config.lmp_parameter['ghost_id'] = self.env.atom_type['BB_ghost_bb'].Id
         # the config with added information is always saved to the root directory
-        config_with_setup = os.path.join(self.config.sim_path['root'], 'config_with_setup.yml')
-        self.config.save(config_with_setup)
+        self.config.save(self.config_with_setup)
         # save particle list
         p_list_path = os.path.join(self.config.sim_path['root'], 'particle_list.npy')
         self.save_particle_list(p_list_path)
@@ -114,7 +119,6 @@ class Job(object):
     def save(self):
         '''Save the data of the completed simulations to HDF5 database.
         '''
-        time.sleep(30)
         if not hasattr(self, 'compactor'):
             self.setup_job_save()
         try:
@@ -137,6 +141,10 @@ class Job(object):
                 val = ' '.join(map(str, val))
             lmp_instance.command('variable %s string "%s"'% (name,val))
 
+    def set_paths(self, paths, lmp_instance):
+        for name, path in paths.items():
+            lmp_instance.command('variable %s string "%s"'% (name, path))
+
     def set_fifos(self, fifos, lmp_instance):
         for name,fifo in fifos.items():
             lmp_instance.command(fifo.lammps_string())
@@ -147,8 +155,7 @@ class Job(object):
         # submitting parameters
         self.set_variables(parameters, lammps_sim)
         # submitting paths
-        for name, path in paths.items():
-            lammps_sim.command('variable %s string "%s"'% (name, path))
+        self.set_paths(paths, lammps_sim)
         # submitting run Id
         lammps_sim.command('variable num string %05d'% Id)
         # starting script
