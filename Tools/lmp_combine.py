@@ -9,7 +9,6 @@ import sets
 import pandas as pd
 import PolyLibScan.Database.db as db
 
-
 class EnvManipulator(object, particle_methods_bundled):
     '''LmpObj constructor is not used here!!
     '''
@@ -59,7 +58,17 @@ class EnvManipulator(object, particle_methods_bundled):
         '''
         i = 0
         # pick first protein molecule
-        protein = filter(lambda x:x.mol_type=='protein', self.molecules.values())[0]
+        try:
+            protein = filter(lambda x:x.mol_type=='protein', self.molecules.values())[0]
+        except:
+            # if there is no protein, use a dummy protein in the center, all it needs is a box and center
+            class dummy_protein():
+                def __init__(self):
+                    dummy_protein.box = np.zeros((3,2))
+                def center(self):
+                    return np.zeros((3))
+            protein = dummy_protein()
+
         for polymer in filter(lambda x:x.mol_type=='polymer', self.molecules.values()):
             shift = self._random_shift(polymer, protein)
             polymer.move(shift)
