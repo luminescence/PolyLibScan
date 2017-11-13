@@ -166,9 +166,6 @@ class Job(object):
         # write snapshot of end-comformation
         lammps_sim.command('write_dump solid xyz ${end_xyz}.xyz')
         lammps_sim.close()
-        # report completed simulation so restarting jobs will know
-        # also, it notes the machine and folder, so scattered info can be retrieved
-        self._mark_complete(Id)
 
     def generate_new_sim(self, index):
         # Create new Start Conditions
@@ -186,7 +183,9 @@ class Job(object):
             self.generate_new_sim(i)
             # start next LAMMPS run
             self.lmps_run(i, self.config.lmp_parameter, self.config.lmp_path, fifos=self.fifo)
-            # mark job as completed
+            # report completed simulation so restarting jobs will know
+            # also, it notes the machine and folder, so scattered info can be retrieved
+            self._mark_complete(i)
         if start_idx != -1:
             self._mark_complete(-1)
 
