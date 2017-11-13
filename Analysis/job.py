@@ -91,7 +91,8 @@ class Job(bayes.Job):
     def _calculate_polymer_charge(self):
         total_charge = 0
         for monomer in self.sequence['monomer']:
-            total_charge += self.project.parameters['Atoms'][monomer]['charge']
+            p_name, sub_name = monomer.split('_')
+            total_charge += self.project.parameters['Atoms'][p_name][sub_name]['charge']
         return total_charge
 
     def _read_runs(self, with_pymol=True):
