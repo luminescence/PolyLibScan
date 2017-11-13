@@ -1,19 +1,20 @@
-import os
 import getpass
-import numpy as np
-from lammps import lammps
-import Tools
-import Save
-import helpers.time as tm
 import itertools as it
-import tempfile as temp
-import time
-import yaml
+import os
 
+import numpy as np
+import yaml
+from lammps import lammps
+
+import Save
+import Tools
 import helpers.git as _git
+import helpers.time as tm
+from Tools.lmp_control import lmp_controler
+
 __git_hash__ = _git.get_git_hash(__file__)
 
-class Job(object):
+class Job(lmp_controler):
 
     def __init__(self, config_path):
         super(Job, self).__init__()
@@ -134,39 +135,6 @@ class Job(object):
             pass
         self.compactor.clean_up()
 
-    def set_variables(self, vars_, lmp_instance):
-        for name, val in vars_.items():
-            # lists are converted to strings
-            if isinstance(val, list):
-                val = ' '.join(map(str, val))
-            lmp_instance.command('variable %s string "%s"'% (name,val))
-
-    def set_paths(self, paths, lmp_instance):
-        for name, path in paths.items():
-            lmp_instance.command('variable %s string "%s"'% (name, path))
-
-    def set_fifos(self, fifos, lmp_instance):
-        for name,fifo in fifos.items():
-            lmp_instance.command(fifo.lammps_string())
-
-    def lmps_run(self, Id, parameters, paths, fifos={}):
-        self._start_fifo_capture(Id)
-        lammps_sim = lammps()
-        # submitting parameters
-        self.set_variables(parameters, lammps_sim)
-        # submitting paths
-        self.set_paths(paths, lammps_sim)
-        # submitting run Id
-        lammps_sim.command('variable num string %05d'% Id)
-        # starting script
-        lammps_sim.file(paths['script'])
-        # specify fifo dumps
-        self.set_fifos(self.fifo, lammps_sim)
-        lammps_sim.command('run ${time_steps}')
-        # write snapshot of end-comformation
-        lammps_sim.command('write_dump solid xyz ${end_xyz}.xyz')
-        lammps_sim.close()
-
     def generate_new_sim(self, index):
         # Create new Start Conditions
         self.sim.create_random_start_positions()
@@ -248,10 +216,6 @@ class Job(object):
         with open(self.config.sim_path['sim_list'], 'a') as f:
             info = '%05d;%s;%s;%s\n' % (index, localhost(), path, tm.time_string())
             f.write(info)
-
-    def _start_fifo_capture(self, index):
-        for name, fifo in self.fifo.items():
-            fifo.activate(index)
 
     def _get_monomer_ids(self):
         monomer_ids = set([p.type_.Id for p in self.poly.data['particles']])
