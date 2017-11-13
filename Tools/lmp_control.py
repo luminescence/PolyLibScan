@@ -4,17 +4,12 @@ from lammps import lammps
 class lmp_controler(object):
     """initiate and control a lammps instance"""
     @staticmethod
-    def set_variables(vars_, lmp_instance):
-        for name, val in vars_.items():
+    def set_dictionary_as_lammps_variables(dictionary, lmp_instance):
+        for name, val in dictionary.items():
             # lists are converted to strings
             if isinstance(val, list):
                 val = ' '.join(map(str, val))
             lmp_instance.command('variable %s string "%s"'% (name,val))
-
-    @staticmethod
-    def set_paths(paths, lmp_instance):
-        for name, path in paths.items():
-            lmp_instance.command('variable %s string "%s"'% (name, path))
 
     @staticmethod
     def set_fifos(fifos, lmp_instance):
@@ -30,9 +25,9 @@ class lmp_controler(object):
         self._start_fifo_capture(fifos, Id)
         lammps_sim = lammps()
         # submitting parameters
-        self.set_variables(parameters, lammps_sim)
+        self.set_dictionary_as_lammps_variables(parameters, lammps_sim)
         # submitting paths
-        self.set_paths(paths, lammps_sim)
+        self.set_dictionary_as_lammps_variables(paths, lammps_sim)
         # submitting run Id
         lammps_sim.command('variable num string %05d'% Id)
         # starting script
