@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from lammps import PyLammps
 
 
@@ -8,7 +9,7 @@ class lmp_controler(object):
         if isinstance(previous_instance, PyLammps):
             self.lmp_instance = previous_instance
         elif previous_instance != '':
-            raise ValueError('The previous instance passed to lmp_controler is not a PyLammps instance!')
+            raise ValueError('The previous_instance passed to lmp_controler is not a PyLammps instance!')
         else:
             self.lmp_instance = PyLammps()
 
@@ -21,6 +22,12 @@ class lmp_controler(object):
             self.lmp_variable(name, var_style, val)
 
     def lmp_variable(self, name, style, val):
+        """
+        >>> test_controler = lmp_controler()
+        LAMMPS output is captured by PyLammps wrapper
+        >>> test_controler.lmp_variable('a', 'string', '2')
+        >>> test_controler.lmp_instance.variables['a'].value == 2.0
+        True"""
         self.lmp_instance.variable('%s %s %s' % (name, style, val))
 
     @staticmethod
@@ -41,13 +48,6 @@ class lmp_controler(object):
 
     def default_settings(self):
 
-        #variables
-        file_paths = {'dat_file': '${input}/${num}',
-                      'start_xyz': '${output}/trajectoryS${num}',
-                      'end_xyz': '${output}/trajectoryE${num}',
-                      'group_output': '${output}/Energy${num}'}
-        self.set_dictionary_as_lammps_variables(file_paths, 'string')
-
         #initialization
         initialization_cmds = ['units		real',
                                'timestep 	${timestep}',
@@ -60,7 +60,7 @@ class lmp_controler(object):
         self.lmp_execute_list_of_commands(initialization_cmds)
 
         #reading coordinate file
-        self.lmp_instance.command('read_data	${dat_file}')
+        self.lmp_instance.command('read_data	%s' % '${input}/${num}')
         pair_coeffs = ['pair_coeff * * lj96/cut 0.14   4.00   8.50',
                        'pair_coeff * * coul/debye']
         self.lmp_execute_list_of_commands(pair_coeffs)
@@ -72,7 +72,6 @@ class lmp_controler(object):
                   'group contacts subtract all protein ghost_protein polymer',
                   'group interactions union polymer contacts',
                   'group solid subtract all ghost_protein',
-                  'group solid type 1 2',
                   'group activesite id ${active_site_ids}',
                   'group distance_group union polymer activesite']
         self.lmp_execute_list_of_commands(groups)
@@ -85,32 +84,37 @@ class lmp_controler(object):
         self.lmp_instance.command('compute SolidTemp solid temp')
 
         # minimization
-        self.lmp_instance.command('minimize 0.0 1.0e-8 100 1000')
+        self.lmp_instance.command('minimize 0.0 1.0e-8 1000 100000')
+
+        def langevin_dynamics(T_0, T_end):
+            cmds = ['fix 		3 solid  langevin %s %s 100.0 699483 gjf yes' % (T_0, T_end),
+                    'fix 		4 solid nve']
+            self.lmp_execute_list_of_commands(cmds)
 
         #equilibrate
-        equilibration_cmds = ['velocity 	solid create 100.0 1321 dist gaussian',
-                              'fix 		3 solid  langevin 1.0 300.0 100.0 699483 gjf yes',
-                              'fix 		4 solid nve',
-                              'write_dump	solid xyz ${start_xyz}.xyz']
+        temperature_start = 100.0
+        temperature_production = 300.0
+        equilibration_cmds = ['velocity 	solid create %s 1321 dist gaussian' % temperature_start,
+                              'write_dump	solid xyz %s.xyz' % '${output}/trajectoryS${num}']
         self.lmp_execute_list_of_commands(equilibration_cmds)
+        langevin_dynamics(T_0=temperature_start, T_end=temperature_production)
         equilibration_timesteps = 170
         self.lmp_instance.run(equilibration_timesteps)
 
         #production
-        production_MD_cmds = ['reset_timestep 0',
-                              'fix 		3 solid  langevin 300.0 300.0 100.0 699483 gjf yes']
-        self.lmp_execute_list_of_commands(production_MD_cmds)
+        self.lmp_instance.command('reset_timestep 0')
+        langevin_dynamics(T_0=temperature_production,T_end=temperature_production)
 
         #output
-        output_vars = {'group0': 'c_2',
-                       'energy_': 'etotal',
-                       'potential_e': 'pe',
-                       'kinetic_e': 'ke',
-                       'sim_temp': 'c_SolidTemp',
-                       'time_step': 'step'}
+        output_vars = OrderedDict([('group0', 'c_2'),
+                                   ('energy_', 'etotal'),
+                                   ('potential_e', 'pe'),
+                                   ('kinetic_e', 'ke'),
+                                   ('sim_temp', 'c_SolidTemp'),
+                                   ('time_step', 'step')])
 
         self.set_dictionary_as_lammps_variables(output_vars, 'equal')
-        self.lmp_instance.command('fix 		5 all print 100 "${energy_} ${potential_e} ${kinetic_e} ${sim_temp} ${time_step}" file ${group_output} screen no')
+        self.lmp_instance.command('fix 		5 all print 100 %s file %s screen no' % (self.convert_python_list_to_lammps_list(output_vars.keys()), '${output}/Energy${num}'))
 
     def lmp_execute_list_of_commands(self, list_of_commands):
         for line in list_of_commands:
@@ -133,5 +137,12 @@ class lmp_controler(object):
         self.set_fifos(fifos)
         self.lmp_instance.command('run ${time_steps}')
         # write snapshot of end-comformation
-        self.lmp_instance.command('write_dump solid xyz ${end_xyz}.xyz')
+        self.lmp_instance.command('write_dump solid xyz %s.xyz' % '${output}/trajectoryE${num}')
         self.lmp_instance.close()
+
+
+
+if __name__ == "__main__":
+    import doctest
+
+    doctest.testmod()
