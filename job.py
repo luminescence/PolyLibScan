@@ -10,11 +10,11 @@ import Save
 import Tools
 import helpers.git as _git
 import helpers.time as tm
-from Tools.lmp_control import lmp_controler
+from Tools import lmp_control
 
 __git_hash__ = _git.get_git_hash(__file__)
 
-class Job(lmp_controler):
+class Job(object):
 
     def __init__(self, config_path):
         super(Job, self).__init__()
@@ -150,7 +150,8 @@ class Job(lmp_controler):
         for i in xrange(start_idx,  end_idx):
             self.generate_new_sim(i)
             # start next LAMMPS run
-            self.lmps_run(i, self.config.lmp_parameter, self.config.lmp_path, fifos=self.fifo)
+            lmp_controler = lmp_control.lmp_controler()
+            lmp_controler.lmps_run(i, self.config.lmp_parameter, self.config.lmp_path, fifos=self.fifo)
             # report completed simulation so restarting jobs will know
             # also, it notes the machine and folder, so scattered info can be retrieved
             self._mark_complete(i)
