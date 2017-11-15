@@ -36,10 +36,11 @@ class lmp_controler(object):
         self.lmp_instance.variable('%s %s %s' % (name, style, val))
 
     @staticmethod
-    def convert_python_list_to_lammps_list(val):
+    def convert_python_list_to_lammps_list(val, with_quotes=True):
         """convert from [a,b,c] to "a b c" which is required in lammps"""
         val = ' '.join(map(str, val))
-        val = '"' + val + '"'
+        if with_quotes:
+            val = '"' + val + '"'
         return val
 
     @staticmethod
@@ -92,7 +93,7 @@ class lmp_controler(object):
         # production
         self.lmp_instance.command('reset_timestep 0')
         self.langevin_dynamics(T_0=temperature_production, T_end=temperature_production)
-        self.lmp_instance.command('run ${time_steps}')
+        self.lmp_instance.run(self.parameters['time_steps'])
         # write snapshot of end-comformation
         self.lmp_instance.command('write_dump solid xyz %s.xyz' % '${output}/trajectoryE${num}')
 
@@ -106,13 +107,13 @@ class lmp_controler(object):
 
     def group_declaration(self):
         # grouping
-        groups = ['group protein type ${bb_id}',
-                  'group ghost_protein type ${ghost_id}',
-                  'group polymer type ${monomer_ids}',
+        groups = ['group protein type %s' % self.parameters['bb_id'],
+                  'group ghost_protein type %s' % self.parameters['ghost_id'],
+                  'group polymer type %s' % self.convert_python_list_to_lammps_list(self.parameters['monomer_ids'], with_quotes=False),
                   'group contacts subtract all protein ghost_protein polymer',
                   'group interactions union polymer contacts',
                   'group solid subtract all ghost_protein',
-                  'group activesite id ${active_site_ids}',
+                  'group activesite id %s' % self.convert_python_list_to_lammps_list(self.parameters['active_site_ids'], with_quotes=False),
                   'group distance_group union polymer activesite']
         self.lmp_execute_list_of_commands(groups)
 
@@ -123,9 +124,9 @@ class lmp_controler(object):
 
     def model_specifications(self):
         # specify the model
-        pair_coeffs = ['timestep 	${timestep}',
-                       'pair_style hybrid/overlay lj96/cut 10.5 coul/debye ${debye_kappa} 25.0',
-                       'dielectric ${dielectric_par}',
+        pair_coeffs = ['timestep 	%s' % self.parameters['timestep'],
+                       'pair_style hybrid/overlay lj96/cut 10.5 coul/debye %s 25.0' % self.parameters['debye_kappa'],
+                       'dielectric %s' % self.parameters['dielectric_par'],
                        'pair_coeff * * lj96/cut 0.14   4.00   8.50',
                        'pair_coeff * * coul/debye']
         self.lmp_execute_list_of_commands(pair_coeffs)
@@ -136,8 +137,6 @@ class lmp_controler(object):
 
     def lmps_run(self, run_script=False):
         self._start_fifo_capture(self.fifos, self.Id)
-        # submitting parameters
-        self.set_dictionary_as_lammps_variables(self.parameters, 'string')
         # submitting paths
         self.set_dictionary_as_lammps_variables(self.paths, 'string')
         # submitting run Id
