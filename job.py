@@ -150,8 +150,8 @@ class Job(object):
         for i in xrange(start_idx,  end_idx):
             self.generate_new_sim(i)
             # start next LAMMPS run
-            lmp_controler = lmp_control.lmp_controler()
-            lmp_controler.lmps_run(i, self.config.lmp_parameter, self.config.lmp_path, fifos=self.fifo)
+            lmp_controler = lmp_control.lmp_controler(i, self.config.lmp_parameter, self.config.lmp_path, fifos=self.fifo)
+            lmp_controler.lmps_run()
             # report completed simulation so restarting jobs will know
             # also, it notes the machine and folder, so scattered info can be retrieved
             self._mark_complete(i)

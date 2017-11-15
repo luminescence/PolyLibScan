@@ -5,13 +5,18 @@ from lammps import PyLammps
 class lmp_controler(object):
     """Initialize and control a lammps instance"""
 
-    def __init__(self, previous_instance=''):
+    def __init__(self, Id, parameters, paths, fifos={}, previous_instance=''):
         if isinstance(previous_instance, PyLammps):
             self.lmp_instance = previous_instance
         elif previous_instance != '':
             raise ValueError('The previous_instance passed to lmp_controler is not a PyLammps instance!')
         else:
             self.lmp_instance = PyLammps()
+
+            self.Id = Id
+            self.parameters = parameters
+            self.paths = paths
+            self.fifos = fifos
 
     def set_dictionary_as_lammps_variables(self, dictionary, var_style):
         """dictionary keys will be variable names, dictionary values will be variable values"""
@@ -55,22 +60,52 @@ class lmp_controler(object):
 
         #initialization
         initialization_cmds = ['units		real',
-                               'timestep 	${timestep}',
                                'boundary	p p p',
                                'atom_style	hybrid angle charge',
                                'bond_style  harmonic',
-                               'angle_style harmonic',
-                               'pair_style hybrid/overlay lj96/cut 10.5 coul/debye ${debye_kappa} 25.0',
-                               'dielectric ${dielectric_par}']
+                               'angle_style harmonic']
         self.lmp_execute_list_of_commands(initialization_cmds)
 
         #reading coordinate file
         self.lmp_instance.command('read_data	%s' % '${input}/${num}')
-        pair_coeffs = ['pair_coeff * * lj96/cut 0.14   4.00   8.50',
-                       'pair_coeff * * coul/debye']
-        self.lmp_execute_list_of_commands(pair_coeffs)
 
-        #grouping
+    def lmp_minimization(self):
+        # minimization
+        self.lmp_instance.command('minimize 0.0 1.0e-8 1000 100000')
+
+    def configure_output(self):
+        # output & computes
+        self.lmp_instance.command('compute 2 contacts group/group polymer pair yes')
+        self.lmp_instance.command('compute SolidTemp solid temp')
+        output_vars = OrderedDict([('group0', 'c_2'),
+                                   ('energy_', 'etotal'),
+                                   ('potential_e', 'pe'),
+                                   ('kinetic_e', 'ke'),
+                                   ('sim_temp', 'c_SolidTemp'),
+                                   ('time_step', 'step')])
+        self.set_dictionary_as_lammps_variables(output_vars, 'equal')
+        self.lmp_instance.command('fix 		5 all print 100 %s file %s screen no' % (
+        self.convert_python_list_to_lammps_list([self.variable_sigil_for_lammps(x) for x in output_vars.keys()]),
+        '${output}/Energy${num}'))
+
+    def lmp_production_MD(self, temperature_production):
+        # production
+        self.lmp_instance.command('reset_timestep 0')
+        self.langevin_dynamics(T_0=temperature_production, T_end=temperature_production)
+        self.lmp_instance.command('run ${time_steps}')
+        # write snapshot of end-comformation
+        self.lmp_instance.command('write_dump solid xyz %s.xyz' % '${output}/trajectoryE${num}')
+
+    def lmp_equilibration_MD(self, temperature_production, temperature_start):
+        equilibration_cmds = ['velocity 	solid create %s 1321 dist gaussian' % temperature_start,
+                              'write_dump	solid xyz %s.xyz' % '${output}/trajectoryS${num}']
+        self.lmp_execute_list_of_commands(equilibration_cmds)
+        self.langevin_dynamics(T_0=temperature_start, T_end=temperature_production)
+        equilibration_timesteps = 170
+        self.lmp_instance.run(equilibration_timesteps)
+
+    def group_declaration(self):
+        # grouping
         groups = ['group protein type ${bb_id}',
                   'group ghost_protein type ${ghost_id}',
                   'group polymer type ${monomer_ids}',
@@ -81,68 +116,50 @@ class lmp_controler(object):
                   'group distance_group union polymer activesite']
         self.lmp_execute_list_of_commands(groups)
 
-        #modify neighbor list
-        self.lmp_instance.command('neigh_modify exclude group ghost_protein all')
+    def langevin_dynamics(self, T_0, T_end):
+        cmds = ['fix 		3 solid  langevin %s %s 100.0 699483 gjf yes' % (T_0, T_end),
+                'fix 		4 solid nve']
+        self.lmp_execute_list_of_commands(cmds)
 
-        #computes
-        self.lmp_instance.command('compute 2 contacts group/group polymer pair yes')
-        self.lmp_instance.command('compute SolidTemp solid temp')
-
-        # minimization
-        self.lmp_instance.command('minimize 0.0 1.0e-8 1000 100000')
-
-        def langevin_dynamics(T_0, T_end):
-            cmds = ['fix 		3 solid  langevin %s %s 100.0 699483 gjf yes' % (T_0, T_end),
-                    'fix 		4 solid nve']
-            self.lmp_execute_list_of_commands(cmds)
-
-        #equilibrate
-        temperature_start = 100.0
-        temperature_production = 300.0
-        equilibration_cmds = ['velocity 	solid create %s 1321 dist gaussian' % temperature_start,
-                              'write_dump	solid xyz %s.xyz' % '${output}/trajectoryS${num}']
-        self.lmp_execute_list_of_commands(equilibration_cmds)
-        langevin_dynamics(T_0=temperature_start, T_end=temperature_production)
-        equilibration_timesteps = 170
-        self.lmp_instance.run(equilibration_timesteps)
-
-        #production
-        self.lmp_instance.command('reset_timestep 0')
-        langevin_dynamics(T_0=temperature_production,T_end=temperature_production)
-
-        #output
-        output_vars = OrderedDict([('group0', 'c_2'),
-                                   ('energy_', 'etotal'),
-                                   ('potential_e', 'pe'),
-                                   ('kinetic_e', 'ke'),
-                                   ('sim_temp', 'c_SolidTemp'),
-                                   ('time_step', 'step')])
-
-        self.set_dictionary_as_lammps_variables(output_vars, 'equal')
-        self.lmp_instance.command('fix 		5 all print 100 %s file %s screen no' % (self.convert_python_list_to_lammps_list([self.variable_sigil_for_lammps(x) for x in output_vars.keys()]), '${output}/Energy${num}'))
+    def model_specifications(self):
+        # specify the model
+        pair_coeffs = ['timestep 	${timestep}',
+                       'pair_style hybrid/overlay lj96/cut 10.5 coul/debye ${debye_kappa} 25.0',
+                       'dielectric ${dielectric_par}',
+                       'pair_coeff * * lj96/cut 0.14   4.00   8.50',
+                       'pair_coeff * * coul/debye']
+        self.lmp_execute_list_of_commands(pair_coeffs)
 
     def lmp_execute_list_of_commands(self, list_of_commands):
         for line in list_of_commands:
             self.lmp_instance.command(line)
 
-    def lmps_run(self, Id, parameters, paths, fifos={}, run_script=False):
-        self._start_fifo_capture(fifos, Id)
+    def lmps_run(self, run_script=False):
+        self._start_fifo_capture(self.fifos, self.Id)
         # submitting parameters
-        self.set_dictionary_as_lammps_variables(parameters, 'string')
+        self.set_dictionary_as_lammps_variables(self.parameters, 'string')
         # submitting paths
-        self.set_dictionary_as_lammps_variables(paths, 'string')
+        self.set_dictionary_as_lammps_variables(self.paths, 'string')
         # submitting run Id
-        self.lmp_variable('num', 'string','%05d' % Id)
+        self.lmp_variable('num', 'string','%05d' % self.Id)
         # use default settings
         self.default_settings()
         # starting script if desired
         if run_script:
-            self.lmp_instance.file(paths['script'])
+            self.lmp_instance.file(self.paths['script'])
+        self.model_specifications()
+        self.group_declaration()
+        #modify neighbor list
+        self.lmp_instance.command('neigh_modify exclude group ghost_protein all')
+        self.lmp_minimization()
+        #equilibrate
+        temperature_start = 100.0
+        temperature_production = 300.0
+        self.lmp_equilibration_MD(temperature_production, temperature_start)
+        self.configure_output()
+        self.lmp_production_MD(temperature_production)
         # specify fifo dumps
-        self.set_fifos(fifos)
-        self.lmp_instance.command('run ${time_steps}')
-        # write snapshot of end-comformation
-        self.lmp_instance.command('write_dump solid xyz %s.xyz' % '${output}/trajectoryE${num}')
+        self.set_fifos(self.fifos)
         self.lmp_instance.close()
 
 
