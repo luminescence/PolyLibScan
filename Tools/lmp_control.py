@@ -37,6 +37,11 @@ class lmp_controler(object):
         val = '"' + val + '"'
         return val
 
+    @staticmethod
+    def variable_sigil_for_lammps(varname):
+        """correctly wrap ${...} around variable name"""
+        return "${%s}" % varname
+
     def set_fifos(self, fifos):
         for name,fifo in fifos.items():
             self.lmp_instance.command(fifo.lammps_string())
@@ -114,7 +119,7 @@ class lmp_controler(object):
                                    ('time_step', 'step')])
 
         self.set_dictionary_as_lammps_variables(output_vars, 'equal')
-        self.lmp_instance.command('fix 		5 all print 100 %s file %s screen no' % (self.convert_python_list_to_lammps_list(output_vars.keys()), '${output}/Energy${num}'))
+        self.lmp_instance.command('fix 		5 all print 100 %s file %s screen no' % (self.convert_python_list_to_lammps_list([self.variable_sigil_for_lammps(x) for x in output_vars.keys()]), '${output}/Energy${num}'))
 
     def lmp_execute_list_of_commands(self, list_of_commands):
         for line in list_of_commands:
