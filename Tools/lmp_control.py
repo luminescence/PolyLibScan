@@ -68,7 +68,7 @@ class lmp_controler(object):
         self.lmp_execute_list_of_commands(initialization_cmds)
 
         #reading coordinate file
-        self.lmp_instance.command('read_data	%s' % '${input}/${num}')
+        self.lmp_instance.command('read_data	%s/%05d' % (self.paths['input'], self.Id))
 
     def lmp_minimization(self):
         # minimization
@@ -85,9 +85,8 @@ class lmp_controler(object):
                                    ('sim_temp', 'c_SolidTemp'),
                                    ('time_step', 'step')])
         self.set_dictionary_as_lammps_variables(output_vars, 'equal')
-        self.lmp_instance.command('fix 		5 all print 100 %s file %s screen no' % (
-        self.convert_python_list_to_lammps_list([self.variable_sigil_for_lammps(x) for x in output_vars.keys()]),
-        '${output}/Energy${num}'))
+        self.lmp_instance.command('fix 		5 all print 100 %s file %s/Energy%s screen no' % (
+        self.convert_python_list_to_lammps_list([self.variable_sigil_for_lammps(x) for x in output_vars.keys()]), self.paths['output'], self.Id))
 
     def lmp_production_MD(self, temperature_production):
         # production
@@ -95,11 +94,14 @@ class lmp_controler(object):
         self.langevin_dynamics(T_0=temperature_production, T_end=temperature_production)
         self.lmp_instance.run(self.parameters['time_steps'])
         # write snapshot of end-comformation
-        self.lmp_instance.command('write_dump solid xyz %s.xyz' % '${output}/trajectoryE${num}')
+        output_file_final_conformation = self.paths['output'] + '/trajectoryE' + '%05d' % self.Id
+        self.lmp_instance.command('write_dump solid xyz %s.xyz' % output_file_final_conformation)
 
     def lmp_equilibration_MD(self, temperature_production, temperature_start):
+        output_file_start_conformation = self.paths['output'] + '/trajectoryS' + '%05d' % self.Id
+
         equilibration_cmds = ['velocity 	solid create %s 1321 dist gaussian' % temperature_start,
-                              'write_dump	solid xyz %s.xyz' % '${output}/trajectoryS${num}']
+                              'write_dump	solid xyz %s.xyz' % output_file_start_conformation]
         self.lmp_execute_list_of_commands(equilibration_cmds)
         self.langevin_dynamics(T_0=temperature_start, T_end=temperature_production)
         equilibration_timesteps = 170
@@ -137,8 +139,6 @@ class lmp_controler(object):
 
     def lmps_run(self, run_script=False):
         self._start_fifo_capture(self.fifos, self.Id)
-        # submitting paths
-        self.set_dictionary_as_lammps_variables(self.paths, 'string')
         # submitting run Id
         self.lmp_variable('num', 'string','%05d' % self.Id)
         # use default settings
