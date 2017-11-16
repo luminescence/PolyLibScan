@@ -84,17 +84,19 @@ class Job(object):
                                                         self.config.sim_parameter['monomers'],
                                                         weights=self.config.sim_parameter['weights'],
                                                         length=self.config.sim_parameter['poly_length'])
-        self.poly = self.polymer_creator.create()
+        if self.config.sim_parameter['stoichiometry'][1] == 1:
+            self.poly = self.polymer_creator.create()
 
         self.sim = Tools.EnvManipulator(self.env, auto_repulsion=False)
         self.sim.create_random_start_positions()
         self.setup_writer = Tools.LmpWriter(self.env)
 
         # Update Lammps Parameters
-        self.config.sim_parameter['poly_sequence'] = [monomers.type_.name for monomers in self.poly.data['monomers']]
-        self.config.sim_parameter['named_sequence'] = [particle.type_.name for particle in self.poly.data['particles']]
-        self.config.sim_parameter['id_sequence'] = [particle.type_.Id for particle in self.poly.data['particles']]
-        self.config.lmp_parameter['monomer_ids'] = self._get_monomer_ids()
+        if self.config.sim_parameter['stoichiometry'][1] == 1:
+            self.config.sim_parameter['poly_sequence'] = [monomers.type_.name for monomers in self.poly.data['monomers']]
+            self.config.sim_parameter['named_sequence'] = [particle.type_.name for particle in self.poly.data['particles']]
+            self.config.sim_parameter['id_sequence'] = [particle.type_.Id for particle in self.poly.data['particles']]
+            self.config.lmp_parameter['monomer_ids'] = self._get_monomer_ids()
         if self.config.sim_parameter['stoichiometry'][0] == 1:
             self.config.sim_parameter['active_site'] = self.set_active_site()
             self.config.lmp_parameter['active_site_ids'] = self.config.sim_parameter['active_site']['xyz']
@@ -163,7 +165,7 @@ class Job(object):
         for i in xrange(start_idx,  end_idx):
             self.generate_new_sim(i)
             # start next LAMMPS run
-            lmp_controller = lmp_control.LmpController(i, self.config.lmp_parameter, self.config.lmp_path, self.parametrisation, fifos=self.fifo)
+            lmp_controller = lmp_control.LmpController(i, self.config.lmp_parameter, self.config.lmp_path, self.parametrisation, fifos=self.fifo, stoichiometry=self.config.sim_parameter['stoichiometry'])
             lmp_controller.lmps_run()
             # report completed simulation so restarting jobs will know
             # also, it notes the machine and folder, so scattered info can be retrieved
