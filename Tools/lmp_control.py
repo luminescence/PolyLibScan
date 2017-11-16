@@ -5,7 +5,7 @@ from lammps import PyLammps
 class lmp_controler(object):
     """Initialize and control a lammps instance"""
 
-    def __init__(self, Id, parameters, paths, fifos={}, previous_instance=''):
+    def __init__(self, Id, parameters, paths, fifos={}, previous_instance='', stoichiometry=[1,1]):
         if isinstance(previous_instance, PyLammps):
             self.lmp_instance = previous_instance
         elif previous_instance != '':
@@ -17,6 +17,11 @@ class lmp_controler(object):
             self.parameters = parameters
             self.paths = paths
             self.fifos = fifos
+            self.stoichiometry=stoichiometry
+
+            self.is_protein_present = (self.stoichiometry[0] > 0)
+            self.is_polymer_present = (self.stoichiometry[1] > 0)
+
 
     def set_dictionary_as_lammps_variables(self, dictionary, var_style):
         """dictionary keys will be variable names, dictionary values will be variable values"""
@@ -76,16 +81,21 @@ class lmp_controler(object):
 
     def configure_output(self):
         # output & computes
-        self.lmp_instance.command('compute 2 contacts group/group polymer pair yes')
+
         self.lmp_instance.command('compute SolidTemp solid temp')
-        output_vars = OrderedDict([('group0', 'c_2'),
-                                   ('energy_', 'etotal'),
-                                   ('potential_e', 'pe'),
-                                   ('kinetic_e', 'ke'),
-                                   ('sim_temp', 'c_SolidTemp'),
-                                   ('time_step', 'step')])
+
+        list_of_output_var_tuples = [('energy_', 'etotal'),
+                                     ('potential_e', 'pe'),
+                                     ('kinetic_e', 'ke'),
+                                     ('sim_temp', 'c_SolidTemp'),
+                                     ('time_step', 'step')]
+        if self.is_protein_present and self.is_polymer_present:
+            self.lmp_instance.command('compute 2 contacts group/group polymer pair yes')
+            list_of_output_var_tuples = [('group0', 'c_2')] + list_of_output_var_tuples
+
+        output_vars = OrderedDict(list_of_output_var_tuples)
         self.set_dictionary_as_lammps_variables(output_vars, 'equal')
-        self.lmp_instance.command('fix 		5 all print 100 %s file %s/Energy%s screen no' % (
+        self.lmp_instance.command('fix 		5 all print 100 %s file %s/Energy%05d screen no' % (
         self.convert_python_list_to_lammps_list([self.variable_sigil_for_lammps(x) for x in output_vars.keys()]), self.paths['output'], self.Id))
 
     def lmp_production_MD(self, temperature_production):
@@ -108,15 +118,26 @@ class lmp_controler(object):
         self.lmp_instance.run(equilibration_timesteps)
 
     def group_declaration(self):
-        # grouping
-        groups = ['group protein type %s' % self.parameters['bb_id'],
-                  'group ghost_protein type %s' % self.parameters['ghost_id'],
-                  'group polymer type %s' % self.convert_python_list_to_lammps_list(self.parameters['monomer_ids'], with_quotes=False),
-                  'group contacts subtract all protein ghost_protein polymer',
-                  'group interactions union polymer contacts',
-                  'group solid subtract all ghost_protein',
-                  'group activesite id %s' % self.convert_python_list_to_lammps_list(self.parameters['active_site_ids'], with_quotes=False),
-                  'group distance_group union polymer activesite']
+        """define groups as needed, """
+        groups = ['group solid union all']
+
+        if self.is_protein_present:
+            protein_exclusive_groups = ['group protein type %s' % self.parameters['bb_id'],
+                                        'group ghost_protein type %s' % self.parameters['ghost_id'],
+                                        'group activesite id %s' % self.convert_python_list_to_lammps_list(self.parameters['active_site_ids'], with_quotes=False),
+                                        'group solid subtract all ghost_protein'] # overwrite default
+            groups += protein_exclusive_groups
+
+        if self.is_polymer_present:
+            polymer_exclusive_groups = ['group polymer type %s' % self.convert_python_list_to_lammps_list(self.parameters['monomer_ids'], with_quotes=False)]
+            groups += polymer_exclusive_groups
+
+        if self.is_protein_present and self.is_polymer_present:
+            protein_and_polymer_groups = ['group contacts subtract all protein ghost_protein polymer',
+                                          'group interactions union polymer contacts',
+                                          'group distance_group union polymer activesite']
+            groups += protein_and_polymer_groups
+
         self.lmp_execute_list_of_commands(groups)
 
     def langevin_dynamics(self, T_0, T_end):
@@ -149,7 +170,8 @@ class lmp_controler(object):
         self.model_specifications()
         self.group_declaration()
         #modify neighbor list
-        self.lmp_instance.command('neigh_modify exclude group ghost_protein all')
+        if self.is_protein_present:
+            self.lmp_instance.command('neigh_modify exclude group ghost_protein all')
         self.lmp_minimization()
         #equilibrate
         temperature_start = 100.0
