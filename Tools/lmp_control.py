@@ -98,8 +98,12 @@ class lmp_controler(object):
 
         output_vars = OrderedDict(list_of_output_var_tuples)
         self.set_dictionary_as_lammps_variables(output_vars, 'equal')
-        self.lmp_instance.command('fix 		5 all print %s %s file %s/Energy%05d screen no' % (print_interval,
-        self.convert_python_list_to_lammps_list([self.variable_sigil_for_lammps(x) for x in output_vars.keys()]), self.paths['output'], self.Id))
+
+        output_file_path = '%s/Energy%05d' % (self.paths['output'], self.Id)
+        csv_header = self.convert_python_list_to_lammps_list(output_vars.keys())
+
+        self.lmp_instance.command('fix 		5 all print %s %s file %s screen no title %s' % (print_interval,
+        self.convert_python_list_to_lammps_list([self.variable_sigil_for_lammps(x) for x in output_vars.keys()]), output_file_path, csv_header))
 
     def lmp_production_MD(self, temperature_production):
         # production
