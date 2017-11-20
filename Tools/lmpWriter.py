@@ -121,9 +121,13 @@ class LmpWriter(object):
                             pair.pair_type.parameters['coeffs'][0], 
                             pair.pair_type.parameters['coeffs'][1], pair.pair_type.parameters['coeffs'][2])
             elif pair.pair_type.kind == 'coul/cut':
-                bond_template = '{:> 3d} {:> 3d}'
+                bond_template = '{:> 3d} {:> 3d} {:> 6.2f}'
                 return bond_template.format(
-                            pair.atom_type2.Id, pair.atom_type1.Id)
+                            pair.atom_type2.Id, pair.atom_type1.Id, pair.cutoff)
+            elif pair.pair_type.kind == 'coul/debye':
+                bond_template = '{:> 3d} {:> 3d} {:> 6.2f}'
+                return bond_template.format(
+                            pair.atom_type2.Id, pair.atom_type1.Id, pair.cutoff)
             elif pair.pair_type.kind == 'soft':
                 bond_template = '{:> 3d} {:> 3d} {:> 6.2f} {:> 6.2f}'
                 return bond_template.format(

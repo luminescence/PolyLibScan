@@ -1,7 +1,7 @@
 import getpass
 import itertools as it
 import os
-
+import collections as col
 import numpy as np
 import yaml
 from lammps import lammps
@@ -24,7 +24,6 @@ class Job(object):
             with open(self.config_with_setup) as f:
                 setup_config = yaml.load(f)
             self.config.sim_parameter['poly_sequence'] = setup_config['sim_parameter']['poly_sequence']
-
         self.username = getpass.getuser()
 
         self.config.sim_path['sim_list'] = os.path.join(self.config.sim_path['root'], 'sim.list')
@@ -34,6 +33,8 @@ class Job(object):
         else:
             new_paths = self.create_folders(self.config.lmp_path['root'])
             self.config.lmp_path.update(new_paths)
+        with open(self.config.sim_path['config']) as f:
+            self.parametrisation = yaml.load(f)
 
     def read_config(self, path):
         return Tools.config.JobConfig(path)
@@ -52,7 +53,6 @@ class Job(object):
                 'chain': map(str, as_data['chain']), 
                 'pdb_id': map(int, as_data['pdb_id']), 
                 'iCode': map(str, as_data['iCode'])}
-        
 
     def setup_env(self):
         self.env = Tools.Environment(self.config.sim_path['config'])
@@ -150,8 +150,8 @@ class Job(object):
         for i in xrange(start_idx,  end_idx):
             self.generate_new_sim(i)
             # start next LAMMPS run
-            lmp_controler = lmp_control.lmp_controler(i, self.config.lmp_parameter, self.config.lmp_path, fifos=self.fifo)
-            lmp_controler.lmps_run()
+            lmp_controller = lmp_control.LmpController(i, self.config.lmp_parameter, self.config.lmp_path, self.parametrisation, fifos=self.fifo)
+            lmp_controller.lmps_run()
             # report completed simulation so restarting jobs will know
             # also, it notes the machine and folder, so scattered info can be retrieved
             self._mark_complete(i)
