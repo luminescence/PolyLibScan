@@ -82,6 +82,9 @@ class lmp_controler(object):
     def configure_output(self):
         # output & computes
 
+        print_interval = 100 # every n timesteps...
+        self.lmp_instance.command('thermo %s' % print_interval) # ...determine thermodynamics
+
         self.lmp_instance.command('compute SolidTemp solid temp')
 
         list_of_output_var_tuples = [('energy_', 'etotal'),
@@ -95,7 +98,7 @@ class lmp_controler(object):
 
         output_vars = OrderedDict(list_of_output_var_tuples)
         self.set_dictionary_as_lammps_variables(output_vars, 'equal')
-        self.lmp_instance.command('fix 		5 all print 100 %s file %s/Energy%05d screen no' % (
+        self.lmp_instance.command('fix 		5 all print %s %s file %s/Energy%05d screen no' % (print_interval,
         self.convert_python_list_to_lammps_list([self.variable_sigil_for_lammps(x) for x in output_vars.keys()]), self.paths['output'], self.Id))
 
     def lmp_production_MD(self, temperature_production):
@@ -114,7 +117,7 @@ class lmp_controler(object):
                               'write_dump	solid xyz %s.xyz' % output_file_start_conformation]
         self.lmp_execute_list_of_commands(equilibration_cmds)
         self.langevin_dynamics(T_0=temperature_start, T_end=temperature_production)
-        equilibration_timesteps = 170
+        equilibration_timesteps = 1700
         self.lmp_instance.run(equilibration_timesteps)
 
     def group_declaration(self):
