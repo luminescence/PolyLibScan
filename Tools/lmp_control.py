@@ -124,6 +124,9 @@ class LmpController(object):
     def configure_output(self):
         # output & computes
 
+        print_interval = 100 # every n timesteps...
+        self.lmp_instance.command('thermo %s' % print_interval) # ...determine thermodynamics
+
         self.lmp_instance.command('compute SolidTemp solid temp')
 
         list_of_output_var_tuples = [('energy_', 'etotal'),
