@@ -1,16 +1,17 @@
-import os
 import getpass
-import numpy as np
-from lammps import lammps
-import Tools
-import Save
-import helpers.time as tm
 import itertools as it
-import tempfile as temp
-import time
+import os
+import collections as col
+import numpy as np
 import yaml
+from lammps import lammps
 
+import Save
+import Tools
 import helpers.git as _git
+import helpers.time as tm
+from Tools import lmp_control
+
 __git_hash__ = _git.get_git_hash(__file__)
 
 class Job(object):
@@ -23,7 +24,6 @@ class Job(object):
             with open(self.config_with_setup) as f:
                 setup_config = yaml.load(f)
             self.config.sim_parameter['poly_sequence'] = setup_config['sim_parameter']['poly_sequence']
-
         self.username = getpass.getuser()
 
         self.config.sim_path['sim_list'] = os.path.join(self.config.sim_path['root'], 'sim.list')
@@ -33,6 +33,8 @@ class Job(object):
         else:
             new_paths = self.create_folders(self.config.lmp_path['root'])
             self.config.lmp_path.update(new_paths)
+        with open(self.config.sim_path['config']) as f:
+            self.parametrisation = yaml.load(f)
 
     def read_config(self, path):
         return Tools.config.JobConfig(path)
@@ -51,7 +53,6 @@ class Job(object):
                 'chain': map(str, as_data['chain']), 
                 'pdb_id': map(int, as_data['pdb_id']), 
                 'iCode': map(str, as_data['iCode'])}
-        
 
     def setup_env(self):
         self.env = Tools.Environment(self.config.sim_path['config'])
@@ -134,42 +135,6 @@ class Job(object):
             pass
         self.compactor.clean_up()
 
-    def set_variables(self, vars_, lmp_instance):
-        for name, val in vars_.items():
-            # lists are converted to strings
-            if isinstance(val, list):
-                val = ' '.join(map(str, val))
-            lmp_instance.command('variable %s string "%s"'% (name,val))
-
-    def set_paths(self, paths, lmp_instance):
-        for name, path in paths.items():
-            lmp_instance.command('variable %s string "%s"'% (name, path))
-
-    def set_fifos(self, fifos, lmp_instance):
-        for name,fifo in fifos.items():
-            lmp_instance.command(fifo.lammps_string())
-
-    def lmps_run(self, Id, parameters, paths, fifos={}):
-        self._start_fifo_capture(Id)
-        lammps_sim = lammps()
-        # submitting parameters
-        self.set_variables(parameters, lammps_sim)
-        # submitting paths
-        self.set_paths(paths, lammps_sim)
-        # submitting run Id
-        lammps_sim.command('variable num string %05d'% Id)
-        # starting script
-        lammps_sim.file(paths['script'])
-        # specify fifo dumps
-        self.set_fifos(self.fifo, lammps_sim)
-        lammps_sim.command('run ${time_steps}')
-        # write snapshot of end-comformation
-        lammps_sim.command('write_dump solid xyz ${end_xyz}.xyz')
-        lammps_sim.close()
-        # report completed simulation so restarting jobs will know
-        # also, it notes the machine and folder, so scattered info can be retrieved
-        self._mark_complete(Id)
-
     def generate_new_sim(self, index):
         # Create new Start Conditions
         self.sim.create_random_start_positions()
@@ -185,8 +150,11 @@ class Job(object):
         for i in xrange(start_idx,  end_idx):
             self.generate_new_sim(i)
             # start next LAMMPS run
-            self.lmps_run(i, self.config.lmp_parameter, self.config.lmp_path, fifos=self.fifo)
-            # mark job as completed
+            lmp_controller = lmp_control.LmpController(i, self.config.lmp_parameter, self.config.lmp_path, self.parametrisation, fifos=self.fifo)
+            lmp_controller.lmps_run()
+            # report completed simulation so restarting jobs will know
+            # also, it notes the machine and folder, so scattered info can be retrieved
+            self._mark_complete(i)
         if start_idx != -1:
             self._mark_complete(-1)
 
@@ -249,10 +217,6 @@ class Job(object):
         with open(self.config.sim_path['sim_list'], 'a') as f:
             info = '%05d;%s;%s;%s\n' % (index, localhost(), path, tm.time_string())
             f.write(info)
-
-    def _start_fifo_capture(self, index):
-        for name, fifo in self.fifo.items():
-            fifo.activate(index)
 
     def _get_monomer_ids(self):
         monomer_ids = set([p.type_.Id for p in self.poly.data['particles']])
