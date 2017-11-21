@@ -126,9 +126,9 @@ class LmpController(object):
         # output & computes
 
         print_interval = 100 # every n timesteps...
-        self.lmp_instance.command('thermo %s' % print_interval) # ...determine thermodynamics
+        self.instance.command('thermo %s' % print_interval) # ...determine thermodynamics
 
-        self.lmp_instance.command('compute SolidTemp solid temp')
+        self.instance.command('compute SolidTemp solid temp')
 
         list_of_output_var_tuples = [('energy_', 'etotal'),
                                      ('potential_e', 'pe'),
@@ -136,7 +136,7 @@ class LmpController(object):
                                      ('sim_temp', 'c_SolidTemp'),
                                      ('time_step', 'step')]
         if self.is_protein_present and self.is_polymer_present:
-            self.lmp_instance.command('compute 2 contacts group/group polymer pair yes')
+            self.instance.command('compute 2 contacts group/group polymer pair yes')
             list_of_output_var_tuples = [('group0', 'c_2')] + list_of_output_var_tuples
 
         output_vars = OrderedDict(list_of_output_var_tuples)
