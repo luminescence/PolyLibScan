@@ -61,7 +61,13 @@ class Monomer(object):
             monomer.angles.append(bb_angle)
             monomer2.angles.append(bb_angle)
         else:
-            pass
+            bb_angle = PaI.Angle(self.env.new_id['angle'], self.env.angle_type['polymer'],
+                                [monomer.particles[monomer.combined_name('bb')], 
+                                self.particles[self.combined_name('bb')], 
+                                 monomer2.particles[monomer2.combined_name('bb')]])
+            self.angles.append(bb_angle)
+            monomer.angles.append(bb_angle)
+            monomer2.angles.append(bb_angle)
 
     def angle_with(self, monomer):
     	if len(monomer.particles) > 1:
