@@ -77,12 +77,6 @@ class LmpController(object):
             self.variable(name, var_style, val)
 
     def variable(self, name, style, val):
-        """
-        >>> test_controller = controler()
-        LAMMPS output is captured by PyLammps wrapper
-        >>> test_controller.variable('a', 'string', '2')
-        >>> test_controller.instance.variables['a'].value == 2.0
-        True"""
         self.instance.variable('%s %s %s' % (name, style, val))
 
     @staticmethod
