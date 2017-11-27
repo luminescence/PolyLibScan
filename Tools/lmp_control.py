@@ -231,9 +231,3 @@ class LmpController(object):
         self.set_fifos(self.fifos)
         self.production_MD(temperature_production)
         self.instance.close()
-
-
-if __name__ == "__main__":
-    import doctest
-
-    doctest.testmod()

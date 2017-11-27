@@ -26,8 +26,6 @@ class TestControl(ut.TestCase):
         with open(local_path.joinpath('data', 'parameters_hp2.yml').as_posix()) as f:
             self.parametrisation = yaml.load(f)
 
-        self.controller = LmpController(self.Id, self.parameter, self.path, self.parametrisation)
-
     def setUp(self):
         self.controller = LmpController(self.Id, self.parameter, self.path, self.parametrisation)
 
