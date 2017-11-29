@@ -47,10 +47,10 @@ class Type(PymolDensity):
             density.create_epitopsy_map(norm=norm)
             density.save(self.pymol.type_folder)
         self.pymol_handle.load(dx_path.as_posix())
-        density_obj = dc.DensityMap(self.pymol.poly_type.name, len(self.pymolpoly_type.sims), 
+        density_obj = dc.DensityMap(self.pymol.poly_type.name, len(self.pymol.poly_type.sims), 
                                  monomer_id, margin, resolution, dx_path, norm)
         self.map_data.add(density_obj)
-        self.poly_type.project.pymol.map_data.add(density_obj)
+        #self.poly_type.project.pymol.map_data.add(density_obj)
         return density_obj
 
 
