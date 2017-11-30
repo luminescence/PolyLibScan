@@ -20,10 +20,10 @@ Generated datfile with some information | {{ description }}
 {% if writer.entry_is_needed('dihedral') and env.dihedral_type.values()|length > 0 -%}
     {{ '{:> 12d}  dihedral types'.format(env.dihedral_type.values()|length) }}
 {%- endif %}
-
-{{ '{:> 6.4f} {:> 6.4f} xlo xhi'.format(env.box[0,0], env.box[0,1]) }}
-{{ '{:> 6.4f} {:> 6.4f} ylo yhi'.format(env.box[1,0], env.box[1,1]) }}
-{{ '{:> 6.4f} {:> 6.4f} zlo zhi'.format(env.box[2,0], env.box[2,1]) }}
+{% set box = env.sim_box() -%}
+{{- '{:> 6.4f} {:> 6.4f} xlo xhi'.format(box[0,0], box[0,1]) }}
+{{ '{:> 6.4f} {:> 6.4f} ylo yhi'.format(box[1,0], box[1,1]) }}
+{{ '{:> 6.4f} {:> 6.4f} zlo zhi'.format(box[2,0], box[2,1]) }}
 
 Masses
 
