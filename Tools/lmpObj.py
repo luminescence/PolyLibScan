@@ -13,7 +13,7 @@ class LmpObj(object):
         self.box = np.zeros([3,2])
 
     def __repr__(self):
-        return 'Molecule Type: %s %d | Length: %d' % (self.mol_type, self.Id, len(self.data['particles']))
+        return 'Molecule Type: %s %d | Length: %d | Beads: %d' % (self.mol_type, self.Id, len(self.data['monomers']), len(self.data['particles']))
 
     def name():
         doc = "The name property."
