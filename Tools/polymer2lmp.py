@@ -117,6 +117,14 @@ class PolymerCreator(LmpCreator):
             coords = polymer[-1].position + np.array([4.0, 0.0, 0.0])
         return Mono.Monomer(coords, element, self.env.monomer_type[element] ,self.env, lmpObj)
 
+    @staticmethod
+    def unique_ordered_DOF(monomers, DOF):
+        all_DOF = []
+        for x in monomers:
+            all_DOF += getattr(x, DOF)
+        ordered_unique_bonds = sorted(list(set(tuple(all_DOF))), key=lambda x: x.Id)
+        return ordered_unique_bonds
+
     def create_polymer_bonds(self, molecule):
         '''links all the monomers to 
         one string together.
@@ -126,13 +134,10 @@ class PolymerCreator(LmpCreator):
             return []
         for current_mono,next_mono in zip(monomers[0:-1], monomers[1:]):
             current_mono.bind_with(next_mono)
-        
-        bonds = set([])
-        for mono in monomers:
-            for bond in mono.bonds:
-                bonds.add(bond)
-        return sorted(list(bonds), key=lambda x:x.Id)
-    
+
+        ordered_unique_bonds = self.unique_ordered_DOF(monomers, 'bonds')
+        return ordered_unique_bonds
+
     def create_polymer_angles(self, molecule):
         monomers = molecule.data['monomers']
         if len(monomers) >= 2:
@@ -147,11 +152,8 @@ class PolymerCreator(LmpCreator):
                 current_element.angle_with(next_element)
                 current_element.bb_angle_with(previous_element, next_element)
 
-        angles = set([])
-        for mono in monomers:
-            for angle in mono.angles:
-                angles.add(angle)
-        return sorted(list(angles), key=lambda x:x.Id)
+        ordered_unique_angles = self.unique_ordered_DOF(monomers, 'angles')
+        return ordered_unique_angles
 
     def create_polymer_dihedrals(self, molecule):
         monomers = molecule.data['monomers']
@@ -168,11 +170,8 @@ class PolymerCreator(LmpCreator):
                 current_element.dihedral_with(previous_element)
                 current_element.bb_dihedral_with(previous_element, next_element, after_next_element)
 
-        dihedrals = set([])
-        for mono in molecule.data['monomers']:
-            for dihedral in mono.dihedrals:
-                dihedrals.add(dihedral)
-        return sorted(list(dihedrals), key=lambda x:x.Id)
+        ordered_unique_dihedrals = self.unique_ordered_DOF(monomers, 'dihedrals')
+        return ordered_unique_dihedrals
 
     def add_auto_repulsion(self, lmpObj, repulsion_value=None):
         '''Make all monomers repulse each other.
