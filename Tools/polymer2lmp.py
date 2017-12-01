@@ -148,7 +148,6 @@ class PolymerCreator(LmpCreator):
                                                     monomers[:-2], 
                                                     monomers[1:-1], 
                                                     monomers[2:]):
-                current_element.angle_with(previous_element)
                 current_element.angle_with(next_element)
                 current_element.bb_angle_with(previous_element, next_element)
 
