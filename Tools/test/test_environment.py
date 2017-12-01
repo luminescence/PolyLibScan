@@ -49,6 +49,25 @@ class TestEnvironment(ut.TestCase):
 
         self.assertNotEqual(first_box[0,0], second_box[0,0])
 
+    def test_sim_box(self):
+        sim_box = self.env.sim_box()
+        box = self.env.box.copy()
+
+        self.assertEqual(sim_box.shape, (3,2))
+
+        # box centers are the same
+        box_centers = 0.5 * (box[:,1] + box[:,0])
+        sim_box_centers = 0.5 * (sim_box[:,1] + sim_box[:,0])
+        self.assertAlmostEqual(tuple(box_centers), tuple(sim_box_centers))
+
+        # equal sized box
+        sim_box_lengths = sim_box[:,1] - sim_box[:,0]
+        self.assertAlmostEqual(sim_box_lengths[0], sim_box_lengths[1])
+        self.assertAlmostEqual(sim_box_lengths[0], sim_box_lengths[2])
+
+        # compare with largest box dimension
+        box_lengths = box[:,1] - box[:,0]
+        self.assertAlmostEqual(sim_box_lengths[0], box_lengths.max())
 
 if __name__ == '__main__':
     ut.main(verbosity=2)

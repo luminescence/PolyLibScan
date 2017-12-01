@@ -121,5 +121,14 @@ class Environment(object):
             self.box[i,0] = boxes[:,i,0].min()-margin
             self.box[i,1] = boxes[:,i,1].max()+margin
 
+    def sim_box(self):
+        self.calc_box(add_margin=True)
+        box_centers = 0.5 * (self.box[:,1] + self.box[:,0])
+        box_lengths = self.box[:,1] - self.box[:,0]
+        max_length = box_lengths.max()
+        r = max_length/2.0
+        # box matrix (x1, x2)
+        return np.append(box_centers - r, box_centers.T + r).reshape(2,3).T
+
     def update(self, value):
         self.calc_box()
