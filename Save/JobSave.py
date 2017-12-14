@@ -28,7 +28,7 @@ class JobSave(object):
 
     def _set_paths(self, input_paths):
         path = {dir_name: pl.Path(input_paths[dir_name])
-                        for dir_name in ['input', 'output', 'logs', 
+                        for dir_name in ['input', 'output', 'logs',
                                          'fifo', 'root', 'local_root']}
         path['meta'] = path['root'].joinpath('config_with_setup.yml')
         path['p_list'] = path['root'].joinpath('particle_list.npy')
@@ -52,12 +52,16 @@ class JobSave(object):
         self.db.traj_type_order = type_list
         self.db.traj_info = traj_info
 
+    def is_protein_present(self):
+        return (self.config.sim_parameter['stoichiometry'][0] > 0)
+
     def save_meta_data(self, config):
         meta_data = self.parse.meta(config)
         self.db.sequence = meta_data['sequence']
         self.db.weights = meta_data['weights']
         self.db.misc = meta_data['misc']
-        self.db.active_site = meta_data['active_site']
+        if self.is_protein_present():
+            self.db.active_site = meta_data['active_site']
         self.db.parameter = meta_data['parameter']
 
     def save_particle_list(self, path):
@@ -79,21 +83,28 @@ class JobSave(object):
 
     def save_endstates(self, runs):
         polymer_ids = np.array(np.unique(self.db.sequence['ID']))
-        active_site_pos = self.db.active_site['xyz']
-        endstates = np.zeros(len(runs), dtype=[('ID', '>i2'), 
-                                               ('Energy', '>f4'), 
-                                               ('TotalEnergy', '>f4'), 
-                                               ('Distance', '>f4')])
+
+        dtypes = [('ID', '>i2'), ('Energy', '>f4'), ('TotalEnergy', '>f4')]
+
+        if self.is_protein_present():
+            active_site_pos = self.db.active_site['xyz']
+            dtypes += [('Distance', '>f4')]
+
+        endstates = np.zeros(len(runs), dtype=dtypes)
+
         for run in runs:
-            distance = compute.distance_to_active_site(run.end_traj, polymer_ids, 
-                                                       active_site_pos)
-            endstates[run.Id] = (run.Id, run.energy[-1,0], run.energy[-1,1], distance)
+            if self.is_protein_present():
+                distance = compute.distance_to_active_site(run.end_traj, polymer_ids, active_site_pos)
+                endstates[run.Id] = (run.Id, run.energy[-1,0], run.energy[-1,1], distance)
+            else:
+                endstates[run.Id] = (run.Id, run.energy[-1,0], run.energy[-1,1])
+
         self.db.end_states = endstates
-    
+
     def read_runs(self):
         runs = []
         input_files = self.path['input'].glob('*')
-        return [Run.from_id(self, self.path, input_file.name) 
+        return [Run.from_id(self, self.path, input_file.name)
                 for input_file in input_files]
 
     def get_Error(self):
@@ -101,7 +112,7 @@ class JobSave(object):
             with open(self.path['logs'].joinpath('slurm.err').as_posix()) as f:
                 return f.read()
         else:
-            return 'No error occurred.' 
+            return 'No error occurred.'
 
     def has_error(self):
         '''Check if the job ran through correctly by looking at 
@@ -139,7 +150,7 @@ class JobSave(object):
                     self.path['root'].joinpath(file_).unlink()
             for file_ in ['slurm.out','slurm.err']:
                 if self.path['logs'].joinpath(file_).exists():
-                    self.path['logs'].joinpath(file_).unlink()    
+                    self.path['logs'].joinpath(file_).unlink()
             for dir_ in ['input', 'output', 'logs', 'fifo']:
                 if self.path[dir_].exists():
                     self.path[dir_].rmdir()

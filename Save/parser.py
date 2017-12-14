@@ -29,10 +29,13 @@ class Parser(object):
         meta['sequence'] = np.array([(id_, name) for name,id_ in zip(config.sim_parameter['named_sequence'], 
                                                                      config.sim_parameter['id_sequence']   )], 
                                                      dtype=[('ID', '>i2'), ('monomer', '|S10')])
-        as_val = config.sim_parameter['active_site']
-        meta['active_site'] = np.array([ (as_val['xyz'][i], as_val['chain'][i], as_val['pdb_id'][i], as_val['iCode'][i]) 
-                                                                                    for i in xrange(len(as_val['xyz']))], 
-                                        dtype=[('xyz', '<i2'), ('chain', '|S1'), ('pdb_id', '<i2'), ('iCode', '|S1')])
+
+        if config.sim_parameter['stoichiometry'][0] > 0:
+            as_val = config.sim_parameter['active_site']
+            meta['active_site'] = np.array([ (as_val['xyz'][i], as_val['chain'][i], as_val['pdb_id'][i], as_val['iCode'][i])
+                                                                                        for i in xrange(len(as_val['xyz']))],
+                                            dtype=[('xyz', '<i2'), ('chain', '|S1'), ('pdb_id', '<i2'), ('iCode', '|S1')])
+
         return meta
         
     def xyz(self, file_path):
