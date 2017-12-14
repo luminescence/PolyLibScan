@@ -65,8 +65,6 @@ class JobSave(object):
         self.db.particle_list = particle_data
 
     def save_runs(self, runs):
-        polymer_ids = np.array(np.unique(self.db.sequence['ID']))
-        active_site_pos = self.db.active_site['xyz']
         for run in runs:
             self.db.start_trajectories_save(run.start_traj, run.Id)
             self.db.end_trajectories_save(run.end_traj, run.Id)
