@@ -48,7 +48,7 @@ class LmpWriter(object):
         return False
 
     def pair_string(self, pair):
-        if self.env.globals['pair_style'] == 'hybrid':
+        if self.env.globals['pair_style'] in ['hybrid', 'hybrid/overlay']:
             if pair.pair_type.kind == 'lj/cut':
                 bond_template = '{:> 3d} {:> 3d} {} {:> 6.2f} {:> 6.2f} {:> 6.2f}'
                 return bond_template.format(
