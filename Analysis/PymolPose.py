@@ -145,7 +145,7 @@ class Run(PymolPose):
                 np_help.copy_fields(pose_data, self.traj_data(run, state, mask), ['x','y', 'z'])
                 yield pose_data
         elif state == 'full':
-            for step_data in self.run.polymer_trajectory():
+            for step_data in self.run.trajectory(molecule='polymer'):
                 pose_data['x'] = step_data['xyz'][:,0]
                 pose_data['y'] = step_data['xyz'][:,1]
                 pose_data['z'] = step_data['xyz'][:,2]

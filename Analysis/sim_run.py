@@ -73,11 +73,13 @@ class Run(plotting.Run):
         traj_iterator = self.job._parse.trajectory_load(self.Id)
 
         monomer_coords = it.ifilter(type_filter, traj_iterator)
-        time_step_coords = np.zeros(len(self.sequence()), dtype=[('type_', np.int), ('xyz', np.float,3)])
+        seq_length = len(self.sequence())
+        time_step_coords = np.zeros(seq_length, dtype=[('type_', np.int), ('xyz', np.float,3)])
         full_time_steps = self.job.lmp_parameters['time_steps']/self.job.trajectory_meta['step_size']+1
         for time_step in xrange(full_time_steps):
-            for i, coord in it.izip(xrange(len(self.sequence())), monomer_coords):
-                time_step_coords[i] = coord
+            for i, atom_id, coord in it.izip(xrange(seq_length), self.sequence()['ID'], monomer_coords):
+                time_step_coords[i][0] = atom_id
+                time_step_coords[i][1] = coord
             yield time_step_coords
 
     def polymer_trajectory(self):
@@ -87,10 +89,10 @@ class Run(plotting.Run):
         traj_iterator = self.job._parse.trajectory_load(self.Id)
 
         monomer_coords = it.ifilter(type_filter, traj_iterator)
-        xyz = np.zeros(len(self.sequence()), dtype=[('xyz', np.float,3)])
+        xyz = np.zeros(seq_length, dtype=[('xyz', np.float,3)])
         full_time_steps = self.job.lmp_parameters['time_steps']/self.job.trajectory_meta['step_size']+1
         for time_step in xrange(full_time_steps):
-            for i, coord in it.izip(xrange(len(self.sequence())), monomer_coords):
+            for i, coord in it.izip(xrange(seq_length), monomer_coords):
                 xyz[i] = coord
             yield xyz
 

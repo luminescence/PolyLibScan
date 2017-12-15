@@ -59,7 +59,7 @@ class TestRun(ut.TestCase):
         self.assertAlmostEqual(results[-1][1], 8.68289875388)
 
     def test_polymer_trajectory(self):
-        results = self.run_.polymer_trajectory()
+        results = self.run_.trajectory(molecule='polymer')
         self.assertTrue(len(results.next()) > 0)
         #self.assertTrue(results.next()
 
