@@ -61,10 +61,10 @@ class Run(plotting.Run):
         if molecule == 'protein':
             type_filter = self._create_atom_type_filter(particle_order, 
                             monomer_id=ids['protein'])
-        if molecule == 'polymer':
+        elif molecule == 'polymer':
             type_filter = self._create_atom_type_filter(particle_order, 
                             monomer_id=ids['polymer'])
-        if molecule == 'full':
+        elif molecule == 'full':
             alll_ids = np.concatenate(ids['protein'], ids['polymer'])
             type_filter = self._create_atom_type_filter(particle_order, 
                             monomer_id=ids)
