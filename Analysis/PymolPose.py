@@ -152,3 +152,4 @@ class Run(PymolPose):
                 yield pose_data
         else:
             raise AttributeError("state must have value of 'start', 'end' or 'full'.")
+            
