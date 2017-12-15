@@ -82,20 +82,6 @@ class Run(plotting.Run):
                 time_step_coords[i][1] = coord
             yield time_step_coords
 
-    def polymer_trajectory(self):
-        particle_order = self.job.trajectory_order
-        type_filter = self._create_atom_type_filter(particle_order, 
-                            monomer_id=self.job.particle_ids['polymer'])
-        traj_iterator = self.job._parse.trajectory_load(self.Id)
-
-        monomer_coords = it.ifilter(type_filter, traj_iterator)
-        xyz = np.zeros(seq_length, dtype=[('xyz', np.float,3)])
-        full_time_steps = self.job.lmp_parameters['time_steps']/self.job.trajectory_meta['step_size']+1
-        for time_step in xrange(full_time_steps):
-            for i, coord in it.izip(xrange(seq_length), monomer_coords):
-                xyz[i] = coord
-            yield xyz
-
     def _distance_to_active_site(self):
         xyz = self.coordinates()['end']
         mask = np.in1d(xyz['atom_type'], self.job.particle_ids['polymer'])
