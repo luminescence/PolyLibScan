@@ -142,11 +142,21 @@ class LmpController(object):
         self.instance.command('fix 		5 all print %s %s file %s screen no title %s' % (print_interval,
         self.convert_python_list_to_lammps_list([self.variable_sigil_for_lammps(x) for x in output_vars.keys()]), output_file_path, csv_header))
 
-    def production_MD(self, temperature_production):
+    def production_MD(self, temperature_production, time_bug_fix=True):
         # production
         self.instance.command('reset_timestep 0')
         self.langevin_dynamics(T_0=temperature_production, T_end=temperature_production)
-        self.instance.run(self.parameters['time_steps'])
+        # on Niklas's local machine, LAMMPS stops after 86200 steps
+        # one can run 80k steps n-times, though!
+        if time_bug_fix:
+            max_no_time_steps = 80000
+            full_runs, timesteps_left = divmod(self.parameters['time_steps'], max_no_time_steps)
+
+            for x in range(full_runs):
+                self.instance.run(max_no_time_steps)
+            self.instance.run(timesteps_left)
+        else:
+            self.instance.run(self.parameters['time_steps'])
         # write snapshot of end-comformation
         output_file_final_conformation = self.paths['output'] + '/trajectoryE' + '%05d' % self.Id
         self.instance.command('write_dump solid xyz %s.xyz' % output_file_final_conformation)
@@ -158,7 +168,7 @@ class LmpController(object):
                               'write_dump	solid xyz %s.xyz' % output_file_start_conformation]
         self.execute_list_of_commands(equilibration_cmds)
         self.langevin_dynamics(T_0=temperature_start, T_end=temperature_production)
-        equilibration_timesteps = 170
+        equilibration_timesteps = 1700
         self.instance.run(equilibration_timesteps)
 
     def group_declaration(self):
