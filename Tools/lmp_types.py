@@ -175,7 +175,10 @@ class PairType(ArchType):
         self.single_type_parametrised = single_type_parametrised
         self.repulsive_only = rep_only
         self.cutoff = cutoff
-        
+
+        if self.repulsive_only and not self.single_type_parametrised:
+            raise ValueError('Pair potential "{}": Repulsive only potentials need to be single type parametrised!'.format(name))
+
     @classmethod
     def from_dict(cls, pair_dict, name='None'):
         coef_keys = sorted([key for key in pair_dict if 'coef' in key])
