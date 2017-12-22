@@ -11,7 +11,7 @@ class Interaction(object):
         #self._create_matrix()
 
     def _add(self, type_):
-        '''This function is only one newly added type, 
+        '''This function is only used for one newly added type, 
         not for the creation of the interaction matrix.
         '''
         types_existing_before = filter(lambda x:x.Id!=type_.Id, self._env.atom_type.values())

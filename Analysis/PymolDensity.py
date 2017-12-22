@@ -40,6 +40,13 @@ class Type(PymolDensity):
         self.sims = pymol_vis.sims
         
     def add_dx(self, monomer_id='all', margin=20.0, resolution=1.5, norm='max'):
+        '''Add cumulative densities of all simulations of this type.
+
+        input:
+            margin:      margin around the protein in Angstrom [Float]
+            resolution:  bin-size in angstrom [Float]
+            norm:        options: ['max', 'probability']
+        '''
         density = dc.DensityContainer(self.sims, monomer_id, margin=margin, 
             resolution=resolution, norm_type=norm)
         dx_path = density._map_path(self.pymol.type_folder)

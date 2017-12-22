@@ -24,7 +24,8 @@ class Config2(object):
     def read(self, source=None):
         if not source:
             source = self.config_path
-        if isinstance(source, basestring) and source.endswith('.yml'):
+        if isinstance(source, basestring) and (source.endswith('.yml') or 
+                                               source.endswith('.yaml')):
             self._read_yaml(source)
         elif isinstance(source, basestring) and source.endswith('.cfg'):
             self._read_cfg(source)

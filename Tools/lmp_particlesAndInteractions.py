@@ -125,7 +125,11 @@ class particle_methods_bundled:
             raise Exception('Found more than one particle: %s \nCheck your pdb file for duplicate entries.' % (
                 [p.residue for p in particle]))
         elif len(particle)==0:
-            raise Exception("There is no particle with chain %s, id %d, iCode '%s' and ghost status %d" % pdb_residue_chain, pdb_residue_id[1:], pdb_residue_id[0])
+            raise Exception("There is no particle with chain %s, id %d, iCode '%s' and ghost status %d" % (
+                                    pdb_residue_chain, 
+                                    pdb_residue_id[1], 
+                                    pdb_residue_id[2], 
+                                    pdb_residue_id[0]))
         return particle[0]
 
     def _make_particle_unique(self, particle):
