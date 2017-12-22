@@ -125,7 +125,7 @@ class particle_methods_bundled:
             raise Exception('Found more than one particle: %s \nCheck your pdb file for duplicate entries.' % (
                 [p.residue for p in particle]))
         elif len(particle)==0:
-            raise Exception("There is no particle with chain %s, id %d, iCode '%s' and ghost status %d" % (
+            raise Exception("There is no particle with chain %s, id %d, iCode '%s' and ghost status %s" % (
                                     pdb_residue_chain, 
                                     pdb_residue_id[1], 
                                     pdb_residue_id[2], 
