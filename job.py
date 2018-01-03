@@ -66,10 +66,13 @@ class Job(object):
             ph=self.config.sim_parameter['pH']
         )
 
+        number_of_proteins = self.config.sim_parameter['stoichiometry'][0]
+        number_of_polymers = self.config.sim_parameter['stoichiometry'][1]
+
         # protein
-        if self.config.sim_parameter['stoichiometry'][0] == 0:
+        if number_of_proteins == 0:
             pass
-        elif self.config.sim_parameter['stoichiometry'][0] == 1:
+        elif number_of_proteins == 1:
             self.protein = self.protein_creator.create()
         else:
             raise NotImplementedError(
@@ -84,7 +87,7 @@ class Job(object):
                                                         self.config.sim_parameter['monomers'],
                                                         weights=self.config.sim_parameter['weights'],
                                                         length=self.config.sim_parameter['poly_length'])
-        if self.config.sim_parameter['stoichiometry'][1] == 1:
+        if number_of_polymers == 1:
             self.poly = self.polymer_creator.create()
 
         self.sim = Tools.EnvManipulator(self.env, auto_repulsion=False)
@@ -92,17 +95,19 @@ class Job(object):
         self.setup_writer = Tools.LmpWriter(self.env)
 
         # Update Lammps Parameters
-        if self.config.sim_parameter['stoichiometry'][1] == 1:
+        if number_of_polymers == 1:
             self.config.sim_parameter['poly_sequence'] = [monomers.type_.name for monomers in self.poly.data['monomers']]
             self.config.sim_parameter['named_sequence'] = [particle.type_.name for particle in self.poly.data['particles']]
             self.config.sim_parameter['id_sequence'] = [particle.type_.Id for particle in self.poly.data['particles']]
             self.config.lmp_parameter['monomer_ids'] = self._get_monomer_ids()
-        if self.config.sim_parameter['stoichiometry'][0] == 1:
+        elif number_of_polymers > 1:
+            raise NotImplementedError('Multiple polymer molecules are currently not supported!')
+        if number_of_proteins == 1:
             self.config.sim_parameter['active_site'] = self.set_active_site()
             self.config.lmp_parameter['active_site_ids'] = self.config.sim_parameter['active_site']['xyz']
             self.config.lmp_parameter['bb_id'] = self.env.atom_type['BB_bb'].Id
             self.config.lmp_parameter['ghost_id'] = self.env.atom_type['BB_ghost_bb'].Id
-        elif self.config.sim_parameter['stoichiometry'][0] > 1:
+        elif number_of_proteins > 1:
             raise NotImplementedError('Multiple protein molecules are currently not supported!')
         # the config with added information is always saved to the root directory
         self.config.save(self.config_with_setup)
