@@ -82,7 +82,7 @@ class PymolVisPolyType(PymolVisualisation):
                         search_path=self._default_pdb_folder)
         self.type_folder = self.create_polytype_folder(first_sim_folder)
         super(PymolVisPolyType, self).__init__(protein_path)
-        self.density = PymolDensity.Project(self)
+        self.density = PymolDensity.Type(self)
         self.pose = PymolPose.Type(self)
 
     def create_polytype_folder(self, sim_path):
