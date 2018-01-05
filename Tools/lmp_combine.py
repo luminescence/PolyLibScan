@@ -8,7 +8,7 @@ import itertools as it
 import sets
 import pandas as pd
 import PolyLibScan.Database.db as db
-
+from scipy.spatial.distance import cdist
 
 class EnvManipulator(object, particle_methods_bundled):
     '''LmpObj constructor is not used here!!
@@ -140,7 +140,6 @@ class EnvManipulator(object, particle_methods_bundled):
             big_box[dim,0] = min(environment.box[dim,0], dim_interval[0])
             big_box[dim,1] = max(environment.box[dim,1], dim_interval[1])
         return big_box
-
         
     def shift_mol(self, mol, box, margin=5.0):
         '''
@@ -174,11 +173,12 @@ class EnvManipulator(object, particle_methods_bundled):
         mol1_coords = np.array([p.position for p in mol1_particles])
         mol2_coords = np.array([p.position for p in mol2_particles])
 
-        for c1 in mol1_coords:
-            for c2 in mol2_coords:
-                if np.linalg.norm((c1-c2)) < margin:
-                    return True
-        return False
+        distance_matrix = cdist(mol1_coords, mol2_coords)
+
+        if distance_matrix.min() < margin:
+            return True
+        else:
+            return False
 
     ### FEATURE: ADD AFFINITIES
 
