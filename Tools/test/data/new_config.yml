@@ -52,7 +52,7 @@ Dihedrals:
   peptide: {coef1: 0.1, coef2: 0.5, coef3: 1.5, coef4: 120, kind: harmonic}
 Pairs:
   affinity: {coef1: 0.0, coef2: 0.4, cutoff: 45, kind: morse, repulsive_only: 0, single_type_parametrised: True}
-  lj: {coef1: 1.0, cutoff: 12.0, kind: lj/cut, repulsive_only: 1, single_type_parametrised: True}
+  lj: {coef1: 1.0, cutoff: 12.0, kind: lj/cut, repulsive_only: 1, single_type_parametrised: true}
   coulomb: {coef1: 78.0, coef2: 1.375, coef3: 0.112, cutoff: 45, kind: coul/diel, repulsive_only: 0, single_type_parametrised: False}
 globals: {affinity_file: ../data/affinities_Originals2.h5, angle_style: harmonic, atom_style: angle,
   bond_style: harmonic, box_margin: 20, pair_style: hybrid}
