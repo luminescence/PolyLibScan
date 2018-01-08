@@ -202,15 +202,16 @@ class LmpController(object):
         self.group_declaration()
         #modify neighbor list
         self.instance.command('neigh_modify exclude group ghost_protein all')
-        self.minimization()
-        #equilibrate
-        temperature_start = 100.0
-        temperature_production = 300.0
-        self.equilibration_MD(temperature_production, temperature_start)
-        self.configure_output()
-        # specify fifo dumps
-        self.set_fifos(self.fifos)
-        self.production_MD(temperature_production)
+        self.instance.command('write_dump solid xyz start_%s.xyz' % self.Id)
+        # self.minimization()
+        # #equilibrate
+        # temperature_start = 100.0
+        # temperature_production = 300.0
+        # self.equilibration_MD(temperature_production, temperature_start)
+        # self.configure_output()
+        # # specify fifo dumps
+        # self.set_fifos(self.fifos)
+        # self.production_MD(temperature_production)
         self.instance.close()
 
 
