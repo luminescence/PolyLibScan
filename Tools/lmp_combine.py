@@ -66,12 +66,31 @@ class EnvManipulator(object, particle_methods_bundled):
             axis, angle = self._random_rotation()
             polymer.rotate(axis, angle)
             reduced_mol_list = filter(lambda x:x.name != polymer.name, self.molecules.values())
+            # proximity needs to be ensured at this point in case there's no overlap/the while loop is not entered
+            self.approach_polymer_to_protein(polymer, protein)
             while self.overlapping_with_any(polymer, reduced_mol_list):
                 shift = self._random_shift(polymer, protein)
                 polymer.move(shift)
                 axis, angle = self._random_rotation()
                 polymer.rotate(axis, angle)
+                self.approach_polymer_to_protein(polymer, protein)
+
         self.env.calc_box(add_margin=True)
+
+    def approach_polymer_to_protein(self, polymer, protein):
+        """'frontier' refers to the interface between polymer and protein"""
+        largest_interaction_cutoff = max([interaction.cutoff for interaction in self.env.pair_type.values()])
+        protein_particles = protein.data['particles']
+        polymer_particles = polymer.data['particles']
+        protein_polymer_distances = self.generateDistanceMatrix(protein_particles, polymer_particles)
+        shortest_distance = protein_polymer_distances.min()
+        if shortest_distance > largest_interaction_cutoff:
+            protein_frontier_bead, polymer_frontier_bead = [x[0] for x in np.where(protein_polymer_distances == shortest_distance)]
+            protein_frontier_position = self.get_position_array_for_particles(protein_particles)[protein_frontier_bead]
+            polymer_frontier_position = self.get_position_array_for_particles(polymer_particles)[polymer_frontier_bead]
+            frontier_vector = protein_frontier_position - polymer_frontier_position
+            frontier_vector_magnitude = (shortest_distance - largest_interaction_cutoff) / shortest_distance
+            polymer.move(frontier_vector * frontier_vector_magnitude)
 
     def _random_shift(self, shift_mol, center_mol):
         '''shifts a box with the size of the shift_mol 
@@ -170,15 +189,25 @@ class EnvManipulator(object, particle_methods_bundled):
         The margin should make sure that no atoms come so close 
         as to blow up the system.
         '''
-        mol1_coords = np.array([p.position for p in mol1_particles])
-        mol2_coords = np.array([p.position for p in mol2_particles])
-
-        distance_matrix = cdist(mol1_coords, mol2_coords)
+        distance_matrix = self.generateDistanceMatrix(mol1_particles, mol2_particles)
 
         if distance_matrix.min() < margin:
             return True
         else:
             return False
+
+    def generateDistanceMatrix(self, mol1_particles, mol2_particles):
+        mol1_coords = self.get_position_array_for_particles(mol1_particles)
+        mol2_coords = self.get_position_array_for_particles(mol2_particles)
+        distance_matrix = cdist(mol1_coords, mol2_coords)
+        return distance_matrix
+
+    @staticmethod
+    def get_position_array_for_particles(mol_particles, exclude_ghost_atoms=True):
+        if exclude_ghost_atoms:
+            return np.array([p.position for p in mol_particles if p.residue.name != 'ghost'])
+        else:
+            return np.array([p.position for p in mol_particles])
 
     ### FEATURE: ADD AFFINITIES
 

@@ -1,0 +1,6 @@
+LAMMPS (17 Nov 2016)
+variable c string 2
+info variables
+print "${c}"
+2
+Total wall time: 0:00:00
