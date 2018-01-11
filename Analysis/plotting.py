@@ -91,8 +91,8 @@ class Project(object):
             fig, ax = plt.subplots(figsize=(18,12))
             ax.set_title('%s (PDB: %s)' % (self.jobs[0].meta['protein_name'], 
                                            self.jobs[0].meta['protein']), size=20)
+        near_active_site = self.endstate_matrix.stack(0).loc[self.endstate_matrix.stack(0)['Distance'] < min_dist_to_ac, :].unstack()['Energy']
         if self.experimental_data is not None:
-            near_active_site = self.endstate_matrix.stack(0).loc[self.endstate_matrix.stack(0)['Distance']<min_dist_to_ac, :].unstack()['Energy']
             a = near_active_site.loc[:, self.experimental_data[near_active_site.columns].isnull()].mean()
             weights1 = np.ones_like(a)/len(a)
             a.hist(ax=ax, weights=weights1, label='not inhibiting', color='red')
