@@ -144,7 +144,7 @@ class PolymerTypeSims(plotting.PolymerTypeSims, bayes.PolymerTypeSims):
         ChargeAverage = col.namedtuple('ChargeAverage', 'monomer, sequence')
 
         per_monomer = sum((self.monomer_charge_for_all_beads(name) * weight
-                           for name,weight in self.weights.items()))/len(self.weights)
+                           for name,weight in self.weights.items())) / sum(self.weights.values())
         sequence = sum((sim.charge for sim in self.sims))/len(self.sims)
 
         return ChargeAverage(monomer=per_monomer, sequence=sequence)
