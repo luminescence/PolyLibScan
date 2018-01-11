@@ -128,8 +128,9 @@ class PolymerTypeSims(plotting.PolymerTypeSims, bayes.PolymerTypeSims):
         out += ['Containing %d Jobs.' % len(self.sims)]
         out += ['Composition:']
         for name,weight in self.weights.items():
+            monomer_charge = self.monomer_charge_for_all_beads(name)
             out += ['  %s: %0.2f (charge: %d)' % (
-                    name, weight, self.project.parameters['Atoms'][name]['charge'])]
+                name, weight, monomer_charge)]
         out += ['Average Charge: %0.2f (monomer), %0.2f (sequence)' % self.charge_average()]
         if self.ic50:
             out += ['Experimental inhibition: %0.2f (inverse IC50)' % self.ic50]
@@ -141,10 +142,15 @@ class PolymerTypeSims(plotting.PolymerTypeSims, bayes.PolymerTypeSims):
         "sequence" returns the average charge from the generates sequences
         '''
         ChargeAverage = col.namedtuple('ChargeAverage', 'monomer, sequence')
-        particle_props = self.project.parameters['Atoms']
 
-        per_monomer = sum((particle_props[name]['charge'] * weight 
+        per_monomer = sum((self.monomer_charge_for_all_beads(name) * weight
                            for name,weight in self.weights.items()))/len(self.weights)
         sequence = sum((sim.charge for sim in self.sims))/len(self.sims)
 
         return ChargeAverage(monomer=per_monomer, sequence=sequence)
+
+    def monomer_charge_for_all_beads(self, name):
+        monomer_charge = 0
+        for beads in self.project.parameters['Atoms'][name].keys():
+            monomer_charge += self.project.parameters['Atoms'][name][beads]['charge']
+        return monomer_charge
