@@ -88,8 +88,9 @@ class Parser(object):
     def particle_list(self, path):
         '''Extract particles from list
         '''
-        dtype = [('xyz', np.int), ('p_id', np.int), ('name', 'S6'), 
-                 ('chain', 'S1'), ('atom', 'S6'), ('res_id', np.int), ('iCode', 'S1')]
+        dtype = [('xyz'  , np.int), ('p_id'  , np.int)    , ('name'  , 'S6'), 
+                 ('chain', 'S1')  , ('atom'  , 'S6')      , ('res_id', np.int), 
+                 ('iCode', 'S1')  , ('charge', np.float)]
         return np.fromfile(path, dtype=dtype)
 
     def trajectory_meta(self, file_path):

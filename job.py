@@ -99,15 +99,17 @@ class Job(object):
 
     def save_particle_list(self, path):
         dtype = [('xyz', np.int), ('p_id', np.int), ('name', 'S6'), 
-                 ('chain', 'S1'), ('atom', 'S6'), ('res_id', np.int), ('iCode', 'S1')]
+                 ('chain', 'S1'), ('atom', 'S6'), ('res_id', np.int), 
+                 ('iCode', 'S1'), ('charge', np.float)]
 
         molecules = sorted(self.env.molecules.values(), key=lambda x: x.Id)
         particle_gen = it.chain(*[molecule.data['particles'] for molecule in molecules])
         particle_count = sum([len(mol.data['particles']) for mol in self.env.molecules.values()])
         particle_dat = np.empty(particle_count, dtype)
         for i,p in enumerate(particle_gen):
-            particle_dat[i] = (p.Id, p.type_.Id, p.residue.name, p.residue.chain, 
-                                p.residue.id[0], p.residue.id[1], p.residue.id[2]) 
+            particle_dat[i] = (p.Id, p.type_.Id, p.residue.name , p.residue.chain, 
+                               p.residue.id[0] , p.residue.id[1], p.residue.id[2],
+                               p.charge)
         particle_dat.tofile(path)
 
     def terminate_fifos(self):
