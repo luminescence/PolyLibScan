@@ -89,20 +89,30 @@ class DensityContainer(object):
         else:
             raise UserWarning('This attribute should not be changed after object creation.')
 
-    def __eq__(self, other):
-        if self.margin != other.margin: 
-            return False
-            raise AttributeError("Margins in maps differ: %f and %f" % (self.margin, other.margin))
+    def __eq__(self, other, return_differences=False):
+        difference_list = []
+        if self.margin != other.margin:
+            difference_list.append("Margins in maps differ: %.1f and %.1f" % (self.margin, other.margin))
         if self.resolution != other.resolution:
-            return False
-            raise AttributeError("Resolution in maps differ: %f and %f" % (self.resolution, other.resolution))
+            difference_list.append("Resolution in maps differ: %.1f and %.1f" % (self.resolution, other.resolution))
         if self.monomer_id != other.monomer_id:
-            return False
-            raise AttributeError("Monomers in maps differ: %s and %s" % (self.monomer_id, other.monomer_id))
+            difference_list.append("Monomers in maps differ: %s and %s" % (self.monomer_id, other.monomer_id))
         if (self.box!=other.box).any():
+            difference_list.append("Boxes in maps differ: %s and %s" % (self.box, other.box))
+
+        if return_differences:
+            return difference_list
+        if len(difference_list) == 0:
+            return True
+        else:
             return False
-            raise AttributeError("Boxes in maps differ: %s and %s" % (self.box, other.box))
-        return True
+
+    def _check_for_difference(self, other):
+        differences = self.__eq__(other, return_differences=True)
+        if len(differences) == 0:
+        	return 'No differences found.'
+        else:
+            return '\n'.join(differences)
 
     def __ne__(self, other):
         bool_val = (self == other)
@@ -119,18 +129,6 @@ class DensityContainer(object):
     #         raise ValueError(self._check_for_difference(other))
     #     self.map += other.map
     #     return self
-
-    def _check_for_difference(self, other):
-        if self.margin != other.margin: 
-            return "Margins in maps differ: %.1f and %.1f" % (self.margin, other.margin)
-        if self.resolution != other.resolution:
-            return "Resolution in maps differ: %.1f and %.1f" % (self.resolution, other.resolution)
-        if self.monomer_id != other.monomer_id:
-            return "Monomers in maps differ: %s and %s" % (self.monomer_id, other.monomer_id)
-        if (self.box!=other.box).any():
-            return "Boxes in maps differ: %s and %s" % (self.box, other.box)
-        else:
-        	return 'No differences found.'
 
     def _create_empty_map(self):
         '''Set up an empty array for the density and get the size and offset 
