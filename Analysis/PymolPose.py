@@ -4,17 +4,17 @@ import jinja2 as ji
 import PolyLibScan.helpers.numpy_helpers as np_help
 import itertools as it
 
-def _get_pdb_template():
-    with open('%s/pymol_polymer.tpl' % _os.path.dirname(__file__)) as f:
+def _get_pdb_template(name):
+    with open('%s/%s' % (_os.path.dirname(__file__),name)) as f:
         template = ji.Template(f.read())
     return template
 
 class PymolPose(object):
     '''Parent class of pymol Visualisation
     '''
-    atom_names = 10*['C', 'N', 'O', 'S', 'H']
+    atom_names = 100*['C', 'N', 'O', 'S', 'H']
     
-    template = _get_pdb_template()
+    template = _get_pdb_template('pymol_polymer.tpl')
 
     def __init__(self, pymol):
         self.pymol = pymol
@@ -29,17 +29,17 @@ class PymolPose(object):
         if state not in ['start', 'end']:
             raise AttributeError("state must have value of 'start' or 'end'.")
         mask = np.in1d(sim.trajectory_order, sim.particle_ids[molecule])
-        pose_data = self._create_pose_array(sim, mask)
+        pose_data = self._create_pose_array(sim, molecule, mask)
         for run in sim:
             np_help.copy_fields(pose_data, self.traj_data(run, state, mask), ['x','y', 'z'])
             yield pose_data
 
-    def _create_pose_array(self, sim, mask):
+    def _create_pose_array(self, sim, molecule, mask):
         '''
         '''
         pose_list_type = [('id', '>i2'), ('ele', '|S1'), ('res_name', '|S3'), 
                           ('x', np.float), ('y', np.float), ('z', np.float)]
-        elements = dict(zip(sim.particle_ids['polymer'], self.atom_names))
+        elements = dict(zip(sim.particle_ids[molecule], self.atom_names))
         pose_data = np.zeros(mask.sum(), dtype=pose_list_type)
         pose_data['id'] = np.arange(1, mask.sum()+1)
         pose_data['ele'] = map(lambda x:elements[x], sim[0].coordinates()['end'][mask]['atom_type'])
@@ -139,7 +139,7 @@ class Run(PymolPose):
         information is left unchanged
         '''
         mask = np.in1d(sim.trajectory_order, sim.particle_ids[molecule])
-        pose_data = self._create_pose_array(sim, mask)
+        pose_data = self._create_pose_array(sim, molecule, mask)
         if state in ['start', 'end']:
             for run in [sim[self.run.Id]]:
                 np_help.copy_fields(pose_data, self.traj_data(run, state, mask), ['x','y', 'z'])
