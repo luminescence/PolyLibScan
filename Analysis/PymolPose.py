@@ -4,33 +4,14 @@ import jinja2 as ji
 import PolyLibScan.helpers.numpy_helpers as np_help
 import itertools as it
 
+from PolyLibScan.Analysis.sim_run import generate_mask
+
+
 def _get_pdb_template():
     with open('%s/pymol_polymer.tpl' % _os.path.dirname(__file__)) as f:
         template = ji.Template(f.read())
     return template
 
-def generate_mask(particle_list, monomers_to_match, sim, filter='type', molecule='polymer'):
-    """return a 1d np.array (lenghth = number of particles in MD) filled with True or False"""
-
-    polymer_length = len(sim.sequence)
-    protein_length = len(particle_list) - polymer_length
-
-    if filter == 'type':
-        mask = np.in1d(particle_list, monomers_to_match)
-    elif filter == 'id':
-        if molecule != 'polymer':
-            raise NotImplementedError('Filtering by id is only implemented for the polymer so far! ')
-        mask = np.array([False] * (polymer_length + protein_length))
-        absolute_id = [x+protein_length for x in monomers_to_match]
-        mask[absolute_id] = True
-
-    # if molecule == 'full', nothing needs to be done
-    if molecule == 'polymer':
-        mask[:protein_length] = [False] * protein_length
-    elif molecule == 'protein':
-        mask[protein_length:] = [False] * polymer_length
-
-    return mask
 
 class PymolPose(object):
     '''Parent class of pymol Visualisation

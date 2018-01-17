@@ -3,8 +3,8 @@ import tqdm
 import itertools as it
 import epitopsy.DXFile as dx
 import numerics as numerics
-import PolyLibScan
-from .PymolPose import generate_mask
+from PolyLibScan.Analysis.sim_run import create_atom_type_filter
+
 
 class DensityContainer(object):
     """docstring for DensityContainer"""
@@ -158,23 +158,13 @@ class DensityContainer(object):
                          resolution_str, self.norm_type, suffix])
         return root.joinpath(name).absolute().resolve()
 
-    def _create_atom_type_filter(self, particle_order, sim, monomer_id=None):
-        if not monomer_id:
-            monomer_id = self.monomer_id
-        mask = generate_mask(particle_order, monomer_id, sim)
-        iterator = it.cycle(mask)
-        def atom_type_filter(dummy_variable=True):
-            # one variable is required but there is nothing to be passed
-            return iterator.next()
-        return atom_type_filter
-
     def _add_run_to_epitopsy_map(self, sim, run_id, monomer_id=None):
         """Add all mapped coordinates to epitopsy grid.
         """
         if not monomer_id:
             monomer_id = self.monomer_id
         particle_order = sim.trajectory_order
-        type_filter = self._create_atom_type_filter(particle_order, sim, monomer_id=monomer_id)
+        type_filter = create_atom_type_filter(particle_order, sim, monomer_id=monomer_id, molecule='polymer')
         offset = self.box[0]
         traj_iterator = sim._parse.trajectory_load(run_id)
         monomer_coords = it.ifilter(type_filter, traj_iterator)

@@ -3,6 +3,7 @@ import plotting
 import pymol_visualisation as pym
 import itertools as it
 
+
 class Run(plotting.Run):
 
     def __init__(self, parent, Id, energy, distance=None, with_pymol=True):
@@ -46,28 +47,19 @@ class Run(plotting.Run):
                 'end': self._parse.end_trajectories_load(self.Id)}
         return data
 
-    def _create_atom_type_filter(self, particle_order, monomer_id=None):
-        if monomer_id == None:
-            monomer_id = self.monomer_id
-        mask = np.in1d(particle_order, monomer_id)
-        iterator = it.cycle(mask)
-        def atom_type_filter(whatever):
-            return iterator.next()
-        return atom_type_filter
-
     def trajectory(self, molecule='full'):
         particle_order = self.job.trajectory_order
         ids = self.job.particle_ids
         if molecule == 'protein':
-            type_filter = self._create_atom_type_filter(particle_order, 
-                            monomer_id=ids['protein'])
+            type_filter = create_atom_type_filter(particle_order, sim=self.job,
+                                                  monomer_id=ids['protein'], molecule=molecule)
         elif molecule == 'polymer':
-            type_filter = self._create_atom_type_filter(particle_order, 
-                            monomer_id=ids['polymer'])
+            type_filter = create_atom_type_filter(particle_order, sim=self.job,
+                                                  monomer_id=ids['polymer'], molecule=molecule)
         elif molecule == 'full':
             all_ids = np.concatenate((ids['protein'], ids['polymer']))
-            type_filter = self._create_atom_type_filter(particle_order, 
-                            monomer_id=all_ids)
+            type_filter = create_atom_type_filter(particle_order, sim=self.job,
+                                                  monomer_id=all_ids, molecule=molecule)
         else:
             raise AttributeError("molecule must be 'protein', 'polymer' or 'full'.")
         traj_iterator = self.job._parse.trajectory_load(self.Id)
@@ -136,3 +128,39 @@ class Run(plotting.Run):
 
     def __repr__(self):
         return 'LammpsRun - id %d' % self.Id
+
+
+def generate_mask(particle_list, monomers_to_match, sim, selection_filter='type', molecule='full'):
+    """return a 1d np.array (lenghth = number of particles in MD) filled with True or False"""
+
+    polymer_length = len(sim.sequence)
+    protein_length = len(particle_list) - polymer_length
+
+    if selection_filter == 'type':
+        mask = np.in1d(particle_list, monomers_to_match)
+    elif selection_filter == 'id':
+        if molecule != 'polymer':
+            raise NotImplementedError('Filtering by id is only implemented for the polymer so far! ')
+        mask = np.array([False] * (polymer_length + protein_length))
+        absolute_id = [x+protein_length for x in monomers_to_match]
+        mask[absolute_id] = True
+    else:
+        raise NotImplementedError("Filter is unknown. Use 'type' or 'id'!")
+
+    # if molecule == 'full', nothing needs to be done
+    if molecule == 'polymer':
+        mask[:protein_length] = [False] * protein_length
+    elif molecule == 'protein':
+        mask[protein_length:] = [False] * polymer_length
+
+    return mask
+
+
+def create_atom_type_filter(particle_order, sim, monomer_id, molecule='full'):
+    mask = generate_mask(particle_order, monomer_id, sim, molecule=molecule)
+    iterator = it.cycle(mask)
+
+    def atom_type_filter(dummy_variable=True):
+        # one variable is required but there is nothing to be passed
+        return iterator.next()
+    return atom_type_filter
