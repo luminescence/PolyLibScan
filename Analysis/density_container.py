@@ -3,7 +3,7 @@ import tqdm
 import itertools as it
 import epitopsy.DXFile as dx
 import numerics as numerics
-from PolyLibScan.Analysis.sim_run import create_atom_type_filter
+from PolyLibScan.Analysis.sim_run import AtomFilter
 
 
 class DensityContainer(object):
@@ -164,10 +164,10 @@ class DensityContainer(object):
         if not monomer_id:
             monomer_id = self.monomer_id
         particle_order = sim.trajectory_order
-        type_filter = create_atom_type_filter(particle_order, sim, monomer_id=monomer_id, molecule='polymer')
+        type_filter = AtomFilter(particle_order, sim, monomer_id=monomer_id, molecule='polymer')
         offset = self.box[0]
         traj_iterator = sim._parse.trajectory_load(run_id)
-        monomer_coords = it.ifilter(type_filter, traj_iterator)
+        monomer_coords = it.ifilter(type_filter.filter_function, traj_iterator)
         for coord in it.ifilter(lambda x:numerics.in_box(x, self.box), monomer_coords):
             idx = np.around(((coord - offset) / self.resolution)).astype(np.int)
             self.map[idx[0],idx[1],idx[2]] += 1

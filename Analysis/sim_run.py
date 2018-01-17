@@ -51,20 +51,20 @@ class Run(plotting.Run):
         particle_order = self.job.trajectory_order
         ids = self.job.particle_ids
         if molecule == 'protein':
-            type_filter = create_atom_type_filter(particle_order, sim=self.job,
+            type_filter = AtomFilter(particle_order, sim=self.job,
                                                   monomer_id=ids['protein'], molecule=molecule)
         elif molecule == 'polymer':
-            type_filter = create_atom_type_filter(particle_order, sim=self.job,
+            type_filter = AtomFilter(particle_order, sim=self.job,
                                                   monomer_id=ids['polymer'], molecule=molecule)
         elif molecule == 'full':
             all_ids = np.concatenate((ids['protein'], ids['polymer']))
-            type_filter = create_atom_type_filter(particle_order, sim=self.job,
+            type_filter = AtomFilter(particle_order, sim=self.job,
                                                   monomer_id=all_ids, molecule=molecule)
         else:
             raise AttributeError("molecule must be 'protein', 'polymer' or 'full'.")
         traj_iterator = self.job._parse.trajectory_load(self.Id)
 
-        monomer_coords = it.ifilter(type_filter, traj_iterator)
+        monomer_coords = it.ifilter(type_filter.filter_function, traj_iterator)
         seq_length = len(self.sequence())
         time_step_coords = np.zeros(seq_length, dtype=[('type_', np.int), ('xyz', np.float,3)])
         full_time_steps = self.job.lmp_parameters['time_steps']/self.job.trajectory_meta['step_size']+1
@@ -130,37 +130,47 @@ class Run(plotting.Run):
         return 'LammpsRun - id %d' % self.Id
 
 
-def generate_mask(particle_list, monomers_to_match, sim, selection_filter='type', molecule='full'):
-    """return a 1d np.array (lenghth = number of particles in MD) filled with True or False"""
+class AtomFilter(object):
 
-    polymer_length = len(sim.sequence)
-    protein_length = len(particle_list) - polymer_length
+    def __init__(self, particle_order, sim, monomer_id, molecule='full', selection_filter='type'):
+        self.particle_order = particle_order
+        self.sequence = sim.sequence
+        self.monomer_id = monomer_id
+        self.molecule = molecule
+        self.selection_filter = selection_filter
+        self.mask = self.generate_mask()
+        self.filter_function = self.create_atom_type_filter()
 
-    if selection_filter == 'type':
-        mask = np.in1d(particle_list, monomers_to_match)
-    elif selection_filter == 'id':
-        if molecule != 'polymer':
-            raise NotImplementedError('Filtering by id is only implemented for the polymer so far! ')
-        mask = np.array([False] * (polymer_length + protein_length))
-        absolute_id = [x+protein_length for x in monomers_to_match]
-        mask[absolute_id] = True
-    else:
-        raise NotImplementedError("Filter is unknown. Use 'type' or 'id'!")
+    def generate_mask(self):
+        """return a 1d np.array (lenghth = number of particles in MD) filled with True or False"""
 
-    # if molecule == 'full', nothing needs to be done
-    if molecule == 'polymer':
-        mask[:protein_length] = [False] * protein_length
-    elif molecule == 'protein':
-        mask[protein_length:] = [False] * polymer_length
+        polymer_length = len(self.sequence)
+        protein_length = len(self.particle_order) - polymer_length
 
-    return mask
+        if self.selection_filter == 'type':
+            mask = np.in1d(self.particle_order, self.monomer_id)
+        elif self.selection_filter == 'id':
+            if self.molecule != 'polymer':
+                raise NotImplementedError('Filtering by id is only implemented for the polymer so far! ')
+            mask = np.array([False] * (polymer_length + protein_length))
+            absolute_id = [x+protein_length for x in self.monomer_id]
+            mask[absolute_id] = True
+        else:
+            raise NotImplementedError("Filter is unknown. Use 'type' or 'id'!")
 
+        # if molecule == 'full', nothing needs to be done
+        if self.molecule == 'polymer':
+            mask[:protein_length] = [False] * protein_length
+        elif self.molecule == 'protein':
+            mask[protein_length:] = [False] * polymer_length
 
-def create_atom_type_filter(particle_order, sim, monomer_id, molecule='full'):
-    mask = generate_mask(particle_order, monomer_id, sim, molecule=molecule)
-    iterator = it.cycle(mask)
+        return mask
 
-    def atom_type_filter(dummy_variable=True):
-        # one variable is required but there is nothing to be passed
-        return iterator.next()
-    return atom_type_filter
+    def create_atom_type_filter(self):
+        iterator = it.cycle(self.mask)
+
+        def atom_type_filter(dummy_variable=True):
+            # one variable is required but there is nothing to be passed
+            return iterator.next()
+
+        return atom_type_filter

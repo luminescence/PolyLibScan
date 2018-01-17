@@ -4,7 +4,7 @@ import jinja2 as ji
 import PolyLibScan.helpers.numpy_helpers as np_help
 import itertools as it
 
-from PolyLibScan.Analysis.sim_run import generate_mask
+from PolyLibScan.Analysis.sim_run import AtomFilter
 
 
 def _get_pdb_template():
@@ -32,10 +32,10 @@ class PymolPose(object):
         '''
         if state not in ['start', 'end']:
             raise AttributeError("state must have value of 'start' or 'end'.")
-        mask = generate_mask(sim.trajectory_order, sim.particle_ids[molecule], sim)
-        pose_data = self._create_pose_array(sim, mask)
+        filter = AtomFilter(sim.trajectory_order,  sim, sim.particle_ids[molecule], molecule='polymer')
+        pose_data = self._create_pose_array(sim, filter.mask)
         for run in sim:
-            np_help.copy_fields(pose_data, self.traj_data(run, state, mask), ['x','y', 'z'])
+            np_help.copy_fields(pose_data, self.traj_data(run, state, filter.mask), ['x', 'y', 'z'])
             yield pose_data
 
     def _create_pose_array(self, sim, mask):
@@ -142,11 +142,11 @@ class Run(PymolPose):
         Each yield (run) the coordinates of the polymer are updated, while the constant
         information is left unchanged
         '''
-        mask = generate_mask(sim.trajectory_order, sim.particle_ids[molecule], sim)
-        pose_data = self._create_pose_array(sim, mask)
+        filter = AtomFilter(sim.trajectory_order, sim, sim.particle_ids[molecule], molecule='polymer')
+        pose_data = self._create_pose_array(sim, filter.mask)
         if state in ['start', 'end']:
             for run in [sim[self.run.Id]]:
-                np_help.copy_fields(pose_data, self.traj_data(run, state, mask), ['x','y', 'z'])
+                np_help.copy_fields(pose_data, self.traj_data(run, state, filter.mask), ['x','y', 'z'])
                 yield pose_data
         elif state == 'full':
             for step_data in self.run.trajectory(molecule='polymer'):
