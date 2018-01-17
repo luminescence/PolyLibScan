@@ -161,7 +161,7 @@ class DensityContainer(object):
     def _create_atom_type_filter(self, particle_order, sim, monomer_id=None):
         if not monomer_id:
             monomer_id = self.monomer_id
-        mask = generate_mask(particle_order, monomer_id)
+        mask = generate_mask(particle_order, monomer_id, sim)
         iterator = it.cycle(mask)
         def atom_type_filter(dummy_variable=True):
             # one variable is required but there is nothing to be passed
@@ -174,7 +174,7 @@ class DensityContainer(object):
         if not monomer_id:
             monomer_id = self.monomer_id
         particle_order = sim.trajectory_order
-        type_filter = self._create_atom_type_filter(particle_order, monomer_id=monomer_id)
+        type_filter = self._create_atom_type_filter(particle_order, sim, monomer_id=monomer_id)
         offset = self.box[0]
         traj_iterator = sim._parse.trajectory_load(run_id)
         monomer_coords = it.ifilter(type_filter, traj_iterator)

@@ -9,9 +9,27 @@ def _get_pdb_template():
         template = ji.Template(f.read())
     return template
 
-def generate_mask(particel_list, monomers_to_match):
+def generate_mask(particle_list, monomers_to_match, sim, filter='type', molecule='polymer'):
     """return a 1d np.array (lenghth = number of particles in MD) filled with True or False"""
-    mask = np.in1d(particel_list, monomers_to_match)
+
+    polymer_length = len(sim.sequence)
+    protein_length = len(particle_list) - polymer_length
+
+    if filter == 'type':
+        mask = np.in1d(particle_list, monomers_to_match)
+    elif filter == 'id':
+        if molecule != 'polymer':
+            raise NotImplementedError('Filtering by id is only implemented for the polymer so far! ')
+        mask = np.array([False] * (polymer_length + protein_length))
+        absolute_id = [x+protein_length for x in monomers_to_match]
+        mask[absolute_id] = True
+
+    # if molecule == 'full', nothing needs to be done
+    if molecule == 'polymer':
+        mask[:protein_length] = [False] * protein_length
+    elif molecule == 'protein':
+        mask[protein_length:] = [False] * polymer_length
+
     return mask
 
 class PymolPose(object):
@@ -33,7 +51,7 @@ class PymolPose(object):
         '''
         if state not in ['start', 'end']:
             raise AttributeError("state must have value of 'start' or 'end'.")
-        mask = generate_mask(sim.trajectory_order, sim.particle_ids[molecule])
+        mask = generate_mask(sim.trajectory_order, sim.particle_ids[molecule], sim)
         pose_data = self._create_pose_array(sim, mask)
         for run in sim:
             np_help.copy_fields(pose_data, self.traj_data(run, state, mask), ['x','y', 'z'])
@@ -143,7 +161,7 @@ class Run(PymolPose):
         Each yield (run) the coordinates of the polymer are updated, while the constant
         information is left unchanged
         '''
-        mask = generate_mask(sim.trajectory_order, sim.particle_ids[molecule])
+        mask = generate_mask(sim.trajectory_order, sim.particle_ids[molecule], sim)
         pose_data = self._create_pose_array(sim, mask)
         if state in ['start', 'end']:
             for run in [sim[self.run.Id]]:
