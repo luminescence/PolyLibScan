@@ -163,7 +163,8 @@ class DensityContainer(object):
             monomer_id = self.monomer_id
         mask = generate_mask(particle_order, monomer_id)
         iterator = it.cycle(mask)
-        def atom_type_filter(whatever):
+        def atom_type_filter(dummy_variable=True):
+            # one variable is required but there is nothing to be passed
             return iterator.next()
         return atom_type_filter
 
