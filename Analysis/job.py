@@ -64,12 +64,15 @@ class Job(bayes.Job):
         # in case there are no sim runs
         if len(self) == 0:
             raise Exception('No sim data available.')
-            
+
+        # this approach works if:
+        # 1. there is only one protein and one polymer molecule
+        # 2. the protein was created first, the polymer second
         p_type_ids = {}
         p_type_ids['polymer'] = np.unique(self.sequence['ID'])
-        all_particles_set = set(self[0].coordinates()['end']['atom_type'])
-        protein_set = all_particles_set - set(p_type_ids['polymer'])
-        p_type_ids['protein'] = np.array(list(protein_set))
+        polymer_length = len(self.sequence)
+        p_type_ids['protein'] = np.unique(self.trajectory_order[:-polymer_length])
+
         return p_type_ids
 
     def charge():
