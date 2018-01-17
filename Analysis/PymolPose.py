@@ -9,6 +9,11 @@ def _get_pdb_template():
         template = ji.Template(f.read())
     return template
 
+def generate_mask(particel_list, monomers_to_match):
+    """return a 1d np.array (lenghth = number of particles in MD) filled with True or False"""
+    mask = np.in1d(particel_list, monomers_to_match)
+    return mask
+
 class PymolPose(object):
     '''Parent class of pymol Visualisation
     '''
@@ -28,7 +33,7 @@ class PymolPose(object):
         '''
         if state not in ['start', 'end']:
             raise AttributeError("state must have value of 'start' or 'end'.")
-        mask = np.in1d(sim.trajectory_order, sim.particle_ids[molecule])
+        mask = generate_mask(sim.trajectory_order, sim.particle_ids[molecule])
         pose_data = self._create_pose_array(sim, mask)
         for run in sim:
             np_help.copy_fields(pose_data, self.traj_data(run, state, mask), ['x','y', 'z'])
@@ -138,7 +143,7 @@ class Run(PymolPose):
         Each yield (run) the coordinates of the polymer are updated, while the constant
         information is left unchanged
         '''
-        mask = np.in1d(sim.trajectory_order, sim.particle_ids[molecule])
+        mask = generate_mask(sim.trajectory_order, sim.particle_ids[molecule])
         pose_data = self._create_pose_array(sim, mask)
         if state in ['start', 'end']:
             for run in [sim[self.run.Id]]:

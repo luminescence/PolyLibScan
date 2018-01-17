@@ -4,6 +4,7 @@ import itertools as it
 import epitopsy.DXFile as dx
 import numerics as numerics
 import PolyLibScan
+from .PymolPose import generate_mask
 
 class DensityContainer(object):
     """docstring for DensityContainer"""
@@ -157,10 +158,10 @@ class DensityContainer(object):
                          resolution_str, self.norm_type, suffix])
         return root.joinpath(name).absolute().resolve()
 
-    def _create_atom_type_filter(self, particle_order, monomer_id=None):
+    def _create_atom_type_filter(self, particle_order, sim, monomer_id=None):
         if not monomer_id:
             monomer_id = self.monomer_id
-        mask = np.in1d(particle_order, monomer_id)
+        mask = generate_mask(particle_order, monomer_id)
         iterator = it.cycle(mask)
         def atom_type_filter(whatever):
             return iterator.next()
