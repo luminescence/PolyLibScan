@@ -65,9 +65,9 @@ class Run(plotting.Run):
             type_filter = self._create_atom_type_filter(particle_order, 
                             monomer_id=ids['polymer'])
         elif molecule == 'full':
-            alll_ids = np.concatenate(ids['protein'], ids['polymer'])
+            all_ids = np.concatenate((ids['protein'], ids['polymer']))
             type_filter = self._create_atom_type_filter(particle_order, 
-                            monomer_id=ids)
+                            monomer_id=all_ids)
         else:
             raise AttributeError("molecule must be 'protein', 'polymer' or 'full'.")
         traj_iterator = self.job._parse.trajectory_load(self.Id)
