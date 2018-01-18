@@ -8,13 +8,14 @@ from PolyLibScan.Analysis.sim_run import AtomFilter
 
 class DensityContainer(object):
     """docstring for DensityContainer"""
-    def __init__(self, simulations, monomer_id='all', margin=20.0, resolution=3.0, 
+    def __init__(self, simulations, monomer_id='all', filter_specification='type', margin=20.0, resolution=3.0,
                  norm_type='max'):
         super(DensityContainer, self).__init__()
         self.sims = simulations
         self.poly_type = self.sims[0].meta['polymer_name']
         self.sim_number = self.sims
         self.monomer_id = monomer_id
+        self.filter_specification = filter_specification
         self.margin = margin
         self.resolution = resolution
         self.norm_type = norm_type
@@ -164,7 +165,7 @@ class DensityContainer(object):
         if not monomer_id:
             monomer_id = self.monomer_id
         particle_order = sim.trajectory_order
-        type_filter = AtomFilter(particle_order, sim, monomer_id=monomer_id, molecule='polymer')
+        type_filter = AtomFilter(particle_order, sim, monomer_id=monomer_id, molecule='polymer', filter_specification=self.filter_specification)
         offset = self.box[0]
         traj_iterator = sim._parse.trajectory_load(run_id)
         monomer_coords = it.ifilter(type_filter.filter_function, traj_iterator)

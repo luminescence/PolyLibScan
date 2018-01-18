@@ -132,12 +132,12 @@ class Run(plotting.Run):
 
 class AtomFilter(object):
 
-    def __init__(self, particle_order, sim, monomer_id, molecule='full', selection_filter='type'):
+    def __init__(self, particle_order, sim, monomer_id, molecule='full', filter_specification='type'):
         self.particle_order = particle_order
         self.sequence = sim.sequence
         self.monomer_id = monomer_id
         self.molecule = molecule
-        self.selection_filter = selection_filter
+        self.filter_specification = filter_specification
         self.mask = self.generate_mask()
         self.filter_function = self.create_atom_type_filter()
 
@@ -147,9 +147,9 @@ class AtomFilter(object):
         polymer_length = len(self.sequence)
         protein_length = len(self.particle_order) - polymer_length
 
-        if self.selection_filter == 'type':
+        if self.filter_specification == 'type':
             mask = np.in1d(self.particle_order, self.monomer_id)
-        elif self.selection_filter == 'id':
+        elif self.filter_specification == 'id':
             if self.molecule != 'polymer':
                 raise NotImplementedError('Filtering by id is only implemented for the polymer so far! ')
             mask = np.array([False] * (polymer_length + protein_length))
