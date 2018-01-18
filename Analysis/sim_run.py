@@ -65,11 +65,13 @@ class Run(plotting.Run):
         traj_iterator = self.job._parse.trajectory_load(self.Id)
 
         monomer_coords = it.ifilter(type_filter.filter_function, traj_iterator)
-        seq_length = len(self.sequence())
-        time_step_coords = np.zeros(seq_length, dtype=[('type_', np.int), ('xyz', np.float,3)])
+        particle_ids = particle_order[type_filter.mask]
+        number_of_particles = len(particle_ids)
+
+        time_step_coords = np.zeros(number_of_particles, dtype=[('type_', np.int), ('xyz', np.float,3)])
         full_time_steps = self.job.lmp_parameters['time_steps']/self.job.trajectory_meta['step_size']+1
         for time_step in xrange(full_time_steps):
-            for i, atom_id, coord in it.izip(xrange(seq_length), self.sequence()['ID'], monomer_coords):
+            for i, atom_id, coord in it.izip(xrange(number_of_particles), particle_ids, monomer_coords):
                 time_step_coords[i][0] = atom_id
                 time_step_coords[i][1] = coord
             yield time_step_coords

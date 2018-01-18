@@ -56,3 +56,12 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# idea
+/.idea
+
+# Test files
+Database/db_test.h5
+
+# LAMMPS
+log.lammps
