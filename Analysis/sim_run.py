@@ -152,10 +152,12 @@ class AtomFilter(object):
         if self.filter_specification == 'type':
             mask = np.in1d(self.particle_order, self.monomer_id)
         elif self.filter_specification == 'id':
-            if self.molecule != 'polymer':
-                raise NotImplementedError('Filtering by id is only implemented for the polymer so far! ')
+            if self.molecule == 'polymer':
+                offset = protein_length
+            else:
+                offset = 0
             mask = np.array([False] * (polymer_length + protein_length))
-            absolute_id = [x+protein_length for x in self.monomer_id]
+            absolute_id = [x+offset for x in self.monomer_id]
             mask[absolute_id] = True
         else:
             raise NotImplementedError("Filter is unknown. Use 'type' or 'id'!")
