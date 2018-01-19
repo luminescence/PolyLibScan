@@ -87,7 +87,7 @@ class JobSave(object):
                                                ('TotalEnergy', '>f4'), 
                                                ('Distance', '>f4')])
         for run in runs:
-            distance = compute.distance_to_active_site(run.end_traj, polymer_ids, 
+            distance = compute.distance_to_active_site(run.end_traj, self.db, polymer_ids,
                                                        active_site_pos)
             endstates[run.Id] = (run.Id, run.energy[-1,0], run.energy[-1,1], distance)
         self.db.end_states = endstates
