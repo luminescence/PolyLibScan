@@ -67,7 +67,10 @@ class Parser(object):
         dist_data = np.zeros(len(data), dtype=dtype)
         for i, line in enumerate(data):
             items = line.split()
-            dist_data[i] = (int(items[0]), float(items[1]))
+            try:
+                dist_data[i] = (int(items[0]), float(items[1]))
+            except IndexError:
+                raise IndexError('list index out of range in file %s, line %d' % (file_path, i))
         return dist_data
 
     def trajectory(self, file_path):
