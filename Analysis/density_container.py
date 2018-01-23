@@ -165,7 +165,7 @@ class DensityContainer(object):
         if not monomer_id:
             monomer_id = self.monomer_id
         particle_order = sim.trajectory_order
-        type_filter = AtomFilter(particle_order, sim, monomer_id=monomer_id, molecule='polymer', filter_specification=self.filter_specification)
+        type_filter = AtomFilter(particle_order, sim.sequence, monomer_id=monomer_id, molecule='polymer', filter_specification=self.filter_specification)
         offset = self.box[0]
         traj_iterator = sim._parse.trajectory_load(run_id)
         monomer_coords = it.ifilter(type_filter.filter_function, traj_iterator)

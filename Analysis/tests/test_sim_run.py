@@ -83,11 +83,11 @@ class TestAtomFilter(ut.TestCase):
         self.run_ = self.project.jobs[0][0]
 
     def test_mask(self):
-        polymer_monomers = AtomFilter(self.run_.job.trajectory_order, sim=self.run_.job,
+        polymer_monomers = AtomFilter(self.run_.job.trajectory_order, sequence=self.run_.job.sequence,
                                       monomer_id=self.run_.job.particle_ids['polymer'], molecule='polymer')
-        protein_monomers = AtomFilter(self.run_.job.trajectory_order, sim=self.run_.job,
+        protein_monomers = AtomFilter(self.run_.job.trajectory_order, sequence=self.run_.job.sequence,
                                       monomer_id=self.run_.job.particle_ids['protein'], molecule='protein')
-        all_monomers = AtomFilter(self.run_.job.trajectory_order, sim=self.run_.job,
+        all_monomers = AtomFilter(self.run_.job.trajectory_order, sequence=self.run_.job.sequence,
                                   monomer_id=np.concatenate((self.run_.job.particle_ids['protein'],self.run_.job.particle_ids['polymer'])), molecule='full')
         self.assertEqual(polymer_monomers.mask.sum(), len(self.run_.sequence()))
         self.assertEqual(all_monomers.mask.sum(), polymer_monomers.mask.sum() + protein_monomers.mask.sum())
@@ -98,7 +98,7 @@ class TestAtomFilter(ut.TestCase):
 
     def test_filter_function(self):
         """reconstruct np.array from function and compare it to mask"""
-        polymer_monomers = AtomFilter(self.run_.job.trajectory_order, sim=self.run_.job,
+        polymer_monomers = AtomFilter(self.run_.job.trajectory_order, sequence=self.run_.job.sequence,
                                       monomer_id=self.run_.job.particle_ids['polymer'], molecule='full')
 
         bool_list = []

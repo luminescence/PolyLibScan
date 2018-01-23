@@ -51,14 +51,14 @@ class Run(plotting.Run):
         particle_order = self.job.trajectory_order
         ids = self.job.particle_ids
         if molecule == 'protein':
-            type_filter = AtomFilter(particle_order, sim=self.job,
+            type_filter = AtomFilter(particle_order, sequence=self.job.sequence,
                                                   monomer_id=ids['protein'], molecule=molecule)
         elif molecule == 'polymer':
-            type_filter = AtomFilter(particle_order, sim=self.job,
+            type_filter = AtomFilter(particle_order, sequence=self.job.sequence,
                                                   monomer_id=ids['polymer'], molecule=molecule)
         elif molecule == 'full':
             all_ids = np.concatenate((ids['protein'], ids['polymer']))
-            type_filter = AtomFilter(particle_order, sim=self.job,
+            type_filter = AtomFilter(particle_order, sequence=self.job.sequence,
                                                   monomer_id=all_ids, molecule=molecule)
         else:
             raise AttributeError("molecule must be 'protein', 'polymer' or 'full'.")
@@ -134,9 +134,9 @@ class Run(plotting.Run):
 
 class AtomFilter(object):
 
-    def __init__(self, particle_order, sim, monomer_id, molecule='full', filter_specification='type'):
+    def __init__(self, particle_order, sequence, monomer_id, molecule='full', filter_specification='type'):
         self.particle_order = particle_order
-        self.sequence = sim.sequence
+        self.sequence = sequence
         self.monomer_id = monomer_id
         self.molecule = molecule
         self.filter_specification = filter_specification

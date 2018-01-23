@@ -9,7 +9,7 @@ def distance_to_active_site(xyz_coords, db, polymer_ids, active_site_no):
     active site.
     '''
 
-    type_filter = AtomFilter(db.traj_type_order, db, polymer_ids, molecule='polymer')
+    type_filter = AtomFilter(db.traj_type_order, db.sequence, polymer_ids, molecule='polymer')
 
     poly_coords = xyz_coords[type_filter.mask]
     # lammps atom ids start at 1 while numpy arrays
