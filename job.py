@@ -80,6 +80,9 @@ class Job(object):
         self.sim.create_random_start_positions()
         self.setup_writer = Tools.LmpWriter(self.env)
 
+        # save particle list
+        p_list_path = os.path.join(self.config.sim_path['root'], 'particle_list.npy')
+        self.save_particle_list(p_list_path)
         # Update Lammps Parameters
         self.config.sim_parameter['poly_sequence'] = [monomers.type_.name for monomers in self.poly.data['monomers']]
         self.config.sim_parameter['named_sequence'] = [particle.type_.name for particle in self.poly.data['particles']]
@@ -87,13 +90,12 @@ class Job(object):
         self.config.sim_parameter['active_site'] = self.set_active_site()
         self.config.lmp_parameter['active_site_ids'] = self.config.sim_parameter['active_site']['xyz']
         self.config.lmp_parameter['monomer_ids'] = self._get_monomer_ids()
+        self.config.lmp_parameter['particle_ids'] = self.particle_list['p_id'].tolist()
+        self.config.lmp_parameter['poly_sequence'] = self.config.sim_parameter['id_sequence']   
         self.config.lmp_parameter['bb_id'] = self.env.atom_type['BB_bb'].Id
         self.config.lmp_parameter['ghost_id'] = self.env.atom_type['BB_ghost_bb'].Id
         # the config with added information is always saved to the root directory
         self.config.save(self.config_with_setup)
-        # save particle list
-        p_list_path = os.path.join(self.config.sim_path['root'], 'particle_list.npy')
-        self.save_particle_list(p_list_path)
         # fifos can only be created if the monomer ids are known
         self.fifo = self._create_fifos()
 
@@ -108,6 +110,7 @@ class Job(object):
         for i,p in enumerate(particle_gen):
             particle_dat[i] = (p.Id, p.type_.Id, p.residue.name, p.residue.chain, 
                                 p.residue.id[0], p.residue.id[1], p.residue.id[2]) 
+        self.particle_list = particle_dat
         particle_dat.tofile(path)
 
     def terminate_fifos(self):

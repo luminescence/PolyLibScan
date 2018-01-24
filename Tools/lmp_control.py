@@ -1,5 +1,8 @@
+import numpy as np
+
 from collections import OrderedDict
 from lammps import PyLammps
+from PolyLibScan.Analysis.sim_run import AtomFilter
 
 
 class LmpController(object):
@@ -156,9 +159,14 @@ class LmpController(object):
 
     def group_declaration(self):
         # grouping
+
+        type_filter = AtomFilter(self.parameters['particle_ids'], self.parameters['poly_sequence'], monomer_id=self.parameters['monomer_ids'], molecule='polymer', filter_specification='type')
+        polymer_bead_ids = np.where(type_filter.mask == True)[0].tolist()
+
+
         groups = ['group protein type %s' % self.parameters['bb_id'],
                   'group ghost_protein type %s' % self.parameters['ghost_id'],
-                  'group polymer type %s' % self.convert_python_list_to_lammps_list(self.parameters['monomer_ids'], with_quotes=False),
+                  'group polymer id %s' % self.convert_python_list_to_lammps_list(polymer_bead_ids, with_quotes=False),
                   'group contacts subtract all protein ghost_protein polymer',
                   'group interactions union polymer contacts',
                   'group solid subtract all ghost_protein',
