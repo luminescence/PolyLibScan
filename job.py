@@ -190,7 +190,7 @@ class Job(object):
         new_paths = self.create_local_env()
         self.config.lmp_path.update(new_paths)
 
-    def create_sim_list():
+    def create_sim_list(self):
         list_path = os.path.join(self.config.sim_path['root'], 'sim.list')
         if self.config.sim_parameter['local'] == 1: 
             data_folder = self.config.lmp_path['local_root'] 
