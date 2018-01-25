@@ -8,7 +8,7 @@ from PolyLibScan.Analysis.sim_run import AtomFilter
 class LmpController(object):
     """Initialize and control a lammps instance"""
 
-    def __init__(self, Id, parameters, paths, parameterisation, fifos={}, previous_instance=''):
+    def __init__(self, Id, parameters, paths, parameterisation, fifos={}, previous_instance='', stoichiometry=[1,1]):
         if isinstance(previous_instance, PyLammps):
             self.instance = previous_instance
         elif previous_instance != '':
@@ -21,6 +21,10 @@ class LmpController(object):
             self.paths = paths
             self.parameterisation = parameterisation
             self.fifos = fifos
+            self.stoichiometry=stoichiometry
+
+            self.is_protein_present = (self.stoichiometry[0] > 0)
+            self.is_polymer_present = (self.stoichiometry[1] > 0)
 
     def get_lmp_styles(self):
         styles = OrderedDict()
@@ -76,12 +80,6 @@ class LmpController(object):
             self.variable(name, var_style, val)
 
     def variable(self, name, style, val):
-        """
-        >>> test_controller = controler()
-        LAMMPS output is captured by PyLammps wrapper
-        >>> test_controller.variable('a', 'string', '2')
-        >>> test_controller.instance.variables['a'].value == 2.0
-        True"""
         self.instance.variable('%s %s %s' % (name, style, val))
 
     @staticmethod
@@ -123,26 +121,45 @@ class LmpController(object):
 
     def configure_output(self):
         # output & computes
-        print_interval = 100 # every n timesteps... 
-        self.instance.command('thermo %s' % print_interval) # ...determine thermodynamics 
 
-        self.instance.command('compute 2 contacts group/group polymer pair yes')
+        print_interval = 100 # every n timesteps...
+        self.instance.command('thermo %s' % print_interval) # ...determine thermodynamics
+
         self.instance.command('compute SolidTemp solid temp')
-        output_vars = OrderedDict([('group0', 'c_2'),
-                                   ('energy_', 'etotal'),
-                                   ('potential_e', 'pe'),
-                                   ('kinetic_e', 'ke'),
-                                   ('sim_temp', 'c_SolidTemp'),
-                                   ('time_step', 'step')])
-        self.set_dictionary_as_lammps_variables(output_vars, 'equal')
-        self.instance.command('fix     5 all print %s %s file %s/Energy%05d screen no' % (print_interval, 
-        self.convert_python_list_to_lammps_list([self.variable_sigil_for_lammps(x) for x in output_vars.keys()]), self.paths['output'], self.Id))
 
-    def production_MD(self, temperature_production):
+        list_of_output_var_tuples = [('energy_', 'etotal'),
+                                     ('potential_e', 'pe'),
+                                     ('kinetic_e', 'ke'),
+                                     ('sim_temp', 'c_SolidTemp'),
+                                     ('time_step', 'step')]
+        if self.is_protein_present and self.is_polymer_present:
+            self.instance.command('compute 2 contacts group/group polymer pair yes')
+            list_of_output_var_tuples = [('group0', 'c_2')] + list_of_output_var_tuples
+
+        output_vars = OrderedDict(list_of_output_var_tuples)
+        self.set_dictionary_as_lammps_variables(output_vars, 'equal')
+        
+        output_file_path = '%s/Energy%05d' % (self.paths['output'], self.Id)
+        csv_header = self.convert_python_list_to_lammps_list(output_vars.keys())
+
+        self.instance.command('fix 		5 all print %s %s file %s screen no title %s' % (print_interval,
+        self.convert_python_list_to_lammps_list([self.variable_sigil_for_lammps(x) for x in output_vars.keys()]), output_file_path, csv_header))
+
+    def production_MD(self, temperature_production, time_bug_fix=True):
         # production
         self.instance.command('reset_timestep 0')
         self.langevin_dynamics(T_0=temperature_production, T_end=temperature_production)
-        self.instance.run(self.parameters['time_steps'])
+        # on Niklas's local machine, LAMMPS stops after 86200 steps
+        # one can run 80k steps n-times, though!
+        if time_bug_fix:
+            max_no_time_steps = 80000
+            full_runs, timesteps_left = divmod(self.parameters['time_steps'], max_no_time_steps)
+
+            for x in range(full_runs):
+                self.instance.run(max_no_time_steps)
+            self.instance.run(timesteps_left)
+        else:
+            self.instance.run(self.parameters['time_steps'])
         # write snapshot of end-comformation
         output_file_final_conformation = self.paths['output'] + '/trajectoryE' + '%05d' % self.Id
         self.instance.command('write_dump solid xyz %s.xyz' % output_file_final_conformation)
@@ -154,24 +171,33 @@ class LmpController(object):
                               'write_dump	solid xyz %s.xyz' % output_file_start_conformation]
         self.execute_list_of_commands(equilibration_cmds)
         self.langevin_dynamics(T_0=temperature_start, T_end=temperature_production)
-        equilibration_timesteps = 170
+        equilibration_timesteps = 1700
         self.instance.run(equilibration_timesteps)
 
     def group_declaration(self):
-        # grouping
+        """define groups as needed, """
+        groups = ['group solid union all']
 
-        type_filter = AtomFilter(self.parameters['particle_ids'], self.parameters['poly_sequence'], monomer_id=self.parameters['monomer_ids'], molecule='polymer', filter_specification='type')
-        polymer_bead_ids = np.where(type_filter.mask == True)[0].tolist()
+        if self.is_protein_present:
+            protein_exclusive_groups = ['group protein type %s' % self.parameters['bb_id'],
+                                        'group ghost_protein type %s' % self.parameters['ghost_id'],
+                                        'group activesite id %s' % self.convert_python_list_to_lammps_list(self.parameters['active_site_ids'], with_quotes=False),
+                                        'group solid subtract all ghost_protein'] # overwrite default
+            groups += protein_exclusive_groups
 
+        if self.is_polymer_present:
+            type_filter = AtomFilter(self.parameters['particle_ids'], self.parameters['poly_sequence'], monomer_id=self.parameters['monomer_ids'], molecule='polymer', filter_specification='type')
+            polymer_bead_ids = np.where(type_filter.mask == True)[0].tolist()
 
-        groups = ['group protein type %s' % self.parameters['bb_id'],
-                  'group ghost_protein type %s' % self.parameters['ghost_id'],
-                  'group polymer id %s' % self.convert_python_list_to_lammps_list(polymer_bead_ids, with_quotes=False),
-                  'group contacts subtract all protein ghost_protein polymer',
-                  'group interactions union polymer contacts',
-                  'group solid subtract all ghost_protein',
-                  'group activesite id %s' % self.convert_python_list_to_lammps_list(self.parameters['active_site_ids'], with_quotes=False),
-                  'group distance_group union polymer activesite']
+            polymer_exclusive_groups = ['group polymer id %s' % self.convert_python_list_to_lammps_list(polymer_bead_ids, with_quotes=False)]
+            groups += polymer_exclusive_groups
+
+        if self.is_protein_present and self.is_polymer_present:
+            protein_and_polymer_groups = ['group contacts subtract all protein ghost_protein polymer',
+                                          'group interactions union polymer contacts',
+                                          'group distance_group union polymer activesite']
+            groups += protein_and_polymer_groups
+
         self.execute_list_of_commands(groups)
 
     def langevin_dynamics(self, T_0, T_end):
@@ -209,7 +235,8 @@ class LmpController(object):
         self.model_specifications()
         self.group_declaration()
         #modify neighbor list
-        self.instance.command('neigh_modify exclude group ghost_protein all')
+        if self.is_protein_present:
+            self.instance.command('neigh_modify exclude group ghost_protein all')
         self.minimization()
         #equilibrate
         temperature_start = 100.0
@@ -220,9 +247,3 @@ class LmpController(object):
         self.set_fifos(self.fifos)
         self.production_MD(temperature_production)
         self.instance.close()
-
-
-if __name__ == "__main__":
-    import doctest
-
-    doctest.testmod()
