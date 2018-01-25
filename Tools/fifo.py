@@ -156,7 +156,15 @@ class DistanceFifo(BaseFiFo):
         '''The monomer IDs are needed to be able to discern
         between active site and polymer.
         '''
-        return '-'.join(map(str, self.parent.config.lmp_parameter['monomer_ids']))
+
+        def list_to_formatted_string(input_list):
+            return '-'.join(map(str, input_list))
+
+        monomer_id_arg = list_to_formatted_string(self.parent.config.lmp_parameter['monomer_ids'])
+        polymer_sequence_arg = list_to_formatted_string(self.parent.config.lmp_parameter['poly_sequence'])
+        # separating arguments with " " is necessary to have them individually processed
+        all_additional_arguments = '" "'.join([monomer_id_arg, polymer_sequence_arg])
+        return all_additional_arguments
 
     def lammps_string(self):
         return 'dump fifo_distance distance_group xyz %d "%s"' % (self.step_size, self.fifo_path)

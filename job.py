@@ -64,36 +64,58 @@ class Job(object):
             surface_file=self.config.sim_path['surface_db'],
             protonation_file=self.config.sim_path['protonation_db'],
             ph=self.config.sim_parameter['pH']
-            )
+        )
 
-        self.protein = self.protein_creator.create()
-        # Polymer
-        if 'poly_sequence' in self.config.sim_parameter:
-            self.polymer_creator = Tools.PolymerCreator(self.env, self.config.sim_parameter['poly_sequence'], mode='cycle')
+        number_of_proteins = self.config.sim_parameter['stoichiometry'][0]
+        number_of_polymers = self.config.sim_parameter['stoichiometry'][1]
+
+        # protein
+        if number_of_proteins == 0:
+            pass
+        elif number_of_proteins == 1:
+            self.protein = self.protein_creator.create()
         else:
-            self.polymer_creator = Tools.PolymerCreator(self.env, 
-                self.config.sim_parameter['monomers'], weights=self.config.sim_parameter['weights'], 
-                length=self.config.sim_parameter['poly_length'])
-        self.poly = self.polymer_creator.create()
+            raise NotImplementedError(
+                'Multiple protein molecules are currently not supported! \n You will need to edit: Tools.lmp_combine.create_random_start_positions')
+
+        # polymer
+        if 'poly_sequence' in self.config.sim_parameter:
+            self.polymer_creator = Tools.PolymerCreator(self.env, self.config.sim_parameter['poly_sequence'],
+                                                        mode='cycle')
+        else:
+            self.polymer_creator = Tools.PolymerCreator(self.env,
+                                                        self.config.sim_parameter['monomers'],
+                                                        weights=self.config.sim_parameter['weights'],
+                                                        length=self.config.sim_parameter['poly_length'])
+        if number_of_polymers == 1:
+            self.poly = self.polymer_creator.create()
 
         self.sim = Tools.EnvManipulator(self.env, auto_repulsion=False)
         self.sim.create_random_start_positions()
         self.setup_writer = Tools.LmpWriter(self.env)
 
-        # Update Lammps Parameters
-        self.config.sim_parameter['poly_sequence'] = [monomers.type_.name for monomers in self.poly.data['monomers']]
-        self.config.sim_parameter['named_sequence'] = [particle.type_.name for particle in self.poly.data['particles']]
-        self.config.sim_parameter['id_sequence'] = [particle.type_.Id for particle in self.poly.data['particles']]
-        self.config.sim_parameter['active_site'] = self.set_active_site()
-        self.config.lmp_parameter['active_site_ids'] = self.config.sim_parameter['active_site']['xyz']
-        self.config.lmp_parameter['monomer_ids'] = self._get_monomer_ids()
-        self.config.lmp_parameter['bb_id'] = self.env.atom_type['BB_bb'].Id
-        self.config.lmp_parameter['ghost_id'] = self.env.atom_type['BB_ghost_bb'].Id
-        # the config with added information is always saved to the root directory
-        self.config.save(self.config_with_setup)
         # save particle list
         p_list_path = os.path.join(self.config.sim_path['root'], 'particle_list.npy')
         self.save_particle_list(p_list_path)
+        # Update Lammps Parameters
+        if number_of_polymers == 1:
+            self.config.sim_parameter['poly_sequence'] = [monomers.type_.name for monomers in self.poly.data['monomers']]
+            self.config.sim_parameter['named_sequence'] = [particle.type_.name for particle in self.poly.data['particles']]
+            self.config.sim_parameter['id_sequence'] = [particle.type_.Id for particle in self.poly.data['particles']]
+            self.config.lmp_parameter['monomer_ids'] = self._get_monomer_ids()
+            self.config.lmp_parameter['poly_sequence'] = self.config.sim_parameter['id_sequence']   
+        elif number_of_polymers > 1:
+            raise NotImplementedError('Multiple polymer molecules are currently not supported!')
+        if number_of_proteins == 1:
+            self.config.sim_parameter['active_site'] = self.set_active_site()
+            self.config.lmp_parameter['active_site_ids'] = self.config.sim_parameter['active_site']['xyz']
+            self.config.lmp_parameter['bb_id'] = self.env.atom_type['BB_bb'].Id
+            self.config.lmp_parameter['ghost_id'] = self.env.atom_type['BB_ghost_bb'].Id
+        elif number_of_proteins > 1:
+            raise NotImplementedError('Multiple protein molecules are currently not supported!')
+        self.config.lmp_parameter['particle_ids'] = self.particle_list['p_id'].tolist()
+        # the config with added information is always saved to the root directory
+        self.config.save(self.config_with_setup)
         # fifos can only be created if the monomer ids are known
         self.fifo = self._create_fifos()
 
@@ -108,6 +130,7 @@ class Job(object):
         for i,p in enumerate(particle_gen):
             particle_dat[i] = (p.Id, p.type_.Id, p.residue.name, p.residue.chain, 
                                 p.residue.id[0], p.residue.id[1], p.residue.id[2]) 
+        self.particle_list = particle_dat
         particle_dat.tofile(path)
 
     def terminate_fifos(self):
@@ -150,7 +173,7 @@ class Job(object):
         for i in xrange(start_idx,  end_idx):
             self.generate_new_sim(i)
             # start next LAMMPS run
-            lmp_controller = lmp_control.LmpController(i, self.config.lmp_parameter, self.config.lmp_path, self.parametrisation, fifos=self.fifo)
+            lmp_controller = lmp_control.LmpController(i, self.config.lmp_parameter, self.config.lmp_path, self.parametrisation, fifos=self.fifo, stoichiometry=self.config.sim_parameter['stoichiometry'])
             lmp_controller.lmps_run()
             # report completed simulation so restarting jobs will know
             # also, it notes the machine and folder, so scattered info can be retrieved

@@ -52,12 +52,20 @@ class JobSave(object):
         self.db.traj_type_order = type_list
         self.db.traj_info = traj_info
 
+    def is_protein_present(self):
+        return (self.config.sim_parameter['stoichiometry'][0] > 0)
+
+    def is_polymer_present(self):
+        return (self.config.sim_parameter['stoichiometry'][1] > 0)
+
     def save_meta_data(self, config):
         meta_data = self.parse.meta(config)
-        self.db.sequence = meta_data['sequence']
-        self.db.weights = meta_data['weights']
+        if self.is_polymer_present():
+            self.db.sequence = meta_data['sequence']
+            self.db.weights = meta_data['weights']
         self.db.misc = meta_data['misc']
-        self.db.active_site = meta_data['active_site']
+        if self.is_protein_present():
+            self.db.active_site = meta_data['active_site']
         self.db.parameter = meta_data['parameter']
 
     def save_particle_list(self, path):
@@ -65,8 +73,6 @@ class JobSave(object):
         self.db.particle_list = particle_data
 
     def save_runs(self, runs):
-        polymer_ids = np.array(np.unique(self.db.sequence['ID']))
-        active_site_pos = self.db.active_site['xyz']
         for run in runs:
             self.db.start_trajectories_save(run.start_traj, run.Id)
             self.db.end_trajectories_save(run.end_traj, run.Id)
@@ -80,16 +86,25 @@ class JobSave(object):
                 self.db.distance_ts_save(run.distance, run.Id)
 
     def save_endstates(self, runs):
-        polymer_ids = np.array(np.unique(self.db.sequence['ID']))
-        active_site_pos = self.db.active_site['xyz']
-        endstates = np.zeros(len(runs), dtype=[('ID', '>i2'), 
-                                               ('Energy', '>f4'), 
-                                               ('TotalEnergy', '>f4'), 
-                                               ('Distance', '>f4')])
+        dtypes = [('ID', '>i2'), ('Energy', '>f4'), ('TotalEnergy', '>f4')]
+
+        consider_active_site_distance = self.is_protein_present() and self.is_polymer_present()
+
+        if consider_active_site_distance:
+            active_site_pos = self.db.active_site['xyz']
+            dtypes += [('Distance', '>f4')]
+
+        endstates = np.zeros(len(runs), dtype=dtypes)
+
         for run in runs:
-            distance = compute.distance_to_active_site(run.end_traj, polymer_ids, 
-                                                       active_site_pos)
-            endstates[run.Id] = (run.Id, run.energy[-1,0], run.energy[-1,1], distance)
+            if consider_active_site_distance:
+                polymer_ids = np.array(np.unique(self.db.sequence['ID']))
+                distance = compute.distance_to_active_site(run.end_traj, self.db, polymer_ids,
+                                                           active_site_pos)
+                endstates[run.Id] = (run.Id, run.energy[-1,0], run.energy[-1,1], distance)
+            else:
+                endstates[run.Id] = (run.Id, run.energy[-1,0], run.energy[-1,1])
+            
         self.db.end_states = endstates
     
     def read_runs(self):

@@ -10,6 +10,7 @@ import pymol_visualisation
 import sim_run
 import numerics as num_
 import PolyLibScan.Database.db as DB
+import PolyLibScan.Tools.config as cfg
 
 warnings.filterwarnings("ignore")
 
@@ -29,7 +30,15 @@ class Job(bayes.Job):
         self.trajectory_order = self._parse.traj_type_order
         self.sequence = self._parse.sequence
         self.weights = dict(self._parse.weights)
-        self.active_site = self._parse.active_site
+
+        # set self.active_site if there's a protein present
+        self.config = cfg.JobConfig(self.db_path.parent.joinpath('config_with_setup.yml').as_posix())
+        if 'stoichiometry' in self.config.sim_parameter:
+            if self.config.sim_parameter['stoichiometry'][0] > 0:
+                self.active_site = self._parse.active_site
+        else:
+            self.active_site = self._parse.active_site
+
         self._runs = self._read_runs(with_pymol=with_pymol)
         self.particle_ids = self._get_particle_ids()
         self._charge = None
@@ -64,12 +73,15 @@ class Job(bayes.Job):
         # in case there are no sim runs
         if len(self) == 0:
             raise Exception('No sim data available.')
-            
+
+        # this approach works if:
+        # 1. there is only one protein and one polymer molecule
+        # 2. the protein was created first, the polymer second
         p_type_ids = {}
         p_type_ids['polymer'] = np.unique(self.sequence['ID'])
-        all_particles_set = set(self[0].coordinates()['end']['atom_type'])
-        protein_set = all_particles_set - set(p_type_ids['polymer'])
-        p_type_ids['protein'] = np.array(list(protein_set))
+        polymer_length = len(self.sequence)
+        p_type_ids['protein'] = np.unique(self.trajectory_order[:-polymer_length])
+
         return p_type_ids
 
     def charge():

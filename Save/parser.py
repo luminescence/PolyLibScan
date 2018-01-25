@@ -15,10 +15,6 @@ class Parser(object):
 
     def meta(self, config):
         meta = {}
-        weights = config.sim_parameter['weights']
-        monomers = config.sim_parameter['monomers']
-        meta['weights'] = np.array([(mono, weight) for mono,weight in zip(monomers, weights)], 
-                                                     dtype=[('monomers', '|S10'), ('weight', '<f4')])
         
         meta['misc'] = np.array([(key, str(value)) for key,value in config.sim_parameter.items()
                                  if (not isinstance(value, list)) and (not isinstance(value, dict))], 
@@ -26,13 +22,24 @@ class Parser(object):
         meta['parameter'] = np.array([(key, value) for key,value in config.lmp_parameter.items()
                                       if not isinstance(value, list)],
                                       dtype=[('name', '|S20'), ('value', '<i4')])
-        meta['sequence'] = np.array([(id_, name) for name,id_ in zip(config.sim_parameter['named_sequence'], 
-                                                                     config.sim_parameter['id_sequence']   )], 
-                                                     dtype=[('ID', '>i2'), ('monomer', '|S10')])
-        as_val = config.sim_parameter['active_site']
-        meta['active_site'] = np.array([ (as_val['xyz'][i], as_val['chain'][i], as_val['pdb_id'][i], as_val['iCode'][i]) 
-                                                                                    for i in xrange(len(as_val['xyz']))], 
-                                        dtype=[('xyz', '<i2'), ('chain', '|S1'), ('pdb_id', '<i2'), ('iCode', '|S1')])
+        is_polymer_present = config.sim_parameter['stoichiometry'][1] > 0
+        if is_polymer_present:
+            weights = config.sim_parameter['weights']
+            monomers = config.sim_parameter['monomers']
+            meta['weights'] = np.array([(mono, weight) for mono, weight in zip(monomers, weights)],
+                                       dtype=[('monomers', '|S10'), ('weight', '<f4')])
+
+            meta['sequence'] = np.array([(id_, name) for name,id_ in zip(config.sim_parameter['named_sequence'],
+                                                                         config.sim_parameter['id_sequence']   )],
+                                                         dtype=[('ID', '>i2'), ('monomer', '|S10')])
+
+        is_protein_present = config.sim_parameter['stoichiometry'][0] > 0
+        if is_protein_present:
+            as_val = config.sim_parameter['active_site']
+            meta['active_site'] = np.array([ (as_val['xyz'][i], as_val['chain'][i], as_val['pdb_id'][i], as_val['iCode'][i])
+                                                                                        for i in xrange(len(as_val['xyz']))],
+                                            dtype=[('xyz', '<i2'), ('chain', '|S1'), ('pdb_id', '<i2'), ('iCode', '|S1')])
+
         return meta
         
     def xyz(self, file_path):

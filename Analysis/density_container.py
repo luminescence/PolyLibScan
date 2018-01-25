@@ -3,17 +3,19 @@ import tqdm
 import itertools as it
 import epitopsy.DXFile as dx
 import numerics as numerics
-import PolyLibScan
+from PolyLibScan.Analysis.sim_run import AtomFilter
+
 
 class DensityContainer(object):
     """docstring for DensityContainer"""
-    def __init__(self, simulations, monomer_id='all', margin=20.0, resolution=3.0, 
+    def __init__(self, simulations, monomer_id='all', filter_specification='type', margin=20.0, resolution=3.0,
                  norm_type='max'):
         super(DensityContainer, self).__init__()
         self.sims = simulations
         self.poly_type = self.sims[0].meta['polymer_name']
         self.sim_number = self.sims
         self.monomer_id = monomer_id
+        self.filter_specification = filter_specification
         self.margin = margin
         self.resolution = resolution
         self.norm_type = norm_type
@@ -89,20 +91,30 @@ class DensityContainer(object):
         else:
             raise UserWarning('This attribute should not be changed after object creation.')
 
-    def __eq__(self, other):
-        if self.margin != other.margin: 
-            return False
-            raise AttributeError("Margins in maps differ: %f and %f" % (self.margin, other.margin))
+    def __eq__(self, other, return_differences=False):
+        difference_list = []
+        if self.margin != other.margin:
+            difference_list.append("Margins in maps differ: %.1f and %.1f" % (self.margin, other.margin))
         if self.resolution != other.resolution:
-            return False
-            raise AttributeError("Resolution in maps differ: %f and %f" % (self.resolution, other.resolution))
+            difference_list.append("Resolution in maps differ: %.1f and %.1f" % (self.resolution, other.resolution))
         if self.monomer_id != other.monomer_id:
-            return False
-            raise AttributeError("Monomers in maps differ: %s and %s" % (self.monomer_id, other.monomer_id))
+            difference_list.append("Monomers in maps differ: %s and %s" % (self.monomer_id, other.monomer_id))
         if (self.box!=other.box).any():
+            difference_list.append("Boxes in maps differ: %s and %s" % (self.box, other.box))
+
+        if return_differences:
+            return difference_list
+        if len(difference_list) == 0:
+            return True
+        else:
             return False
-            raise AttributeError("Boxes in maps differ: %s and %s" % (self.box, other.box))
-        return True
+
+    def _check_for_difference(self, other):
+        differences = self.__eq__(other, return_differences=True)
+        if len(differences) == 0:
+        	return 'No differences found.'
+        else:
+            return '\n'.join(differences)
 
     def __ne__(self, other):
         bool_val = (self == other)
@@ -119,18 +131,6 @@ class DensityContainer(object):
     #         raise ValueError(self._check_for_difference(other))
     #     self.map += other.map
     #     return self
-
-    def _check_for_difference(self, other):
-        if self.margin != other.margin: 
-            return "Margins in maps differ: %.1f and %.1f" % (self.margin, other.margin)
-        if self.resolution != other.resolution:
-            return "Resolution in maps differ: %.1f and %.1f" % (self.resolution, other.resolution)
-        if self.monomer_id != other.monomer_id:
-            return "Monomers in maps differ: %s and %s" % (self.monomer_id, other.monomer_id)
-        if (self.box!=other.box).any():
-            return "Boxes in maps differ: %s and %s" % (self.box, other.box)
-        else:
-        	return 'No differences found.'
 
     def _create_empty_map(self):
         '''Set up an empty array for the density and get the size and offset 
@@ -159,25 +159,16 @@ class DensityContainer(object):
                          resolution_str, self.norm_type, suffix])
         return root.joinpath(name).absolute().resolve()
 
-    def _create_atom_type_filter(self, particle_order, monomer_id=None):
-        if not monomer_id:
-            monomer_id = self.monomer_id
-        mask = np.in1d(particle_order, monomer_id)
-        iterator = it.cycle(mask)
-        def atom_type_filter(whatever):
-            return iterator.next()
-        return atom_type_filter
-
     def _add_run_to_epitopsy_map(self, sim, run_id, monomer_id=None):
         """Add all mapped coordinates to epitopsy grid.
         """
         if not monomer_id:
             monomer_id = self.monomer_id
         particle_order = sim.trajectory_order
-        type_filter = self._create_atom_type_filter(particle_order, monomer_id=monomer_id)
+        type_filter = AtomFilter(particle_order, sim.sequence, monomer_id=monomer_id, molecule='polymer', filter_specification=self.filter_specification)
         offset = self.box[0]
         traj_iterator = sim._parse.trajectory_load(run_id)
-        monomer_coords = it.ifilter(type_filter, traj_iterator)
+        monomer_coords = it.ifilter(type_filter.filter_function, traj_iterator)
         for coord in it.ifilter(lambda x:numerics.in_box(x, self.box), monomer_coords):
             idx = np.around(((coord - offset) / self.resolution)).astype(np.int)
             self.map[idx[0],idx[1],idx[2]] += 1

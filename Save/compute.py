@@ -1,12 +1,17 @@
 import numpy as np
 import numba as nb
 
-def distance_to_active_site(xyz_coords, polymer_ids, active_site_no):
+from PolyLibScan.Analysis.sim_run import AtomFilter
+
+
+def distance_to_active_site(xyz_coords, db, polymer_ids, active_site_no):
     '''calculates the minimal distance between the polymer and the 
     active site.
     '''
-    mask = np.in1d(xyz_coords['atom_type'], polymer_ids)
-    poly_coords = xyz_coords[mask]
+
+    type_filter = AtomFilter(db.traj_type_order, db.sequence, polymer_ids, molecule='polymer')
+
+    poly_coords = xyz_coords[type_filter.mask]
     # lammps atom ids start at 1 while numpy arrays
     # ids start at 0, thus decreasing the index 
     # yields the right index

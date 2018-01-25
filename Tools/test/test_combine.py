@@ -57,13 +57,13 @@ class TestCombine_Maker(ut.TestCase):
 		
 		dist = center2 - center1
 		print center1, center2
-		self.assertTrue(env_manager.overlapping(env.molecules[keys[0]].data['particles'], 
-												env.molecules[keys[1]].data['particles']))
+		self.assertTrue(env_manager.molecules_within_margin(env.molecules[keys[0]].data['particles'],
+                                                            env.molecules[keys[1]].data['particles']))
 
 		# move one molecule far, far away
 		env.molecules[keys[0]].move(np.array([1000.0, 0.0, 0.0]))
-		self.assertFalse(env_manager.overlapping(env.molecules[keys[0]].data['particles'], 
-												 env.molecules[keys[1]].data['particles']))
+		self.assertFalse(env_manager.molecules_within_margin(env.molecules[keys[0]].data['particles'],
+                                                             env.molecules[keys[1]].data['particles']))
 
 	def test_random_start_position_distance(self):
 		env = Environment(local_path.joinpath('data', 'updated_parameters8.yml').as_posix())

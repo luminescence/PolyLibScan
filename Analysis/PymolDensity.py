@@ -39,7 +39,7 @@ class Type(PymolDensity):
         super(Type, self).__init__(pymol_vis)
         self.sims = pymol_vis.sims
         
-    def add_dx(self, monomer_id='all', margin=20.0, resolution=1.5, norm='max'):
+    def add_dx(self, monomer_id='all', filter_specification='type', margin=20.0, resolution=1.5, norm='max'):
         '''Add cumulative densities of all simulations of this type.
 
         input:
@@ -47,7 +47,7 @@ class Type(PymolDensity):
             resolution:  bin-size in angstrom [Float]
             norm:        options: ['max', 'probability']
         '''
-        density = dc.DensityContainer(self.sims, monomer_id, margin=margin, 
+        density = dc.DensityContainer(self.sims, monomer_id, filter_specification=filter_specification, margin=margin,
             resolution=resolution, norm_type=norm)
         dx_path = density._map_path(self.pymol.type_folder)
         if not dx_path.exists():
@@ -67,9 +67,9 @@ class Job(PymolDensity):
         super(Job, self).__init__(pymol_vis)
         self.sim = pymol_vis.sim
 
-    def add_dx(self, monomer_id='all', margin=20.0, resolution=1.5, norm='max'):
-        density = dc.DensityContainer(self.sim, monomer_id, margin=margin, 
-            resolution=resolution, norm_type=norm)
+    def add_dx(self, monomer_id='all', filter_specification='type', margin=20.0, resolution=1.5, norm='max'):
+        density = dc.DensityContainer(self.sim, monomer_id, filter_specification=filter_specification, margin=margin,
+                                      resolution=resolution, norm_type=norm)
         dx_path = density._map_path(self.pymol.db_folder)
         if not dx_path.exists():
             density.create_epitopsy_map(norm=norm)
