@@ -9,7 +9,7 @@ from lammps import lammps
 import Save
 import Tools
 import helpers.git as _git
-import helpers.time as tm
+import helpers.sim_list
 from Tools import lmp_control
 
 __git_hash__ = _git.get_git_hash(__file__)
@@ -25,9 +25,7 @@ class Job(object):
                 setup_config = yaml.load(f)
             self.config.sim_parameter['poly_sequence'] = setup_config['sim_parameter']['poly_sequence']
         self.username = getpass.getuser()
-
-        self.config.sim_path['sim_list'] = os.path.join(self.config.sim_path['root'], 'sim.list')
-        open(self.config.sim_path['sim_list'], 'a').close()
+        self.sim_list = self.create_sim_list()
         if self.config.sim_parameter['local'] == 1:
             self._switch_to_local()
         else:
@@ -144,21 +142,14 @@ class Job(object):
         self.setup_writer.write('%s/%05d' % (self.config.lmp_path['input'], index))
 
     def run(self):
-        start_idx = self._get_last_uncompleted_index()
-        end_idx = self.config.sim_parameter['sampling_rate']
-        # check if simulations is already completed
-        if start_idx == -1:
-            return 
-        for i in xrange(start_idx,  end_idx):
+        for i in self.sim_list:
             self.generate_new_sim(i)
             # start next LAMMPS run
             lmp_controller = lmp_control.LmpController(i, self.config.lmp_parameter, self.config.lmp_path, self.parametrisation, fifos=self.fifo)
             lmp_controller.lmps_run()
             # report completed simulation so restarting jobs will know
             # also, it notes the machine and folder, so scattered info can be retrieved
-            self._mark_complete(i)
-        if start_idx != -1:
-            self._mark_complete(-1)
+            self.sim_list.mark_complete(i)
 
     def create_local_env(self, local_dir='/data/'):
         '''Create unique local job-folder and create the 
@@ -191,18 +182,6 @@ class Job(object):
             new_paths[sub_folder] = folder
         return new_paths
 
-    def _get_last_uncompleted_index(self):
-        '''get the last line of the sim_list file 
-        and return the index.
-        '''
-        with open(self.config.sim_path['sim_list']) as f:
-            completed_sims = f.read().split('\n')
-        if len(completed_sims) > 1:
-            last_line = completed_sims[-2]
-        else:
-            return 0
-        return int(last_line[:5])
-
     def _switch_to_local(self):
         '''if the data of the simulations 
         is to be stored locally, the lmp paths 
@@ -211,21 +190,16 @@ class Job(object):
         new_paths = self.create_local_env()
         self.config.lmp_path.update(new_paths)
 
-    def _mark_complete(self, index):
-        if self.config.sim_parameter['local'] == 1:
-            path = self.config.lmp_path['local_root']
-        else:
-            path = self.config.lmp_path['root']
-        with open(self.config.sim_path['sim_list'], 'a') as f:
-            info = '%05d;%s;%s;%s\n' % (index, localhost(), path, tm.time_string())
-            f.write(info)
+    def create_sim_list():
+        list_path = os.path.join(self.config.sim_path['root'], 'sim.list')
+        if self.config.sim_parameter['local'] == 1: 
+            data_folder = self.config.lmp_path['local_root'] 
+        else: 
+            data_folder = self.config.lmp_path['root']
+        return helpers.sim_list.SimList(list_path,
+                                        data_folder,
+                                        self.config.sim_parameter['sampling_rate'])
 
     def _get_monomer_ids(self):
         monomer_ids = set([p.type_.Id for p in self.poly.data['particles']])
         return sorted(monomer_ids)      
-
-
-def localhost():
-    """return the nodename of the computer.
-    """
-    return os.uname()[1]
