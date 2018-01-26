@@ -212,7 +212,9 @@ class LmpController(object):
         for pair in [pair for key,pair in self.parameterisation['Pairs'].items() if not pair['single_type_parametrised']]:
             pair_parameter_string = ' '.join(map(str, sorted([p for k,p in 
                                                  sorted(pair.items()) if 'coef' in k])))
-            if 'coul' in pair['kind']:
+            if 'coul/debye' == pair['kind']:
+                pair_coeffs.append('pair_coeff * * %s %s' % (pair['kind'], self.parameters['debye_kappa'])) 
+            elif 'coul' in pair['kind']:
                 pair_coeffs.append('pair_coeff * * %s' % (pair['kind']))
             else:
                 pair_coeffs.append('pair_coeff * * %s %s' % (pair['kind'], 
