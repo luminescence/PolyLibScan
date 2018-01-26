@@ -25,12 +25,13 @@ class Job(object):
                 setup_config = yaml.load(f)
             self.config.sim_parameter['poly_sequence'] = setup_config['sim_parameter']['poly_sequence']
         self.username = getpass.getuser()
-        self.sim_list = self.create_sim_list()
         if self.config.sim_parameter['local'] == 1:
             self._switch_to_local()
         else:
             new_paths = self.create_folders(self.config.lmp_path['root'])
             self.config.lmp_path.update(new_paths)
+        # create_sim_list depends on the results of the previous condition
+        self.sim_list = self.create_sim_list()
         with open(self.config.sim_path['config']) as f:
             self.parametrisation = yaml.load(f)
 
@@ -152,14 +153,23 @@ class Job(object):
             self.sim_list.mark_complete(i)
 
     def create_local_env(self, local_dir='/data/'):
-        '''Create unique local job-folder and create the 
+        '''Create local job-folder and needed subfolders.
+        The job-folder is placed in the folder under the local_dir.
+        The local dir is either composed via the 'local_root' path in 
+        config.sim_path if it exists or the functions 'local_dir' argument.
+        Note that the config takes precedent!
         '''
+
+        # get the folder of the the project and job name
         name_comp = self.config.sim_path['root'].split('/')[-3:]
+        # depending on the existence of the 'jobs' folder 
+        # choose project-root and job-root
         if name_comp[1] == 'jobs':
-            del name_comp[1]
+            project_root = name_comp[0]
         else:
-            del name_comp[0]
-        folder_name = '-'.join(name_comp)
+            project_root = name_comp[1]
+        job_root = name_comp[2]
+        folder_name = '%s-%s' % (project_root, job_root)
         if 'local_root' in self.config.sim_path and self.config.sim_path['local_root'] != '':
             local_userdir = self.config.sim_path['local_root']
         else:
