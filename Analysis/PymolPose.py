@@ -32,7 +32,7 @@ class PymolPose(object):
         if state not in ['start', 'end']:
             raise AttributeError("state must have value of 'start' or 'end'.")
         filter = AtomFilter(sim.trajectory_order, sim.sequence, sim.particle_ids[molecule], molecule='polymer')
-        pose_data = self._create_pose_array(sim, filter.mask)
+        pose_data = self._create_pose_array(sim, molecule, filter.mask)
         for run in sim:
             np_help.copy_fields(pose_data, self.traj_data(run, state, filter.mask), ['x', 'y', 'z'])
             yield pose_data
@@ -142,7 +142,7 @@ class Run(PymolPose):
         information is left unchanged
         '''
         filter = AtomFilter(sim.trajectory_order, sim.sequence, sim.particle_ids[molecule], molecule='polymer')
-        pose_data = self._create_pose_array(sim, filter.mask)
+        pose_data = self._create_pose_array(sim, molecule, filter.mask)
         if state in ['start', 'end']:
             for run in [sim[self.run.Id]]:
                 np_help.copy_fields(pose_data, self.traj_data(run, state, filter.mask), ['x','y', 'z'])
