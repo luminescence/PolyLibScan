@@ -36,11 +36,7 @@ class JobSave(object):
 
     def save(self):
         self.save_meta_data(self.config)
-        try:
-            self.save_trajectory_meta(self.runs[0].path['full_traj'].as_posix())
-        except:
-            print self.path
-            raise Exception('we better stop here.')
+        self.save_trajectory_meta(self.runs[0].path['full_traj'].as_posix())
         self.save_particle_list(self.path['p_list'].as_posix())
         self.save_runs(self.runs)
         self.save_endstates(self.runs)

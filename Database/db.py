@@ -28,11 +28,15 @@ class JobDataBase(object):
 
     @property
     def particle_list(self):
-        return self.db._load_table('/meta', 'particle_list')
+        try:
+            return self.db._load_table('/meta', 'particle_list')
+        except tb.NoSuchNodeError:
+            print 'No particle list in Database %s.' % self.db.path
+            return 
 
     @particle_list.setter
     def particle_list(self, value):
-        self.db._save_table(value, '/meta', 'particle_list')
+        return self.db._save_table(value, '/meta', 'particle_list')
 
     @property
     def active_site(self):

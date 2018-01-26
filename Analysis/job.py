@@ -28,6 +28,7 @@ class Job(bayes.Job):
         self.lmp_parameters = {key:val for key,val in self._parse.parameter}
         self.trajectory_meta = self._parse.traj_info
         self.trajectory_order = self._parse.traj_type_order
+        self.particle_list = self._parse.particle_list
         self.sequence = self._parse.sequence
         self.weights = dict(self._parse.weights)
 
@@ -63,7 +64,7 @@ class Job(bayes.Job):
     def __str__(self):
         info =  (self.meta['poly_name'], self.meta['protein'], self.Id, len(self))
         weights = zip(*self.weights.items())    
-        out = []
+        out  = []
         out += ['Lammps Run: %s-%s | ID: %d | Runs: %d' % info]
         out += ['Monomers: %s' % '-'.join(weights[0])]
         out += ['Weights:  %s' % '-'.join(map(str, weights[1]))]

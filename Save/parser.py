@@ -74,7 +74,10 @@ class Parser(object):
         dist_data = np.zeros(len(data), dtype=dtype)
         for i, line in enumerate(data):
             items = line.split()
-            dist_data[i] = (int(items[0]), float(items[1]))
+            try:
+                dist_data[i] = (int(items[0]), float(items[1]))
+            except IndexError:
+                raise IndexError('list index out of range in file %s, line %d' % (file_path, i))
         return dist_data
 
     def trajectory(self, file_path):
@@ -95,8 +98,9 @@ class Parser(object):
     def particle_list(self, path):
         '''Extract particles from list
         '''
-        dtype = [('xyz', np.int), ('p_id', np.int), ('name', 'S6'), 
-                 ('chain', 'S1'), ('atom', 'S6'), ('res_id', np.int), ('iCode', 'S1')]
+        dtype = [('xyz'  , np.int), ('p_id'  , np.int)    , ('name'  , 'S6'), 
+                 ('chain', 'S1')  , ('atom'  , 'S6')      , ('res_id', np.int), 
+                 ('iCode', 'S1')  , ('charge', np.float)]
         return np.fromfile(path, dtype=dtype)
 
     def trajectory_meta(self, file_path):
