@@ -8,7 +8,7 @@ from PolyLibScan.Analysis.sim_run import AtomFilter
 class LmpController(object):
     """Initialize and control a lammps instance"""
 
-    def __init__(self, Id, parameters, paths, parameterisation, fifos={}, previous_instance='', stoichiometry=[1,1]):
+    def __init__(self, Id, parameters, paths, parameterisation, fifos, previous_instance=''):
         if isinstance(previous_instance, PyLammps):
             self.instance = previous_instance
         elif previous_instance != '':
@@ -16,15 +16,15 @@ class LmpController(object):
         else:
             self.instance = PyLammps()
 
-            self.Id = Id
-            self.parameters = parameters
-            self.paths = paths
-            self.parameterisation = parameterisation
-            self.fifos = fifos
-            self.stoichiometry=stoichiometry
+        self.Id = Id
+        self.parameters = parameters
+        self.paths = paths
+        self.parameterisation = parameterisation
+        self.fifos = fifos
+        self.stoichiometry = parameters['stoichiometry']
 
-            self.is_protein_present = (self.stoichiometry[0] > 0)
-            self.is_polymer_present = (self.stoichiometry[1] > 0)
+        self.is_protein_present = (self.stoichiometry[0] > 0)
+        self.is_polymer_present = (self.stoichiometry[1] > 0)
 
     def get_lmp_styles(self):
         styles = OrderedDict()
@@ -122,8 +122,8 @@ class LmpController(object):
     def configure_output(self):
         # output & computes
 
-        print_interval = 100 # every n timesteps...
-        self.instance.command('thermo %s' % print_interval) # ...determine thermodynamics
+        print_interval = 100    # every n timesteps...
+        self.instance.command('thermo %s' % print_interval)     # ...determine thermodynamics
 
         self.instance.command('compute SolidTemp solid temp')
 
@@ -179,17 +179,25 @@ class LmpController(object):
         groups = ['group solid union all']
 
         if self.is_protein_present:
+
+            active_site_ids_lammps_list = self.convert_python_list_to_lammps_list(self.parameters['active_site_ids'],
+                                                                                  with_quotes=False)
             protein_exclusive_groups = ['group protein type %s' % self.parameters['bb_id'],
                                         'group ghost_protein type %s' % self.parameters['ghost_id'],
-                                        'group activesite id %s' % self.convert_python_list_to_lammps_list(self.parameters['active_site_ids'], with_quotes=False),
-                                        'group solid subtract all ghost_protein'] # overwrite default
+                                        'group activesite id %s' % active_site_ids_lammps_list,
+                                        'group solid subtract all ghost_protein']   # overwrite default
             groups += protein_exclusive_groups
 
         if self.is_polymer_present:
-            type_filter = AtomFilter(self.parameters['particle_ids'], self.parameters['poly_sequence'], monomer_id=self.parameters['monomer_ids'], molecule='polymer', filter_specification='type')
+            type_filter = AtomFilter(self.parameters['particle_ids'],
+                                     self.parameters['poly_sequence'],
+                                     monomer_id=self.parameters['monomer_ids'],
+                                     molecule='polymer',
+                                     filter_specification='type')
             polymer_bead_ids = np.where(type_filter.mask == True)[0].tolist()
 
-            polymer_exclusive_groups = ['group polymer id %s' % self.convert_python_list_to_lammps_list(polymer_bead_ids, with_quotes=False)]
+            polymer_ids_lammps_list = self.convert_python_list_to_lammps_list(polymer_bead_ids, with_quotes=False)
+            polymer_exclusive_groups = ['group polymer id %s' % polymer_ids_lammps_list]
             groups += polymer_exclusive_groups
 
         if self.is_protein_present and self.is_polymer_present:
@@ -228,7 +236,7 @@ class LmpController(object):
     def lmps_run(self, run_script=False):
         self._start_fifo_capture(self.fifos, self.Id)
         # submitting run Id
-        self.variable('num', 'string','%05d' % self.Id)
+        self.variable('num', 'string', '%05d' % self.Id)
         # use default settings
         self.settings()
         # starting script if desired
@@ -236,11 +244,11 @@ class LmpController(object):
             self.instance.file(self.paths['script'])
         self.model_specifications()
         self.group_declaration()
-        #modify neighbor list
+        # modify neighbor list
         if self.is_protein_present:
             self.instance.command('neigh_modify exclude group ghost_protein all')
         self.minimization()
-        #equilibrate
+        # equilibrate
         temperature_start = 100.0
         temperature_production = 300.0
         self.equilibration_MD(temperature_production, temperature_start)

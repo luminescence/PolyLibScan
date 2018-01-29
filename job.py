@@ -97,6 +97,7 @@ class Job(object):
         p_list_path = os.path.join(self.config.sim_path['root'], 'particle_list.npy')
         self.save_particle_list(p_list_path)
         # Update Lammps Parameters
+        self.config.lmp_parameter['stoichiometry'] = self.config.sim_parameter['stoichiometry']
         if number_of_polymers == 1:
             self.config.sim_parameter['poly_sequence'] = [monomers.type_.name for monomers in self.poly.data['monomers']]
             self.config.sim_parameter['named_sequence'] = [particle.type_.name for particle in self.poly.data['particles']]
@@ -169,7 +170,7 @@ class Job(object):
         for i in self.sim_list:
             self.generate_new_sim(i)
             # start next LAMMPS run
-            lmp_controller = lmp_control.LmpController(i, self.config.lmp_parameter, self.config.lmp_path, self.parametrisation, fifos=self.fifo, stoichiometry=self.config.sim_parameter['stoichiometry'])
+            lmp_controller = lmp_control.LmpController(i, self.config.lmp_parameter, self.config.lmp_path, self.parametrisation, self.fifo)
             lmp_controller.lmps_run()
             # report completed simulation so restarting jobs will know
             # also, it notes the machine and folder, so scattered info can be retrieved
