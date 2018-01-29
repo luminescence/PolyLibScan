@@ -95,7 +95,9 @@ class JobSave(object):
         for run in runs:
             if consider_active_site_distance:
                 polymer_ids = np.array(np.unique(self.db.sequence['ID']))
-                distance = compute.distance_to_active_site(run.end_traj, self.db, polymer_ids,
+                distance = compute.distance_to_active_site(run.end_traj,
+                                                           self.db,
+                                                           polymer_ids,
                                                            active_site_pos)
                 endstates[run.Id] = (run.Id, run.energy[-1,0], run.energy[-1,1], distance)
             else:
