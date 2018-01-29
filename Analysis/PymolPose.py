@@ -31,10 +31,10 @@ class PymolPose(object):
         '''
         if state not in ['start', 'end']:
             raise AttributeError("state must have value of 'start' or 'end'.")
-        filter = AtomFilter(sim.trajectory_order, sim.sequence, sim.particle_ids[molecule], molecule='polymer')
-        pose_data = self._create_pose_array(sim, molecule, filter.mask)
+        type_filter = AtomFilter(sim.trajectory_order, sim.sequence, sim.particle_ids[molecule], molecule='polymer')
+        pose_data = self._create_pose_array(sim, molecule, type_filter.mask)
         for run in sim:
-            np_help.copy_fields(pose_data, self.traj_data(run, state, filter.mask), ['x', 'y', 'z'])
+            np_help.copy_fields(pose_data, self.traj_data(run, state, type_filter.mask), ['x', 'y', 'z'])
             yield pose_data
 
     def _create_pose_array(self, sim, molecule, mask):
@@ -141,11 +141,11 @@ class Run(PymolPose):
         Each yield (run) the coordinates of the polymer are updated, while the constant
         information is left unchanged
         '''
-        filter = AtomFilter(sim.trajectory_order, sim.sequence, sim.particle_ids[molecule], molecule='polymer')
-        pose_data = self._create_pose_array(sim, molecule, filter.mask)
+        type_filter = AtomFilter(sim.trajectory_order, sim.sequence, sim.particle_ids[molecule], molecule='polymer')
+        pose_data = self._create_pose_array(sim, molecule, type_filter.mask)
         if state in ['start', 'end']:
             for run in [sim[self.run.Id]]:
-                np_help.copy_fields(pose_data, self.traj_data(run, state, filter.mask), ['x','y', 'z'])
+                np_help.copy_fields(pose_data, self.traj_data(run, state, type_filter.mask), ['x','y', 'z'])
                 yield pose_data
         elif state == 'full':
             for step_data in self.run.trajectory(molecule='polymer'):
