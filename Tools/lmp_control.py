@@ -9,6 +9,17 @@ class LmpController(object):
     """Initialize and control a lammps instance"""
 
     def __init__(self, Id, parameters, paths, parameterisation, fifos, previous_instance=''):
+        '''
+        Control LAMMPS simulation.
+
+        Input:
+            Id: number of simulation - used for input-, output-name. [int]
+            parameters: parameters from config.yml [dict]
+            paths: paths found in config.yml [dict]
+            parameterisation: parameters of beads and force fields, found in parameters.yml [dict]
+            fifos: fifo information from config.yml [dict]
+            previous_instance: Pylammps object
+        '''
         if isinstance(previous_instance, PyLammps):
             self.instance = previous_instance
         elif previous_instance != '':
@@ -119,11 +130,10 @@ class LmpController(object):
         # minimization
         self.instance.command('minimize 0.0 1.0e-8 10000 100000')
 
-    def configure_output(self):
+    def configure_output(self, print_interval=100):
         # output & computes
 
-        print_interval = 100    # every n timesteps...
-        self.instance.command('thermo %s' % print_interval)     # ...determine thermodynamics
+        self.instance.command('thermo %s' % print_interval) # ...determine thermodynamics
 
         self.instance.command('compute SolidTemp solid temp')
 
@@ -220,9 +230,7 @@ class LmpController(object):
         for pair in [pair for key,pair in self.parameterisation['Pairs'].items() if not pair['single_type_parametrised']]:
             pair_parameter_string = ' '.join(map(str, sorted([p for k,p in 
                                                  sorted(pair.items()) if 'coef' in k])))
-            if 'coul/debye' == pair['kind']:
-                pair_coeffs.append('pair_coeff * * %s %s' % (pair['kind'], self.parameters['debye_kappa'])) 
-            elif 'coul' in pair['kind']:
+            if 'coul' in pair['kind']:
                 pair_coeffs.append('pair_coeff * * %s' % (pair['kind']))
             else:
                 pair_coeffs.append('pair_coeff * * %s %s' % (pair['kind'], 
@@ -252,7 +260,10 @@ class LmpController(object):
         temperature_start = 100.0
         temperature_production = 300.0
         self.equilibration_MD(temperature_production, temperature_start)
-        self.configure_output()
+        if 'output_interval' in self.parameters:
+            self.configure_output(self.parameters['output_interval'])
+        else:
+            self.configure_output()
         # specify fifo dumps
         self.set_fifos(self.fifos)
         self.production_MD(temperature_production)
