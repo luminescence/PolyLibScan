@@ -68,4 +68,4 @@ class to_pqr(object):
             np_help.copy_fields(pose_data, self.run.coordinates()[state][mask], ['x','y', 'z'])
             return pose_data
         else:
-            raise AttributeError("state must have value of 'start', 'end' or 'full'.")
+            raise AttributeError("state must have value of 'start', 'end'.")

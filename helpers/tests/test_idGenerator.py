@@ -26,3 +26,7 @@ class TestIdGen(ut.TestCase):
     def test_contains(self):
         self.assertEqual(self.counter['contains_test'], 1)
         self.assertTrue('contains_test' in self.counter)
+
+
+if __name__ == '__main__':
+    ut.main(verbosity=2)
