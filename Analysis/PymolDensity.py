@@ -13,9 +13,21 @@ class PymolDensity(object):
         self.map_data = set([])
 
     def isosurface(self, lvl=0.5, dx_info=None, color=None):
+        '''Show isosurfaces of the created densities.
+
+        if dx_info is not given, then all available 
+        densities are visualized in pymol.
+        if there dx_info is given or there is only one, 
+        the color argument is used, otherwise the colors 
+        are taken from the surface_color list.
+        '''
         if dx_info:
             if not color: color = self.surface_colors[0]
             self.change_isosurface(dx_info, level=lvl, color=color)
+        elif len(self.map_data) == 1:
+            if not color: color = self.surface_colors[0]
+            first_dx = next(iter(self.map_data))
+            self.change_isosurface(first_dx, level=lvl, color=color)
         else:
             for color, density_map in it.izip(self.surface_colors, self.map_data):
                 self.change_isosurface(density_map, level=lvl, color=color)
@@ -57,7 +69,7 @@ class Type(PymolDensity):
         density_obj = dc.DensityMap(self.pymol.poly_type.name, len(self.pymol.poly_type.sims), 
                                  monomer_id, margin, resolution, dx_path, norm)
         self.map_data.add(density_obj)
-        #self.poly_type.project.pymol.map_data.add(density_obj)
+        self.poly_type.project.pymol.map_data.add(density_obj)
         return density_obj
 
 
