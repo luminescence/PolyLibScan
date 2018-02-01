@@ -76,7 +76,7 @@ class Parser(object):
             items = line.split()
             try:
                 dist_data[i] = (int(items[0]), float(items[1]))
-            except IndexError:
+            except IndexError, ValueError:
                 raise IndexError('list index out of range in file %s, line %d' % (file_path, i))
         return dist_data
 
