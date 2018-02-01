@@ -76,8 +76,9 @@ class Parser(object):
             items = line.split()
             try:
                 dist_data[i] = (int(items[0]), float(items[1]))
-            except IndexError, ValueError:
-                raise IndexError('list index out of range in file %s, line %d' % (file_path, i))
+            except (IndexError, ValueError):
+                raise IndexError('Something is wrong in file %s, line %d: %s' % (
+                                    file_path, i, line))
         return dist_data
 
     def trajectory(self, file_path):
