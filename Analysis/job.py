@@ -147,7 +147,7 @@ class Job(bayes.Job):
         def fget(self):
             if self._energy_distance_distribution == None:
                 try:
-                    results = self._parse.hist_data()
+                    results = self._parse.histogramm
                 except parser.DB.tb.NoSuchNodeError:
                     results = self._calc_distance_density(self)
                     hist_array = self._parse_hist_data(results[['distance', 'frequency']],
@@ -181,7 +181,12 @@ class Job(bayes.Job):
 
 
     def _calc_distance_density(self, runs):
-        dist_v = np.zeros(2000, dtype=[('count', np.int), ('energy', np.float)])
+        # 2000 is an arbitrary choice for the number of bins. 
+        # Because the length of each bin is 0.1 Angstrom, 
+        # It assumes that the distance never exceeds 200 Angstrom.
+        bins = 2000
+        bin_length = 0.1
+        dist_v = np.zeros(bins, dtype=[('count', np.int), ('energy', np.float)])
         for run in runs:
             energy = run.binding_energy()[:,0]
             distance = run.distance_time_series()['distance'][-len(energy):]
@@ -194,7 +199,7 @@ class Job(bayes.Job):
         results_dtype = [('distance', np.float), ('frequency', np.int),
                          ('energy', np.float)]
         results = np.empty(reduced_len, results_dtype)
-        results['distance'] = np.arange(reduced_len, dtype=np.float)/10
+        results['distance'] = np.arange(reduced_len, dtype=np.float) * bin_length
         results['frequency'] = reduced_hist
         results['energy'] = energy_mean
         return results
@@ -238,4 +243,3 @@ class Job(bayes.Job):
 
     def mean_energy(self):
         return np.mean(self.energies())
-
