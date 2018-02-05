@@ -1,4 +1,3 @@
-#import parser
 import numpy as np
 import pathlib2 as pl
 import pandas as pd
@@ -121,47 +120,37 @@ class Job(bayes.Job):
                 runs.append(sim_run.Run(self, data['ID'], data['Energy'], with_pymol=True))
         return sorted(runs, key=lambda x:x.Id)
 
-    def distance_frequency():
-        doc = "The distance_frequency property."
-        def fget(self):
-            if self._energy_distance_distribution == None:
-                try:
-                    results = self._parse.histogramm
-                except DB.tb.NoSuchNodeError:
-                    results = self._calc_distance_density(self)
-                    hist_array = self._parse_hist_data(results[['distance', 'frequency']],
-                                               results['energy'])
-                    self._parse.histogram = hist_array
-                self._distance_frequency = results[['distance', 'frequency']]
-                self._energy_distance_distribution = results[['distance', 'energy']]
-            return self._distance_frequency
-        def fset(self, value):
-            self._distance_frequency = value
-        def fdel(self):
-            self._distance_frequency = None
-        return locals()
-    distance_frequency = property(**distance_frequency())
+    def distance_histogram(sel_attr):
+        def calc_both(self):
+            try:
+                results = self._parse.histogramm
+            except DB.tb.NoSuchNodeError:
+                results = self._calc_distance_density(self)
+                hist_array = self._parse_hist_data(results[['distance', 'frequency']],
+                                                   results['energy'])
+                self._parse.histogram = hist_array
+            self._distance_frequency = results[['distance', 'frequency']]
+            self._energy_distance_distribution = results[['distance', 'energy']]
 
-    def energy_distance_distribution():
-        doc = "The energy_distance_distribution property."
-        def fget(self):
-            if self._energy_distance_distribution == None:
-                try:
-                    results = self._parse.histogramm
-                except parser.DB.tb.NoSuchNodeError:
-                    results = self._calc_distance_density(self)
-                    hist_array = self._parse_hist_data(results[['distance', 'frequency']],
-                                               results[ 'energy'])
-                    self._parse.histogram = hist_array
-                self._distance_frequency = results[['distance', 'frequency']]
-                self._energy_distance_distribution = results[['distance', 'energy']]
-            return self._energy_distance_distribution
-        def fset(self, value):
-            self._energy_distance_distribution = value
-        def fdel(self):
-            self._energy_distance_distribution = None
-        return locals()
-    energy_distance_distribution = property(**energy_distance_distribution())
+        def fget(self, selected_attribute=sel_attr):
+            if getattr(self, selected_attribute) is None:
+                calc_both(self)
+            return getattr(self, selected_attribute)
+
+        def fset(self, value, selected_attribute=sel_attr):
+            setattr(self, selected_attribute, value)
+
+        def fdel(self, selected_attribute=sel_attr):
+            setattr(self, selected_attribute, None)
+
+        export_dict = locals()
+        del export_dict['calc_both']
+        del export_dict['sel_attr']
+
+        return export_dict
+
+    energy_distance_distribution = property(**distance_histogram(sel_attr='_energy_distance_distribution'))
+    distance_frequency = property(**distance_histogram(sel_attr='_distance_frequency'))
 
     def _parse_hist_data(self, distance, energy):
         '''Save the observables of distance and energy to the database.
