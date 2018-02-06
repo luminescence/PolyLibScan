@@ -33,6 +33,7 @@ class LmpController(object):
         self.parameterisation = parameterisation
         self.fifos = fifos
         self.stoichiometry = parameters['stoichiometry']
+        self.pairs = PairList(self.parameterisation['globals'], self.parameterisation['Pairs'])
 
         self.is_protein_present = (self.stoichiometry[0] > 0)
         self.is_polymer_present = (self.stoichiometry[1] > 0)
@@ -44,7 +45,7 @@ class LmpController(object):
             ['atom_style', 'bond_style', 'angle_style', 'dihedral_style'])
         for type_ in available_styles:
             styles[type_] = self.add_style(type_, globals_)
-        styles['pair_style'] = self.add_pair_style(globals_, self.parameterisation['Pairs'])
+        styles['pair_style'] = [self.pairs.pair_style_str]
         return styles
 
     @staticmethod
@@ -59,28 +60,6 @@ class LmpController(object):
         else:
             style = [globals_[style_type]]
         return style
-
-    @staticmethod
-    def add_pair_style(globals_, pairs):
-        style_type = globals_['pair_style']
-        pair_list = []
-        if style_type in ['hybrid', 'hybrid/overlay']:
-            pair_list += [style_type]
-            sub_name = 'pair_substyle'
-            substyles = {key: val for key,val in globals_.items() if sub_name in key}
-            if len(substyles) == 0:
-                raise AttributeError("pair_style is hybrid but has no substyles.")
-            sub_styles = [v for k,v in sorted(substyles.items())]
-            for sub_style in sub_styles:
-                if pairs[sub_style]['kind'] in ['lj/cut', 'lj96/cut', 'coul/cut', 'coul/diel', 'soft']:
-                    pair_list += [pairs[sub_style]['kind'], pairs[sub_style]['cutoff']]
-                elif pairs[sub_style]['kind'] in ['coul/debye']:
-                    pair_list += [pairs[sub_style]['kind'], pairs[sub_style]['kappa'], pairs[sub_style]['cutoff']]
-                else:
-                    raise KeyError('pair_style %s is currently not implemented.' % sub_style)
-        else:
-            pair_list += [pairs[style_type]['kind'], pairs[style_type]['cutoff']]
-        return pair_list
 
     def set_dictionary_as_lammps_variables(self, dictionary, var_style):
         """dictionary keys will be variable names, dictionary values will be variable values"""
@@ -227,14 +206,8 @@ class LmpController(object):
         # specify the model
         pair_coeffs = ['timestep 	%s' % self.parameters['timestep'],
                        'dielectric %s' % self.parameters['dielectric_par']]
-        for pair in [pair for key,pair in self.parameterisation['Pairs'].items() if not pair['single_type_parametrised']]:
-            pair_parameter_string = ' '.join(map(str, sorted([p for k,p in 
-                                                 sorted(pair.items()) if 'coef' in k])))
-            if 'coul' in pair['kind']:
-                pair_coeffs.append('pair_coeff * * %s' % (pair['kind']))
-            else:
-                pair_coeffs.append('pair_coeff * * %s %s' % (pair['kind'], 
-                                                             pair_parameter_string))
+        for style in self.pairs.single_parameterized():
+            pair_coeffs.append(self.pairs.pair_coef_str(style))
         self.execute_list_of_commands(pair_coeffs)
 
     def execute_list_of_commands(self, list_of_commands):
@@ -268,3 +241,72 @@ class LmpController(object):
         self.set_fifos(self.fifos)
         self.production_MD(temperature_production)
         self.instance.close()
+
+class PairList(object):
+    
+    def __init__(self, globals_, pairs):
+        self.has_substyles = False
+        self.pairs = pairs
+        self.styles = self.set_styles(globals_)
+        
+    def set_styles(self, styles):
+        style_type = {'main': styles['pair_style']}
+        if style_type['main'] in ['hybrid', 'hybrid/overlay']:
+            style_type['sub'] = self.get_substyles(styles)
+        else:
+            style_type['sub'] = []
+        return style_type
+        
+    def get_substyles(self, styles):
+        sub_name = 'pair_substyle'
+        substyles = {key: val for key,val in styles.items() if sub_name in key}
+        if len(substyles) == 0:
+            raise AttributeError("pair_style is hybrid but has no substyles.")
+        self.has_substyles = True
+        return [v for k,v in sorted(substyles.items())]
+    
+    @property
+    def pair_style_str(self):
+        output = self.pair_string(self.styles['main'])
+        if self.has_substyles:
+            for style in self.styles['sub']:
+                output += self.pair_string(style)
+        return ' '.join(map(str, output))
+        
+    def single_parameterized(self):
+        if self.has_substyles:
+            return [style for style in self.styles['sub'] if self.pairs[style]['single_type_parametrised']]
+        elif self.pairs[self.styles['main']]['single_type_parametrised']:
+            return [self.styles['main']]
+        else:
+            return []
+        
+    def pair_string(self, style):
+        if style in ['hybrid', 'hybrid/overlay']:
+            return [style]
+        else:
+            if self.pairs[style]['kind'] in ['lj/cut', 'lj96/cut', 'coul/cut', 'coul/diel', 'soft']:
+                return [self.pairs[style]['kind'], self.pairs[style]['cutoff']]
+            elif self.pairs[style]['kind'] in ['coul/debye']:
+                return [self.pairs[style]['kind'], self.pairs[style]['kappa'], self.pairs[style]['cutoff']]
+            else:
+                raise KeyError('pair_style %s is currently not implemented.' % style)
+    
+    def pair_coef_str(self, style, atom_type1='*', atom_type2='*'):
+        data = {}
+        data['a1'] = str(atom_type1)
+        data['a2'] = str(atom_type2)
+        data['style'] = self.pairs[style]['kind']
+        data['cutoff'] = self.pairs[style]['cutoff']
+
+        coefficients = sorted([p for k,p in self.pairs[style].items() if 'coef' in k])
+        if len(coefficients) > 0:
+            data['parameters'] = ' '.join(map(str, coefficients))
+        else:
+            data['parameters'] = ''
+        if self.has_substyles:
+            format_str = 'pair_coeff {a1} {a2} {style} {parameters} {cutoff}'
+        else:
+            format_str = 'pair_coeff {a1} {a2} {parameters} {cutoff}'
+        
+        return format_str.format(**data)
