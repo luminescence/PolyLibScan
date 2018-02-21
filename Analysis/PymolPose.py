@@ -15,7 +15,7 @@ def _get_pdb_template(name):
 class PymolPose(object):
     '''Parent class of pymol Visualisation
     '''
-    atom_names = 100*['C', 'N', 'O', 'S', 'H']
+    atom_names = 200*['C', 'N', 'O', 'S', 'H']
     
     template = _get_pdb_template('pymol_polymer.tpl')
 
@@ -31,7 +31,7 @@ class PymolPose(object):
         '''
         if state not in ['start', 'end']:
             raise AttributeError("state must have value of 'start' or 'end'.")
-        type_filter = AtomFilter(sim.trajectory_order, sim.sequence, sim.particle_ids[molecule], molecule='polymer')
+        type_filter = AtomFilter(sim.trajectory_order, sim.sequence, sim.particle_ids[molecule], molecule=molecule)
         pose_data = self._create_pose_array(sim, molecule, type_filter.mask)
         for run in sim:
             np_help.copy_fields(pose_data, self.traj_data(run, state, type_filter.mask), ['x', 'y', 'z'])
@@ -46,7 +46,12 @@ class PymolPose(object):
         pose_data = np.zeros(mask.sum(), dtype=pose_list_type)
         pose_data['id'] = np.arange(1, mask.sum()+1)
         pose_data['ele'] = map(lambda x:elements[x], sim[0].coordinates()['end'][mask]['atom_type'])
-        pose_data['res_name'] = sim.sequence['monomer']
+        if molecule == 'polymer':
+            seq = sim.sequence['monomer']
+        else:
+            seq_mask = np.in1d(sim.particle_list['p_id'], sim.particle_ids['protein'])
+            seq = sim.particle_list['name'][seq_mask]
+        pose_data['res_name'] = seq
         return pose_data
 
     def traj_data(self, run, state, mask):
@@ -141,14 +146,14 @@ class Run(PymolPose):
         Each yield (run) the coordinates of the polymer are updated, while the constant
         information is left unchanged
         '''
-        type_filter = AtomFilter(sim.trajectory_order, sim.sequence, sim.particle_ids[molecule], molecule='polymer')
+        type_filter = AtomFilter(sim.trajectory_order, sim.sequence, sim.particle_ids[molecule], molecule=molecule)
         pose_data = self._create_pose_array(sim, molecule, type_filter.mask)
         if state in ['start', 'end']:
             for run in [sim[self.run.Id]]:
                 np_help.copy_fields(pose_data, self.traj_data(run, state, type_filter.mask), ['x','y', 'z'])
                 yield pose_data
         elif state == 'full':
-            for step_data in self.run.trajectory(molecule='polymer'):
+            for step_data in self.run.trajectory(molecule=molecule):
                 pose_data['x'] = step_data['xyz'][:,0]
                 pose_data['y'] = step_data['xyz'][:,1]
                 pose_data['z'] = step_data['xyz'][:,2]
