@@ -52,7 +52,7 @@ class Project(object):
         if self.experimental_data is not None:
             c_min = results['property'].min()
             c_max = results['property'].max()
-            cm = plt.cm.get_cmap('autumn')
+            cm = plt.cm.get_cmap('bwr')
             non_inhib = results[results.color_by_inhibition=='r']
             ax.scatter(non_inhib['dist_mean'], non_inhib['energy_mean'], edgecolor='k', c=non_inhib['property'],
                        vmin=c_min, vmax=c_max, s=100, marker='o', cmap=cm)
