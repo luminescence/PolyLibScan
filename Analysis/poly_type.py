@@ -143,14 +143,29 @@ class PolymerTypeSims(plotting.PolymerTypeSims, bayes.PolymerTypeSims):
         '''
         ChargeAverage = col.namedtuple('ChargeAverage', 'monomer, sequence')
 
-        per_monomer = sum((self.monomer_charge_for_all_beads(name) * weight
+        per_monomer = sum((self.monomer_property_for_all_beads(name, 'charge') * weight
                            for name,weight in self.weights.items())) / sum(self.weights.values())
         sequence = sum((sim.charge for sim in self.sims))/len(self.sims)
 
         return ChargeAverage(monomer=per_monomer, sequence=sequence)
 
-    def monomer_charge_for_all_beads(self, name):
+    def hydrophobic_average(self):
+        '''Return the average charges of the polymer type.
+        "monomer" gives the average charge per monomer.
+        "sequence" returns the average charge from the generates sequences
+        '''
+        HPAverage = col.namedtuple('HydrophobicAverage', 'monomer, sequence')
+
+        per_monomer = sum((self.monomer_property_for_all_beads(name, 'hydrophobicity') * weight
+                           for name,weight in self.weights.items())) / sum(self.weights.values())
+        sequence = sum((sim.hydrophobicity for sim in self.sims))/len(self.sims)
+
+        return HPAverage(monomer=per_monomer, sequence=sequence)        
+
+    def monomer_property_for_all_beads(self, name, property_):
+        '''Sum up all the charges from all beads of a monomer. 
+        '''
         monomer_charge = 0
         for beads in self.project.parameters['Atoms'][name].keys():
-            monomer_charge += self.project.parameters['Atoms'][name][beads]['charge']
+            monomer_charge += self.project.parameters['Atoms'][name][beads][property_]
         return monomer_charge

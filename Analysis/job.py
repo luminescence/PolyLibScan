@@ -42,6 +42,7 @@ class Job(bayes.Job):
         self._runs = self._read_runs(with_pymol=with_pymol)
         self.particle_ids = self._get_particle_ids()
         self._charge = None
+        self._hydrophobicity = None
         self._parse.close()
         self._distance_frequency = None
         self._energy_distance_distribution = None
@@ -84,12 +85,28 @@ class Job(bayes.Job):
 
         return p_type_ids
 
-    def charge():
-        doc = "The charge property."
+    def hydrophobicity():
+        doc = "The total hydrophobicity."
         def fget(self):
             if self.project.parameters:
-                if not self._charge:
-                    self._charge = self._calculate_polymer_charge()
+                if self._hydrophobicity is None:
+                    self._hydrophobicity = self._calculate_polymer_property('hydrophobicity')
+                return self._hydrophobicity
+            else:
+                raise AttributeError('Set parameters by path or dict.')
+        def fset(self, value):
+            self._hydrophobicity = value
+        def fdel(self):
+            del self._hydrophobicity
+        return locals()
+    hydrophobicity = property(**hydrophobicity())
+
+    def charge():
+        doc = "The total charge."
+        def fget(self):
+            if self.project.parameters:
+                if self._charge is None:
+                    self._charge = self._calculate_polymer_property('charge')
                 return self._charge
             else:
                 raise AttributeError('Set parameters by path or dict.')
@@ -100,11 +117,11 @@ class Job(bayes.Job):
         return locals()
     charge = property(**charge())
 
-    def _calculate_polymer_charge(self):
+    def _calculate_polymer_property(self, property_):
         total_charge = 0
         for monomer in self.sequence['monomer']:
             p_name, sub_name = monomer.split('_')
-            total_charge += self.project.parameters['Atoms'][p_name][sub_name]['charge']
+            total_charge += self.project.parameters['Atoms'][p_name][sub_name][property_]
         return total_charge
 
     def _read_runs(self, with_pymol=True):
