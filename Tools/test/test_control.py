@@ -13,7 +13,8 @@ class TestControl(ut.TestCase):
         self.parameter = {'debye_kappa': 0.5,
                           'dielectric_par': 1,
                           'time_steps': 80000,
-                          'timestep': 17}
+                          'timestep': 17,
+                          'stoichiometry': [1,1]}
 
         self.path = {'input': local_path.joinpath('data', 'jobs', 'abcd', 'input').as_posix(),
                      'output': local_path.joinpath('data', 'jobs', 'abcd', 'output').as_posix(),
@@ -27,7 +28,7 @@ class TestControl(ut.TestCase):
             self.parametrisation = yaml.load(f)
 
     def setUp(self):
-        self.controller = LmpController(self.Id, self.parameter, self.path, self.parametrisation)
+        self.controller = LmpController(self.Id, self.parameter, self.path, self.parametrisation, fifos={})
 
     def tearDown(self):
         self.controller.instance.close()
