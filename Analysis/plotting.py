@@ -1,5 +1,6 @@
 from matplotlib.artist import setp
 import matplotlib.patches as mpatches
+import matplotlib.lines as mlines
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
@@ -10,7 +11,7 @@ import numerics as num_
 class Project(object):
 
     def scatter_plot(self, subset=None, with_errors=False, with_labels=False, with_crossvalidation=False, 
-                           confidence_interval=0.95, ax=None, save_path=None, min_dist_to_ac=10,
+                           confidence_interval=0.95, ax=None, save_path=None, min_dist_to_ac=10, property_='charge',
                            ignore_experiment=False):
         '''create a scatter plot with the probability
         of binding (x-axis) and the mean strength of binding 
@@ -38,6 +39,7 @@ class Project(object):
                                      with_errors=with_errors, 
                                      with_labels=with_labels, 
                                      with_crossvalidation=with_crossvalidation, 
+                                     property_=property_,
                                      confidence_interval=confidence_interval, 
                                      min_dist_to_ac=min_dist_to_ac,
                                      ignore_experiment=ignore_experiment)
@@ -48,25 +50,46 @@ class Project(object):
             error = 0.0
 
         if self.experimental_data is not None:
-            results.plot(kind='scatter', x='dist_mean', y='energy_mean', alpha=0.7,
-                         ax=ax, c=results.dropna()['color_by_inhibition'], s=100)
+            c_min = results['property'].min()
+            c_max = results['property'].max()
+            cm = plt.cm.get_cmap('autumn')
+            non_inhib = results[results.color_by_inhibition=='r']
+            ax.scatter(non_inhib['dist_mean'], non_inhib['energy_mean'], edgecolor='k', c=non_inhib['property'],
+                       vmin=c_min, vmax=c_max, s=100, marker='o', cmap=cm)
+            inhibitors = results[results.color_by_inhibition=='b']
+            plot = ax.scatter(inhibitors['dist_mean'], inhibitors['energy_mean'], edgecolor='k', c=inhibitors['property'],
+                       vmin=c_min, vmax=c_max, s=100, marker='s', cmap=cm)
+
+            if property_:
+                ax.figure.colorbar(plot)
+                cbar = ax.figure.axes[1]
+                cbar.axes.get_yaxis().labelpad = 20
+                cbar.axes.set_ylabel(property_, rotation=270, fontsize=25)
+            
+            legend_items = [mlines.Line2D([], [], markeredgecolor='k', color='w', marker='s', linestyle='None', markersize=10,
+                                             label='inhibiting')]
+            legend_items.append(mlines.Line2D([], [], markeredgecolor='k', color='w', marker='o', linestyle='None', markersize=10,
+                                             label='not inhibiting'))
+
             if with_errors:
                 ax.errorbar(results['dist_mean'] ,results['energy_mean'],
                             xerr=[results['dist_min_error'], results['dist_max_error']], 
                             yerr=[results['energy_min_error'], results['energy_max_error']], 
                             capsize=6, fmt=' ', color='grey', zorder=-1)
-            legend_items = [mpatches.Patch(color='red', label='not inhibiting')]
-            legend_items.append(mpatches.Patch(color='blue', label='inhibiting'))
-
             if with_crossvalidation:
                 classification = results['color_by_inhibition'].apply(lambda x:x=='b')
                 roc_auc_score = self._roc_auc(classification, results['probabilities'])
                 kappa = self._kappa(classification, results['model_predictions'])
                 # plotting black dot on false predictions
                 results[~results['true_predictions']].plot(kind='scatter', x='dist_mean', 
-                                                   y='energy_mean', ax=ax, c='black', s=40)
-                legend_items.append(mpatches.Patch(color='black', label='ROC-AUC: %.2f' % roc_auc_score))
-                legend_items.append(mpatches.Patch(color='black', label='kappa  : %.2f' % kappa))
+                                                   y='energy_mean', ax=ax, marker='x', c='k', s=30)
+                # legend_items.append(mlines.Line2D([], [], edgecolors='k', color='w', marker='x', linestyle='None',
+                #            label='not inhibiting'))
+                legend_items.append(mlines.Line2D([], [], markeredgecolor='k', color='w', marker='x', linestyle='None', markersize=10,
+                                                 label='misclassified'))
+                legend_items.append(mpatches.Patch(color='white', label='ROC-AUC: %.2f' % roc_auc_score))
+                legend_items.append(mpatches.Patch(color='white', label='kappa  : %.2f' % kappa))
+
             ax.legend(handles=legend_items, fontsize=20, loc='best')
         else:
             results.plot(kind='scatter', x='dist_mean', y='energy_mean', alpha=0.7, 

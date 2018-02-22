@@ -183,7 +183,8 @@ class Project(plotting.Project, bayes.Project):
     parameters = property(**parameters())
 
     def _scatter_data(self, subset=None, with_errors=False, with_labels=False, with_crossvalidation=False, 
-                           confidence_interval=0.95, min_dist_to_ac=10, ignore_experiment=False):
+                            property_=None, confidence_interval=0.95, min_dist_to_ac=10, 
+                            ignore_experiment=False):
         if subset:
             polymer_list = subset
             if self.experimental_data is not None:
@@ -200,6 +201,7 @@ class Project(plotting.Project, bayes.Project):
         
         distance_matrix = full_distance_matrix[full_distance_matrix<min_dist_to_ac]
         energy_matrix = full_energy_matrix[full_distance_matrix<min_dist_to_ac]
+
 
         if with_errors:
             df1 = num_.distance_with_error(distance_matrix)
@@ -223,6 +225,17 @@ class Project(plotting.Project, bayes.Project):
             results['true_predictions'] = true_predictions
             results['model_predictions'] = model_predictions
             results['probabilities'] = probabilities
+        if not property_:
+            results['property'] = 'k'
+        elif property_ == 'charge':
+            results['property'] = pd.Series(data={name: pt.charge_average().sequence 
+                                                for name,pt in self.polymer_types.iteritems()})
+        elif property_ == 'hydrophobicity':
+            results['property'] = pd.Series(data={name: pt.hydrophobic_average().sequence 
+                                                for name,pt in self.polymer_types.iteritems()})
+        else:
+            raise AttributeError("only 'charge' and 'hydrophobicity' supported as properties.")
+
         return results
 
 
