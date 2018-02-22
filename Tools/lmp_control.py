@@ -205,6 +205,8 @@ class LmpController(object):
                                      molecule='polymer',
                                      filter_specification='type')
             polymer_bead_ids = np.where(type_filter.mask == True)[0].tolist()
+            polymer_bead_ids = [x+1 for x in polymer_bead_ids]  # increment by one: LAMMPS starts counting at 1,
+                                                                # python at 0
 
             polymer_ids_lammps_list = self.convert_python_list_to_lammps_list(polymer_bead_ids, with_quotes=False)
             polymer_exclusive_groups = ['group polymer id %s' % polymer_ids_lammps_list]
