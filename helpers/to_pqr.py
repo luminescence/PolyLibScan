@@ -48,13 +48,14 @@ class to_pqr(object):
         pose_data['id'] = np.arange(1, mask.sum()+1)
         pose_data['ele'] = map(lambda x:elements[x], self.run.coordinates()['end'][mask]['atom_type'])
         mask = np.in1d(self.job.particle_list['p_id'], self.run.job.particle_ids[molecule])
-        pose_data['res_name'] = self.job.particle_list['name'][mask]
+        res_name = self.job.particle_list['name'][mask].split('_').replace('-', '')
+        pose_data['res_name'] = res_name
         pose_data['chain'] = self.job.particle_list['chain'][mask]
         pose_data['charge'] = self.job.particle_list['charge'][mask]
         pose_data['res_id'] = self.job.particle_list['res_id'][mask]
         pose_data['iCode'] = self.job.particle_list['iCode'][mask]
-        pose_data['radius'] = np.array([self.job.project.parameters['Atoms'][name.replace('_','')]['bb']['radius'] 
-                                                        for name in pose_data['res_name']])
+        pose_data['radius'] = np.array([self.job.project.parameters['Atoms'][atom_name][atom_bead]['radius'] 
+                                            for atom_name,atom_bead in self.job.particle_list['name'][mask].split('_')])
         return pose_data
 
     def pqr(self, molecule='polymer', state='end'):
