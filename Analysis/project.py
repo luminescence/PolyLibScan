@@ -14,7 +14,7 @@ import numerics as num_
 import job as job_class
 import PolyLibScan.Database.db as DB
 
-warnings.filterwarnings("ignore")
+warnings.filterwarnings("default")
 
 class Project(plotting.Project, bayes.Project):
     '''
@@ -119,7 +119,7 @@ class Project(plotting.Project, bayes.Project):
                 except DB.tb.NoSuchNodeError:
                     corrupted_databases.append(folder.name)
         if corrupted_databases:
-            print 'Corrupted databases found in jobs %s' % corrupted_databases
+            warnings.warn('Corrupted databases found in jobs %s' % corrupted_databases)
 
         polymer_types = {name: poly_type.PolymerTypeSims(self, sims, with_pymol=with_pymol) 
                               for name, sims in sims_by_type.items()}
