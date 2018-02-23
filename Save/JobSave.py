@@ -16,6 +16,8 @@ class JobSave(object):
         self.path = self._set_paths(paths)
         setup_path = self.path['root'].joinpath('config_with_setup.yml')
         self.config = cfg.JobConfig(setup_path.as_posix())
+        # use sim_path, not lmp_path for p_list to match job.setup_env
+        self.path['p_list'] = pl.Path(self.config.sim_path['root']).joinpath('particle_list.npy')
         self.parse = parser.Parser()
         self.db_path = self.path['root'].joinpath(db_name)
         if overwrite:
@@ -31,7 +33,6 @@ class JobSave(object):
                         for dir_name in ['input', 'output', 'logs', 
                                          'fifo', 'root', 'local_root']}
         path['meta'] = path['root'].joinpath('config_with_setup.yml')
-        path['p_list'] = path['root'].joinpath('particle_list.npy')
         return path
 
     def save(self):
