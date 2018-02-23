@@ -12,6 +12,7 @@ import visualize
 import poly_type
 import numerics as num_
 import job as job_class
+import PolyLibScan.Database.db as DB
 
 warnings.filterwarnings("ignore")
 
@@ -104,15 +105,22 @@ class Project(plotting.Project, bayes.Project):
 
         # sorting makes sure that the 'poly_id' stay the same during read-ins.
         job_path_list = sorted(path.glob('*'), key=lambda x:x.name)
+        corrupted_databases = []
         for folder in tqdm.tqdm(job_path_list, desc='Reading Jobs'):
             if folder.is_dir() and folder.joinpath('jobdata.h5').exists():
-                # creating job and setting polymer type id
-                job = job_class.Job(self, folder.joinpath('jobdata.h5').as_posix(), with_pymol=with_pymol)
-                poly_id = self._id_gen[job.meta['poly_name']]
-                job.Id = poly_id
-                # storing job in the two containers
-                jobs.append(job)
-                sims_by_type[job.meta['poly_name']].append(job)
+                try:
+                    # creating job and setting polymer type id
+                    job = job_class.Job(self, folder.joinpath('jobdata.h5').as_posix(), with_pymol=with_pymol)
+                    poly_id = self._id_gen[job.meta['poly_name']]
+                    job.Id = poly_id
+                    # storing job in the two containers
+                    jobs.append(job)
+                    sims_by_type[job.meta['poly_name']].append(job)
+                except DB.tb.NoSuchNodeError:
+                    corrupted_databases.append(folder.name)
+        if corrupted_databases:
+            print 'Corrupted databases found in jobs %s' % corrupted_databases
+
         polymer_types = {name: poly_type.PolymerTypeSims(self, sims, with_pymol=with_pymol) 
                               for name, sims in sims_by_type.items()}
         return jobs, polymer_types
