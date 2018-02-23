@@ -120,7 +120,7 @@ class Job(object):
         self.fifo = self._create_fifos()
 
     def save_particle_list(self, path):
-        dtype = [('xyz', np.int), ('p_id', np.int), ('name', 'S6'), 
+        dtype = [('xyz', np.int), ('p_id', np.int), ('name', 'S10'), 
                  ('chain', 'S1'), ('atom', 'S6'), ('res_id', np.int), 
                  ('iCode', 'S1'), ('charge', np.float)]
 
