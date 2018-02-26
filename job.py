@@ -117,7 +117,7 @@ class Job(object):
         self.lmp_settings['particle_ids'] = self.particle_list['p_id'].tolist()
         self.lmp_settings['override_parameters'] = self.config.lmp_parameter
 
-        if not self.lmp_settings['override_parameters']:
+        if bool(self.lmp_settings['override_parameters']):
             print('The following parameters will be overwritten:')
             print(self.lmp_settings['override_parameters'])
 
