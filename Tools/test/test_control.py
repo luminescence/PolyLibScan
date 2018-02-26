@@ -51,4 +51,4 @@ class TestControl(ut.TestCase):
         self.assertEqual(LmpController.convert_python_list_to_lammps_list(test_list, with_quotes=False), 'This is my list to test!')
 
     def test_overriding_parameters(self):
-        self.assertEqual(self.controller.parametrisation['MD_parameters'], self.parameter['override_parameters'])
+        self.assertEqual(self.controller.physical_model['MD_parameters'], self.parameter['override_parameters'])
