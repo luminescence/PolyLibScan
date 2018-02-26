@@ -3,6 +3,7 @@ import itertools as it
 import os
 import collections as col
 import numpy as np
+import warnings
 import yaml
 from lammps import lammps
 
@@ -115,11 +116,11 @@ class Job(object):
         elif number_of_proteins > 1:
             raise NotImplementedError('Multiple protein molecules are currently not supported!')
         self.lmp_settings['particle_ids'] = self.particle_list['p_id'].tolist()
-        self.lmp_settings['override_parameters'] = self.config.lmp_parameter
 
-        if bool(self.lmp_settings['override_parameters']):
-            print('The following parameters will be overwritten:')
-            print(self.lmp_settings['override_parameters'])
+        if bool(self.config.lmp_parameter):
+            warnings.warn('The following parameters in the physical model will be overwritten: %s' %
+                          self.config.lmp_parameter)
+            self.physical_model['MD_parameters'].update(self.config.lmp_parameter)
 
         # the config with added information is always saved to the root directory
         self.config.save(self.config_with_setup)

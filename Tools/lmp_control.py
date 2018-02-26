@@ -31,8 +31,6 @@ class LmpController(object):
         self.parameters = parameters
         self.paths = paths
         self.physical_model = physical_model
-        self.physical_model['MD_parameters'].update(self.parameters['override_parameters'])
-
         self.fifos = fifos
         self.stoichiometry = parameters['stoichiometry']
 
