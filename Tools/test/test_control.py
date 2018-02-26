@@ -46,5 +46,5 @@ class TestControl(ut.TestCase):
     def test_list_conversion(self):
         test_list = ['This', 'is', 'my', 'list', 'to', 'test!']
         self.assertEqual(LmpController.convert_python_list_to_lammps_list(test_list), '"This is my list to test!"')
-        self.assertEqual(LmpController.convert_python_list_to_lammps_list(test_list, with_quotes=False), 'This is my list to test!')
-
+        self.assertEqual(LmpController.convert_python_list_to_lammps_list(test_list, with_quotes=False),
+                         'This is my list to test!')
