@@ -11,9 +11,7 @@ class TestControl(ut.TestCase):
         super(TestControl, self).__init__(*args, **kwargs)
         self.Id = 0
         self.parameter = {'debye_kappa': 0.5,
-                          'dielectric_par': 1,
-                          'time_steps': 80000,
-                          'timestep': 17,
+                          'override_parameters': {'dielectric_par': 10**6, 'time_steps': 10**2, 'timestep': 10**1},
                           'stoichiometry': [1,1]}
 
         self.path = {'input': local_path.joinpath('data', 'jobs', 'abcd', 'input').as_posix(),
@@ -52,3 +50,5 @@ class TestControl(ut.TestCase):
         self.assertEqual(LmpController.convert_python_list_to_lammps_list(test_list), '"This is my list to test!"')
         self.assertEqual(LmpController.convert_python_list_to_lammps_list(test_list, with_quotes=False), 'This is my list to test!')
 
+    def test_overriding_parameters(self):
+        self.assertEqual(self.controller.parametrisation['MD_parameters'], self.parameter['override_parameters'])

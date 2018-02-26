@@ -33,7 +33,7 @@ class Job(object):
         # create_sim_list depends on the results of the previous condition
         self.sim_list = self.create_sim_list()
         with open(self.config.sim_path['config']) as f:
-            self.parametrisation = yaml.load(f)
+            self.physical_model = yaml.load(f)
 
     def read_config(self, path):
         return Tools.config.JobConfig(path)
@@ -96,24 +96,31 @@ class Job(object):
         # save particle list
         p_list_path = os.path.join(self.config.sim_path['root'], 'particle_list.npy')
         self.save_particle_list(p_list_path)
-        # Update Lammps Parameters
-        self.config.lmp_parameter['stoichiometry'] = self.config.sim_parameter['stoichiometry']
+
+        self.lmp_settings = {}
+        self.lmp_settings['stoichiometry'] = self.config.sim_parameter['stoichiometry']
         if number_of_polymers == 1:
             self.config.sim_parameter['poly_sequence'] = [monomers.type_.name for monomers in self.poly.data['monomers']]
             self.config.sim_parameter['named_sequence'] = [particle.type_.name for particle in self.poly.data['particles']]
             self.config.sim_parameter['id_sequence'] = [particle.type_.Id for particle in self.poly.data['particles']]
-            self.config.lmp_parameter['monomer_ids'] = self._get_monomer_ids()
-            self.config.lmp_parameter['poly_sequence'] = self.config.sim_parameter['id_sequence']   
+            self.lmp_settings['monomer_ids'] = self._get_monomer_ids()
+            self.lmp_settings['poly_sequence'] = self.config.sim_parameter['id_sequence']
         elif number_of_polymers > 1:
             raise NotImplementedError('Multiple polymer molecules are currently not supported!')
         if number_of_proteins == 1:
             self.config.sim_parameter['active_site'] = self.set_active_site()
-            self.config.lmp_parameter['active_site_ids'] = self.config.sim_parameter['active_site']['xyz']
-            self.config.lmp_parameter['bb_id'] = self.env.atom_type['BB_bb'].Id
-            self.config.lmp_parameter['ghost_id'] = self.env.atom_type['BB_ghost_bb'].Id
+            self.lmp_settings['active_site_ids'] = self.config.sim_parameter['active_site']['xyz']
+            self.lmp_settings['bb_id'] = self.env.atom_type['BB_bb'].Id
+            self.lmp_settings['ghost_id'] = self.env.atom_type['BB_ghost_bb'].Id
         elif number_of_proteins > 1:
             raise NotImplementedError('Multiple protein molecules are currently not supported!')
-        self.config.lmp_parameter['particle_ids'] = self.particle_list['p_id'].tolist()
+        self.lmp_settings['particle_ids'] = self.particle_list['p_id'].tolist()
+        self.lmp_settings['override_parameters'] = self.config.lmp_parameter
+
+        if not self.lmp_settings['override_parameters']:
+            print('The following parameters will be overwritten:')
+            print(self.lmp_settings['override_parameters'])
+
         # the config with added information is always saved to the root directory
         self.config.save(self.config_with_setup)
         # fifos can only be created if the monomer ids are known
@@ -170,7 +177,7 @@ class Job(object):
         for i in self.sim_list:
             self.generate_new_sim(i)
             # start next LAMMPS run
-            lmp_controller = lmp_control.LmpController(i, self.config.lmp_parameter, self.config.lmp_path, self.parametrisation, self.fifo)
+            lmp_controller = lmp_control.LmpController(i, self.lmp_settings, self.config.lmp_path, self.physical_model, self.fifo)
             lmp_controller.lmps_run()
             # report completed simulation so restarting jobs will know
             # also, it notes the machine and folder, so scattered info can be retrieved
