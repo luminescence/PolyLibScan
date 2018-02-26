@@ -163,8 +163,8 @@ class DistanceFifo(BaseFiFo):
         def list_to_formatted_string(input_list):
             return '-'.join(map(str, input_list))
 
-        monomer_id_arg = list_to_formatted_string(self.parent.config.lmp_parameter['monomer_ids'])
-        polymer_sequence_arg = list_to_formatted_string(self.parent.config.lmp_parameter['poly_sequence'])
+        monomer_id_arg = list_to_formatted_string(self.parent.lmp_settings['monomer_ids'])
+        polymer_sequence_arg = list_to_formatted_string(self.parent.lmp_settings['poly_sequence'])
         # separating arguments with " " is necessary to have them individually processed
         all_additional_arguments = '" "'.join([monomer_id_arg, polymer_sequence_arg])
         return all_additional_arguments
