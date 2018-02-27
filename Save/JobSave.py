@@ -5,7 +5,7 @@ import sys
 import tarfile
 import PolyLibScan.Tools.config as cfg
 import PolyLibScan.Database.db as DB
-from PolyLibScan.helpers.git import get_git_hash
+from PolyLibScan.helpers import git
 import parser
 import compute
 
@@ -134,9 +134,9 @@ class JobSave(object):
         return False
 
     def save_versions(self, lmp_version=None):
-        static_folder_path = pl.Path(self.config.sim_path['config']).parent
         versions = {'PolyLibScan': str(self.__git_hash__),
-                    'PolyLibScan_statics': get_git_hash(str(static_folder_path))}
+                    'PolyLibScan_statics': git.get_git_hash(self.config.sim_path['config']),
+                    'PolyLibScan_statics_diff': git.get_git_diff(self.config.sim_path['config'])}
         if lmp_version:
             versions['LAMMPS'] = str(lmp_version)
         else:
