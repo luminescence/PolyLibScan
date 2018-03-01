@@ -69,7 +69,7 @@ class Type(PymolDensity):
         density_obj = dc.DensityMap(self.pymol.poly_type.name, len(self.pymol.poly_type.sims), 
                                  monomer_id, margin, resolution, dx_path, norm)
         self.map_data.add(density_obj)
-        self.pymol.poly_type.project.pymol.map_data.add(density_obj)
+        self.pymol.poly_type.project.pymol.density.map_data.add(density_obj)
         return density_obj
 
 
