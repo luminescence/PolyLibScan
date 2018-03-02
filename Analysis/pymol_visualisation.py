@@ -62,6 +62,9 @@ class PymolVisProject(PymolVisualisation):
     def __init__(self, project, protein_path=None):
         self.project = project
         self._default_pdb_folder = self.project.path.joinpath('static')
+        if not protein_path:
+            pdb_name = self.project.jobs[0]._parse.misc['protein']
+            protein_path = self._default_pdb_folder.joinpath('%s.pdb' % pdb_name)
         protein_path = self._init_protein_path(
                         protein_path, 
                         search_path=self._default_pdb_folder)
@@ -77,6 +80,9 @@ class PymolVisPolyType(PymolVisualisation):
         self.sim = self.sims[0]
         first_sim_folder = self.sim.db_path.parent
         self._default_pdb_folder = self.poly_type.project.path.joinpath('static')
+        if not protein_path:
+            pdb_name = self.sim._parse.misc['protein']
+            protein_path = self._default_pdb_folder.joinpath('%s.pdb' % pdb_name)
         protein_path = self._init_protein_path(
                         protein_path, 
                         search_path=self._default_pdb_folder)
@@ -99,6 +105,9 @@ class PymolVisJob(PymolVisualisation):
     def __init__(self, job, protein_path=None):
         self.sim = job
         self._default_pdb_folder = self.sim.project.path.joinpath('static')
+        if not protein_path:
+            pdb_name = self.sim._parse.misc['protein']
+            protein_path = self._default_pdb_folder.joinpath('%s.pdb' % pdb_name)
         protein_path = self._init_protein_path(
                         protein_path, 
                         search_path=self._default_pdb_folder)
@@ -114,6 +123,9 @@ class PymolVisRun(PymolVisualisation):
         self.run = run
         self.sim = run.job
         self._default_pdb_folder = self.sim.project.path.joinpath('static')
+        if not protein_path:
+            pdb_name = self.sim._parse.misc['protein']
+            protein_path = self._default_pdb_folder.joinpath('%s.pdb' % pdb_name)
         protein_path = self._init_protein_path(
                         protein_path, 
                         search_path=self._default_pdb_folder)

@@ -76,7 +76,7 @@ class Project(plotting.Project, bayes.Project):
                 default_file_name = '*.pdb'
                 return self.search_static(default_file_name).as_posix()
             except IOError:
-                print 'pdb file not specified and no file "%s" found in static folder.' % default_file_name
+                print 'pdb file not specified and no file (or multiple files) "%s" found in static folder.' % default_file_name
                 return None
     
     def _init_experimental_data(self, file_path):
