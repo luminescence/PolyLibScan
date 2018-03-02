@@ -15,9 +15,6 @@ class TestControl(ut.TestCase):
         self.path = {'input': local_path.joinpath('data', 'jobs', 'abcd', 'input').as_posix(),
                      'output': local_path.joinpath('data', 'jobs', 'abcd', 'output').as_posix(),
                      'root': local_path.joinpath('data', 'jobs', 'abcd').as_posix(),
-                     #'script': local_path.joinpath('data', 'static', 'cluster.in').as_posix(),
-                     #'logs': local_path.joinpath('data', 'jobs', 'abcd', 'logs').as_posix(),
-                     'fifo': local_path.joinpath('data', 'fifo_2file.fifo').as_posix(),
                      'local_root': ''}
 
         with open(local_path.joinpath('data', 'parameters_hp2.yml').as_posix()) as f:
