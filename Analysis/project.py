@@ -32,12 +32,12 @@ class Project(plotting.Project, bayes.Project):
         self.path = pl.Path(project_path)
         self._id_gen = idGen.IdGen()
         self._endstate_matrix = None
+        self.protein_path = self._init_protein(protein_path)
         self.parameters = self._init_parameters(parameters)
         self._visualize = visualize.Visualize(self)
         # stores jobs in list (jobs)
         # and dict form (polymer_types); polymer_types stores jobs sorted by polymer type
         self.jobs, self.polymer_types = self.read_jobs(self.path.joinpath('jobs'), with_pymol=with_pymol)
-        self.protein_path = self._init_protein(protein_path)
         if with_pymol:
             self.pymol = pym.PymolVisProject(self, self.protein_path)
 
