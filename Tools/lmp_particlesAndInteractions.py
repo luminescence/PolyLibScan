@@ -76,7 +76,7 @@ class Bond(Interaction):
             raise Exception('Bonds must have 2 members')
 
     def __repr__(self):
-        return 'Bond | Id: %d - %s' % (self.Id, self.type_)
+        return 'Bond | Id: %d - Type: %s' % (self.Id, self.type_.name)
 
 
 class Angle(Interaction):

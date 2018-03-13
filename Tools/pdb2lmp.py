@@ -119,7 +119,7 @@ class ProteinCreator(LmpCreator, protonation_methods_bundled, surface_methods_bu
         if self._with_amino_acids:
             self.change_to_res_based(molecule)
         if self.surface_file:
-            surface_data = self.get_surface_data(self.surface_file, molecule.pdb_id)
+            surface_data = self.get_surface_data(self.surface_file, molecule.pdb_id.upper())
             self.add_surface_energies(molecule, surface_data)
         if self.protonation_file:
             protonation_data = self.get_protonation_data(self.protonation_file, molecule.pdb_id.upper())
