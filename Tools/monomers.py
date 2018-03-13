@@ -96,7 +96,7 @@ class Monomer(object):
             particles+= [partner.particles[id_] for id_ in other]
 
             dihedral = PaI.Dihedral(self.env.new_id['dihedral'], 
-                                       self.env.angle_type[type_name],
+                                       self.env.dihedral_type[type_name],
                                        particles)
             self.dihedrals.append(dihedral)
             partner.dihedrals.append(dihedral)

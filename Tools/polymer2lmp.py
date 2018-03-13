@@ -164,7 +164,6 @@ class PolymerCreator(LmpCreator):
         monomers = molecule.data['monomers']
         # 1-2 Dihedrals
         parameters = filter(lambda x: len(x)==3, molecule.type.dihedrals)
-        print 'pars:', parameters
         for current_element,next_element in zip(
                                                 monomers[0:-1], 
                                                 monomers[1:]):

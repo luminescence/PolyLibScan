@@ -55,6 +55,13 @@ Angle Coeffs
 {{ env.coefficient_string(angle) }}
 {% endfor -%}
 {%- endif %}
+{%- if writer.entry_is_needed('dihedral'): %}
+Dihedral Coeffs
+
+{% for dihedral in env.dihedral_type.values()|sort(False, False, 'Id') -%}
+{{ env.dihedral_coefficient_string(dihedral) }}
+{% endfor -%}
+{%- endif %}
 Atoms
 
 {% for particle in writer.chain_data('particles') -%}
@@ -73,5 +80,13 @@ Angles
 {% for angle in writer.chain_data('angles') -%}
 {{ '{:> 6d}{:> 4d}{:> 7d}{:> 7d}{:> 7d}'.format(angle.Id, angle.type_.Id, 
 	angle.members[0].Id, angle.members[1].Id, angle.members[2].Id) }}
+{% endfor -%}
+{%- endif %}
+{% if writer.entry_is_needed('dihedral') and writer.count_number('dihedrals') > 0 -%}
+Dihedrals
+
+{% for dihedral in writer.chain_data('dihedrals') -%}
+{{ '{:> 6d}{:> 4d}{:> 7d}{:> 7d}{:> 7d}{:> 7d}'.format(dihedral.Id, dihedral.type_.Id, 
+	dihedral.members[0].Id, dihedral.members[1].Id, dihedral.members[2].Id,dihedral.members[3].Id) }}
 {% endfor -%}
 {%- endif -%}
