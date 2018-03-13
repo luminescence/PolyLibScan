@@ -118,11 +118,14 @@ class Job(bayes.Job):
     charge = property(**charge())
 
     def _calculate_polymer_property(self, property_):
-        total_charge = 0
+        total = []
         for monomer in self.sequence['monomer']:
             p_name, sub_name = monomer.split('_')
-            total_charge += self.project.parameters['Atoms'][p_name][sub_name][property_]
-        return total_charge
+            total.append(self.project.parameters['Atoms'][p_name][sub_name][property_])
+        if property_ == 'charge':
+            return sum(total)
+        elif property_ == 'hydrophobicity':
+            return sum(filter(lambda x:x>0, total))
 
     def _read_runs(self, with_pymol=True):
         '''Reads in all runs from the database and 

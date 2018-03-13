@@ -156,8 +156,9 @@ class PolymerTypeSims(plotting.PolymerTypeSims, bayes.PolymerTypeSims):
         '''
         HPAverage = col.namedtuple('HydrophobicAverage', 'monomer, sequence')
 
-        per_monomer = sum((self.monomer_property_for_all_beads(name, 'hydrophobicity') * weight
-                           for name,weight in self.weights.items())) / sum(self.weights.values())
+        hydrophobic_values = (self.monomer_property_for_all_beads(name, 'hydrophobicity') * weight
+                                        for name,weight in self.weights.items())
+        per_monomer = sum(filter(lambda x:x>0,hydrophobic_values)) / sum(self.weights.values())
         sequence = sum((sim.hydrophobicity for sim in self.sims))/len(self.sims)
 
         return HPAverage(monomer=per_monomer, sequence=sequence)        
