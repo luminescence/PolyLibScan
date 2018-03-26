@@ -31,7 +31,7 @@ class HydrophobicParameterisation(object):
         '''Setter makes sure that the path is a PosixPath object
         '''
         if isinstance(value, basestring):
-            self._pdb_path = pl2.Path(value)
+            self._pdb_path = pl.Path(value)
         else:
             self._pdb_path = value
         self.check_pdb_path()
