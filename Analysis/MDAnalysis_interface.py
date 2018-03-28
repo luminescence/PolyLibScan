@@ -1,7 +1,9 @@
 import MDAnalysis as mda
 import os
+import numpy as np
 import pandas as pd
 import tqdm
+from scipy.spatial.distance import cdist
 
 
 class MdaRun(object):
@@ -91,6 +93,23 @@ class MdaRun(object):
             return mda_universe.select_atoms('all').radius_of_gyration()
 
         return rg_from_universe
+
+    def min_distance_between_selections(self, sel1, sel2):
+        """wrap function for universe; can't be done otherwise because self. is not defined in class"""
+
+        @self.trajectory_capturer
+        @self.temporarily_provide_xyz
+        @self.stream_trajectory_iterator
+        def min_dist_from_universe(mda_universe):
+            group_a = mda_universe.select_atoms(sel1)
+            group_b = mda_universe.select_atoms(sel2)
+
+            dist_a_b = cdist(group_a.positions, group_b.positions)
+
+            min_dist = np.min(dist_a_b)
+            return min_dist
+
+        return min_dist_from_universe
 
 
 class MdaJob(object):
