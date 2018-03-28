@@ -19,9 +19,9 @@ class Job(bayes.Job):
         self.project = project
         self.poly_type = None
         self.db_path = pl.Path(db_path)
-        if with_pymol:
-            self.pymol = pymol_visualisation.PymolVisJob(self)
         self._parse = DB.JobDataBase(self.db_path, 'r')
+        if with_pymol:
+            self.pymol = pymol_visualisation.PymolVisJob(self, protein_path=self.project.protein_path)
         self.Id = None
         self.meta = self._parse.misc
         self.lmp_parameters = {key:val for key,val in self._parse.parameter}

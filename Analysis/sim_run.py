@@ -11,7 +11,7 @@ class Run(plotting.Run):
         self._parse = self.job._parse
         self.Id = Id
         if with_pymol:
-            self.pymol = pym.PymolVisRun(self)
+            self.pymol = pym.PymolVisRun(self, protein_path=self.job.project.protein_path)
         self._distance = -1.0
         if not distance:
             self._distance = distance
