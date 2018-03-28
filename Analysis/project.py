@@ -25,7 +25,7 @@ class Project(plotting.Project, bayes.Project):
     '''
     def __init__(self, 
                  project_path, 
-                 experimental_data=None, 
+                 experimental_data=True,
                  parameters=None, 
                  protein_path=None, 
                  with_pymol=True):
@@ -80,15 +80,20 @@ class Project(plotting.Project, bayes.Project):
                 return None
     
     def _init_experimental_data(self, file_path):
-        if file_path:
-            return file_path
-        else:
+        # this is the default, need to check explicitly if it's True because a string would also be evaluated True
+        if file_path is True:
+            default_file_name = 'ic50.h5'
             try:
-                default_file_name = 'ic50.h5'
                 return self.search_static(default_file_name).as_posix()
             except IOError:
-                print 'Inhibition file not specified and no file "%s" found in static folder.' % default_file_name 
+                print 'Inhibition file not specified and no file "%s" found in static folder.' % default_file_name
                 return None
+        elif file_path is False or file_path is None:
+            return None
+        elif pl.Path(file_path).is_file():
+            return file_path
+        else:
+            raise ValueError('Input on experimental data is inconclusive!')
 
     def read_jobs(self, path, with_pymol=True):
         '''Read in database files found in folders of project folder.
@@ -139,11 +144,14 @@ class Project(plotting.Project, bayes.Project):
         def fget(self):
             return self._experimental_data
         def fset(self, value):
+            protein_name = self.jobs[0].meta['protein']
             if isinstance(value, pd.core.frame.DataFrame):
                 try:
-                    series = value.loc[:, self.jobs[0].meta['protein']]
+                    series = value.loc[:, protein_name]
                 except IndexError:
                     raise IndexError("No Jobs were found in project-folder")
+                except KeyError:
+                    raise KeyError("No experimental data for %s!" % protein_name)
             elif isinstance(value, pd.core.series.Series):
                 series = value
             elif isinstance(value, basestring):
@@ -151,9 +159,11 @@ class Project(plotting.Project, bayes.Project):
                 df = store['ic50ext_pdb']
                 store.close()
                 try:
-                    series = df.loc[:, self.jobs[0].meta['protein'].lower()]
+                    series = df.loc[:, protein_name.lower()]
                 except IndexError:
                     raise IndexError("No Jobs were found in project-folder")
+                except KeyError:
+                    raise KeyError("No experimental data for %s" % protein_name.lower())
             else:
                 self._experimental_data = None
                 return    
