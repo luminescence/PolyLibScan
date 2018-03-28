@@ -48,9 +48,17 @@ class MdaRun(object):
         monomer_types = []  # amino acids, BP, BA, ...
         bead_types = []  # bb or sc
         for x in particle_types:
-            monomer, bead = x.split('_')
-            monomer_types.append(monomer)
-            bead_types.append(bead)
+            # some monomers have NAME_bb, refering to the back bone bead
+            # amino acids don't have this appendix so we need try/except
+            try:
+                monomer, bead = x.split('_')
+            except:
+                monomer = x
+                bead = 'bb'
+            # ghost atoms are not in the trajectories so they need to be neglected
+            if monomer != 'ghost':
+                monomer_types.append(monomer)
+                bead_types.append(bead)
         weights = [atom_possibilities[mono][pos]['mass'] for mono, pos in zip(monomer_types, bead_types)]
         return weights
 
