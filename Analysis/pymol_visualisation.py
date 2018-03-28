@@ -58,12 +58,14 @@ class PymolVisualisation(object):
 
 
 class PymolVisProject(PymolVisualisation):
-    """docstring for PymolVisPolyType"""
+    """docstring for PymolVisProject"""
     def __init__(self, project, protein_path=None):
         self.project = project
+        job_example = self.project.jobs[0]
+        self.sim = job_example
         self._default_pdb_folder = self.project.path.joinpath('static')
         if not protein_path:
-            pdb_name = self.project.jobs[0]._parse.misc['protein']
+            pdb_name = job_example._parse.misc['protein']
             protein_path = self._default_pdb_folder.joinpath('%s.pdb' % pdb_name)
         protein_path = self._init_protein_path(
                         protein_path, 
