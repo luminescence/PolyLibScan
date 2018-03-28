@@ -139,11 +139,14 @@ class Project(plotting.Project, bayes.Project):
         def fget(self):
             return self._experimental_data
         def fset(self, value):
+            protein_name = self.jobs[0].meta['protein']
             if isinstance(value, pd.core.frame.DataFrame):
                 try:
-                    series = value.loc[:, self.jobs[0].meta['protein']]
+                    series = value.loc[:, protein_name]
                 except IndexError:
                     raise IndexError("No Jobs were found in project-folder")
+                except KeyError:
+                    raise KeyError("No experimental data for %s!" % protein_name)
             elif isinstance(value, pd.core.series.Series):
                 series = value
             elif isinstance(value, basestring):
@@ -151,9 +154,11 @@ class Project(plotting.Project, bayes.Project):
                 df = store['ic50ext_pdb']
                 store.close()
                 try:
-                    series = df.loc[:, self.jobs[0].meta['protein'].lower()]
+                    series = df.loc[:, protein_name.lower()]
                 except IndexError:
                     raise IndexError("No Jobs were found in project-folder")
+                except KeyError:
+                    raise KeyError("No experimental data for %s" % protein_name.lower())
             else:
                 self._experimental_data = None
                 return    
