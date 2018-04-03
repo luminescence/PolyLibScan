@@ -141,14 +141,14 @@ class Run(PymolPose):
         Each yield (run) the coordinates of the polymer are updated, while the constant
         information is left unchanged
         '''
-        type_filter = AtomFilter(sim.trajectory_order, sim.sequence, sim.particle_ids[molecule], molecule='polymer')
+        type_filter = AtomFilter(sim.trajectory_order, sim.sequence, sim.particle_ids[molecule], molecule=molecule)
         pose_data = self._create_pose_array(sim, molecule, type_filter.mask)
         if state in ['start', 'end']:
             for run in [sim[self.run.Id]]:
                 np_help.copy_fields(pose_data, self.traj_data(run, state, type_filter.mask), ['x','y', 'z'])
                 yield pose_data
         elif state == 'full':
-            for step_data in self.run.trajectory(molecule='polymer'):
+            for step_data in self.run.trajectory(molecule=molecule):
                 pose_data['x'] = step_data['xyz'][:,0]
                 pose_data['y'] = step_data['xyz'][:,1]
                 pose_data['z'] = step_data['xyz'][:,2]
