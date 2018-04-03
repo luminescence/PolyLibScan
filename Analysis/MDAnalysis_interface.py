@@ -1,5 +1,6 @@
 import MDAnalysis as mda
 import os
+import inspect
 import numpy as np
 import pandas as pd
 import tqdm
@@ -126,3 +127,7 @@ class MdaJob(object):
             all_results.append(getattr(sel_MdaRun, func)(*args, **kwargs))
 
         return pd.DataFrame(all_results).transpose()
+
+    def available_methods(self):
+        """:return a list of all methods for the first MdaRun instance. These can be used with 'func_on_all_runs'"""
+        return inspect.getmembers(self.MdaRuns[0], predicate=inspect.ismethod)
