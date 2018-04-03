@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import tqdm
 from scipy.spatial.distance import cdist
+import xarray as xr
 
 
 class MdaRun(object):
@@ -142,3 +143,35 @@ class MdaJob(object):
     def available_methods(self):
         """:return a list of all methods for the first MdaRun instance. These can be used with 'func_on_all_runs'"""
         return inspect.getmembers(self.MdaRuns[0], predicate=inspect.ismethod)
+    
+    
+class MdaProject(object):
+    
+    def __init__(self, project):
+        self.project = project
+        self.MdaJobs = [MdaJob(x) for x in self.project.jobs]
+
+        # add relevant methods to this instance
+        run_methods = self.available_methods()
+        for method in run_methods:
+            method_name = method[0]
+            if method_name[:5] == 'comp_':    # filter for relevant methods
+                setattr(self, method_name, partial(self.func_on_all_jobs, method_name))
+
+    def func_on_all_jobs(self, func, *args, **kwargs):
+        """:return pandas.DataFrame with results of func for all runs"""
+        all_results = []
+
+        for sel_MdaJob in tqdm.tqdm_notebook(self.MdaJobs):
+            all_results.append(getattr(sel_MdaJob, func)(*args, **kwargs))
+
+        return xr.concat([df.to_xarray() for df in all_results], dim="jobs")
+
+    def available_methods(self):
+        """:return a list of all partials for the first MdaJob instance. Note: they were imported with partial in jobs,
+         therefore we cannot look for methods at the project level. The partials can be used with 'func_on_all_runs'"""
+        return inspect.getmembers(self.MdaJobs[0], predicate=self.ispartial)
+
+    @staticmethod
+    def ispartial(attr):
+        return type(attr) == partial
