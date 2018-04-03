@@ -1,5 +1,6 @@
 import MDAnalysis as mda
 import os
+from functools import partial
 import inspect
 import numpy as np
 import pandas as pd
@@ -85,7 +86,10 @@ class MdaRun(object):
 
         return pd.Series(output_list)
 
-    def compute_radius_of_gyration(self):
+    # scientifically meaningful methods
+    # start with comp_
+
+    def comp_radius_of_gyration(self):
         """wrap function for universe; can't be done otherwise because self. is not defined in class"""
         @self.trajectory_capturer
         @self.temporarily_provide_xyz
@@ -95,7 +99,7 @@ class MdaRun(object):
 
         return rg_from_universe
 
-    def min_distance_between_selections(self, sel1, sel2):
+    def comp_min_distance_between_selections(self, sel1, sel2):
         """wrap function for universe; can't be done otherwise because self. is not defined in class"""
 
         @self.trajectory_capturer
@@ -118,6 +122,13 @@ class MdaJob(object):
     def __init__(self, job):
         self.job = job
         self.MdaRuns = [MdaRun(x) for x in self.job]
+
+        # add relevant methods to this instance
+        run_methods = self.available_methods()
+        for method in run_methods:
+            method_name = method[0]
+            if method_name[:5] == 'comp_':    # filter for relevant methods
+                setattr(self, method_name, partial(self.func_on_all_runs, method_name))
 
     def func_on_all_runs(self, func, *args, **kwargs):
         """:return pandas.DataFrame with results of func for all runs"""
