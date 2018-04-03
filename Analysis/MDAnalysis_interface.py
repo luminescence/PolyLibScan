@@ -98,10 +98,10 @@ class MdaRun(object):
                 yield func(mda_universe)
 
     @staticmethod
-    def trajectory_capturer(func):
-        """store everything from trajectory in pd.Series"""
+    def generator_to_series(input_generator):
+        """store everything from generator (in our case trajectory) in pd.Series"""
         output_list = []
-        for x in func:
+        for x in input_generator:
             output_list.append(x)
 
         return pd.Series(output_list)
@@ -114,7 +114,7 @@ class MdaRun(object):
         def rg_from_universe(mda_universe):
             return mda_universe.select_atoms('all').radius_of_gyration()
 
-        return self.trajectory_capturer(self.temporarily_provide_xyz(
+        return self.generator_to_series(self.temporarily_provide_xyz(
             self.stream_trajectory_iterator(rg_from_universe, snapshots=snapshots)))
 
     def comp_min_distance_between_selections(self, sel1, sel2, snapshots='all'):
@@ -129,7 +129,7 @@ class MdaRun(object):
             min_dist = np.min(dist_a_b)
             return min_dist
 
-        return self.trajectory_capturer(self.temporarily_provide_xyz(
+        return self.generator_to_series(self.temporarily_provide_xyz(
             self.stream_trajectory_iterator(min_dist_from_universe, snapshots=snapshots)))
 
 
