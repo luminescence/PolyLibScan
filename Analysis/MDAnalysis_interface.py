@@ -118,10 +118,11 @@ class MdaJob(object):
         self.job = job
         self.MdaRuns = [MdaRun(x) for x in self.job]
 
-    def func_on_all_runs(self, func):
+    def func_on_all_runs(self, func, *args, **kwargs):
+        """:return pandas.DataFrame with results of func for all runs"""
         all_results = []
 
         for sel_MdaRun in tqdm.tqdm_notebook(self.MdaRuns):
-            all_results.append(getattr(sel_MdaRun, func)())
+            all_results.append(getattr(sel_MdaRun, func)(*args, **kwargs))
 
         return pd.DataFrame(all_results).transpose()
