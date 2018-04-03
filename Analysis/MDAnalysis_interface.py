@@ -74,10 +74,28 @@ class MdaRun(object):
         self.assign_masses_in_universe(mda_universe)
         return mda_universe
 
-    def stream_trajectory_iterator(self, func):
-        for x in tqdm.tqdm_notebook(self.run.trajectory()):
-            mda_universe = self.universe_creator(x)
-            yield func(mda_universe)
+    def stream_trajectory_iterator(self, func, snapshots='all'):
+        # get trajectory info
+        timesteps_per_snapshot = dict(self.job._parse.db._load_table('/meta/trajectory', 'info'))['step_size']
+        total_no_timesteps = dict(self.job._parse.db._load_table('/meta', 'parameter'))['time_steps']
+        no_snapshots = (total_no_timesteps / timesteps_per_snapshot) + 1    # include 0th time step
+
+        if snapshots == 'all':
+            snapshots_range = range(0, no_snapshots)
+        elif type(snapshots) == int:
+            snapshots_range = [snapshots]
+        elif type(snapshots) == list or type(snapshots) == tuple:
+            snapshots_range = snapshots
+        else:
+            raise ValueError('Could not understand timesteps range given!!!')
+
+        # account for counting backwards, i.e. last timestep == -1
+        snapshots_range = [no_snapshots + x if x < 0 else x for x in snapshots_range]
+
+        for ts, x in tqdm.tqdm_notebook(enumerate(self.run.trajectory())):
+            if ts in snapshots_range:
+                mda_universe = self.universe_creator(x)
+                yield func(mda_universe)
 
     @staticmethod
     def trajectory_capturer(func):
@@ -91,22 +109,17 @@ class MdaRun(object):
     # scientifically meaningful methods
     # start with comp_
 
-    def comp_radius_of_gyration(self):
-        """wrap function for universe; can't be done otherwise because self. is not defined in class"""
-        @self.trajectory_capturer
-        @self.temporarily_provide_xyz
-        @self.stream_trajectory_iterator
+    def comp_radius_of_gyration(self, snapshots='all'):
+        """wrap function for universe"""
         def rg_from_universe(mda_universe):
             return mda_universe.select_atoms('all').radius_of_gyration()
 
-        return rg_from_universe
+        return self.trajectory_capturer(self.temporarily_provide_xyz(
+            self.stream_trajectory_iterator(rg_from_universe, snapshots=snapshots)))
 
-    def comp_min_distance_between_selections(self, sel1, sel2):
-        """wrap function for universe; can't be done otherwise because self. is not defined in class"""
+    def comp_min_distance_between_selections(self, sel1, sel2, snapshots='all'):
+        """wrap function for universe"""
 
-        @self.trajectory_capturer
-        @self.temporarily_provide_xyz
-        @self.stream_trajectory_iterator
         def min_dist_from_universe(mda_universe):
             group_a = mda_universe.select_atoms(sel1)
             group_b = mda_universe.select_atoms(sel2)
@@ -116,7 +129,8 @@ class MdaRun(object):
             min_dist = np.min(dist_a_b)
             return min_dist
 
-        return min_dist_from_universe
+        return self.trajectory_capturer(self.temporarily_provide_xyz(
+            self.stream_trajectory_iterator(min_dist_from_universe, snapshots=snapshots)))
 
 
 class MdaJob(object):
