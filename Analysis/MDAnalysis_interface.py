@@ -75,11 +75,22 @@ class MdaRun(object):
         return mda_universe
 
     def stream_trajectory_iterator(self, func, snapshots='all'):
+        snapshots_range = self.determine_snapshots_range(snapshots)
+
+        for ts, x in tqdm.tqdm_notebook(enumerate(self.run.trajectory())):
+            if ts in snapshots_range:
+                mda_universe = self.universe_creator(x)
+                yield func(mda_universe)
+
+    def determine_snapshots_range(self, snapshots):
+        """:return range of snapshots; convert multiple formats into range.
+        Note that the order of the input is lost completely!"""
         # get trajectory info
         timesteps_per_snapshot = dict(self.job._parse.db._load_table('/meta/trajectory', 'info'))['step_size']
         total_no_timesteps = dict(self.job._parse.db._load_table('/meta', 'parameter'))['time_steps']
-        no_snapshots = (total_no_timesteps / timesteps_per_snapshot) + 1    # include 0th time step
+        no_snapshots = (total_no_timesteps / timesteps_per_snapshot) + 1  # include 0th time step
 
+        # convert to range
         if snapshots == 'all':
             snapshots_range = range(0, no_snapshots)
         elif type(snapshots) == int:
@@ -87,15 +98,11 @@ class MdaRun(object):
         elif type(snapshots) == list or type(snapshots) == tuple:
             snapshots_range = snapshots
         else:
-            raise ValueError('Could not understand timesteps range given!!!')
+            raise ValueError('Could not understand snapshots given!!!')
 
         # account for counting backwards, i.e. last timestep == -1
         snapshots_range = [no_snapshots + x if x < 0 else x for x in snapshots_range]
-
-        for ts, x in tqdm.tqdm_notebook(enumerate(self.run.trajectory())):
-            if ts in snapshots_range:
-                mda_universe = self.universe_creator(x)
-                yield func(mda_universe)
+        return snapshots_range
 
     @staticmethod
     def generator_to_series(input_generator):
