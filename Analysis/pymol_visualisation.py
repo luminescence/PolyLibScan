@@ -45,6 +45,8 @@ class PymolVisualisation(object):
         self.pymol_handle.color('red', 'active_site')
 
     def set_protein_detail(self, level='cg'):
+        """Visualize the .pdb file of the protein as spheres. Note that the visualization represents the crystal
+        structure, not the conformation of the protein during the MD simulation!"""
         if not level in ['full', 'cg']:
             raise AttributeError("level must be either 'cg' or 'full'")
         protein_name = self.protein_path.name[:-4]
