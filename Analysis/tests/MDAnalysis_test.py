@@ -1,8 +1,8 @@
-import PolyLibScan.Analysis as lmp_lys
-from PolyLibScan.Analysis.MDAnalysis_interface import MdaRun
 import pathlib2 as pl
-
 import unittest as ut
+
+import PolyLibScan.Analysis as lmp_lys
+from PolyLibScan.Analysis.MDAnalysis_interface import MdaRun, MdaJob, MdaProject
 
 local_path = pl.Path(__file__).absolute().parent
 

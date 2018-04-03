@@ -1,11 +1,12 @@
-import MDAnalysis as mda
-import os
 from functools import partial
 import inspect
 import numpy as np
+import os
+
+import MDAnalysis as mda
 import pandas as pd
-import tqdm
 from scipy.spatial.distance import cdist
+import tqdm
 import xarray as xr
 
 
