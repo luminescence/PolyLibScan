@@ -7,12 +7,17 @@ import numpy as np
 import numba as nb
 import pymc as mc
 import numerics as num_
+try:
+    import adjustText as at
+    adjust_text_enabled = True
+except ImportError:
+    adjust_text_enabled = False
 
 class Project(object):
 
     def scatter_plot(self, subset=None, with_errors=False, with_labels=False, with_crossvalidation=False, 
                            confidence_interval=0.95, ax=None, save_path=None, min_dist_to_ac=10, property_='charge',
-                           ignore_experiment=False):
+                           ignore_experiment=False, label_only_misclassified=False):
         '''create a scatter plot with the probability
         of binding (x-axis) and the mean strength of binding 
         at the active site.
@@ -38,6 +43,7 @@ class Project(object):
         results = self._scatter_data(subset=subset, 
                                      with_errors=with_errors, 
                                      with_labels=with_labels, 
+                                     label_only_misclassified=label_only_misclassified,
                                      with_crossvalidation=with_crossvalidation, 
                                      property_=property_,
                                      confidence_interval=confidence_interval, 
@@ -52,7 +58,7 @@ class Project(object):
         if self.experimental_data is not None:
             c_min = results['property'].min()
             c_max = results['property'].max()
-            cm = plt.cm.get_cmap('bwr')
+            cm = plt.cm.get_cmap('bwr_r')
             non_inhib = results[results.color_by_inhibition=='r']
 
             legend_items = []
@@ -87,11 +93,10 @@ class Project(object):
                 kappa = self._kappa(classification, results['model_predictions'])
                 # plotting black x on false predictions
                 results[~results['true_predictions']].plot(kind='scatter', x='dist_mean', 
-                                                   y='energy_mean', ax=ax, marker='x', c='k', s=30)
-                # legend_items.append(mlines.Line2D([], [], edgecolors='k', color='w', marker='x', linestyle='None',
-                #            label='not inhibiting'))
-                legend_items.append(mlines.Line2D([], [], markeredgecolor='k', color='w', marker='x', linestyle='None', markersize=10,
-                                                 label='misclassified'))
+                                                   y='energy_mean', ax=ax, marker='x', c='lightgreen', s=35, linewidth=2)
+                legend_items.append(mlines.Line2D([], [], markeredgecolor='lightgreen', color='w', marker='x', 
+                                                         linewidth=3, linestyle='None', 
+                                                         markeredgewidth=3, markersize=10, label='misclassified'))
                 legend_items.append(mpatches.Patch(color='white', label='ROC-AUC: %.2f' % roc_auc_score))
                 legend_items.append(mpatches.Patch(color='white', label='kappa  : %.2f' % kappa))
 
@@ -100,7 +105,7 @@ class Project(object):
             results.plot(kind='scatter', x='dist_mean', y='energy_mean', alpha=0.7, 
                          ax=ax, s=100)
         if with_labels:
-            self._annotate(ax, results, 'dist_mean', 'energy_mean')
+            self._annotate(ax, results, 'dist_mean', 'energy_mean', only_misclassified=label_only_misclassified)
         ax.tick_params(axis='both', which='major', labelsize=18)
         ax.set_ylabel('Energy', size=25)
         ax.set_xlabel(r'Binding probability within $%d\AA$ to interface' % round(min_dist_to_ac,1), size=25)
@@ -108,11 +113,17 @@ class Project(object):
         if save_path:
             plt.savefig(save_path)
 
-    def _annotate(self, ax, df, x_name, y_name):
-        for key, val in df.iterrows():
-            ax.annotate(key, (val[x_name], val[y_name]),
-                xytext=(5,-10), textcoords='offset points',
-                family='sans-serif', fontsize=12, color='darkslategrey')
+    def _annotate(self, ax, df, x_name, y_name, only_misclassified=False):
+        if only_misclassified and 'true_predictions' in df.columns:
+            data = df[~df['true_predictions']]
+        else:
+            data =  df
+        texts = [ax.text(val[x_name], val[y_name], key, fontsize=14) 
+                                    for key, val in data.iterrows()]
+        if adjust_text_enabled:
+            at.adjust_text(texts, arrowprops=dict(arrowstyle='->', color='black'), 
+                                  expand_points=(1.2, 1.75),
+                                  force_points=0.5)
 
     def histogramm(self, min_dist_to_ac=5, ax=None, save_path=None):
         if not ax:

@@ -182,11 +182,12 @@ class Project(plotting.Project, bayes.Project):
         return locals()
     parameters = property(**parameters())
 
-    def _scatter_data(self, subset=None, with_errors=False, with_labels=False, with_crossvalidation=False, 
-                            property_=None, confidence_interval=0.95, min_dist_to_ac=10, 
-                            ignore_experiment=False):
+    def _scatter_data(self, subset=None, with_errors=False, with_labels=False, label_only_misclassified=False, 
+                            with_crossvalidation=False, property_=None, confidence_interval=0.95, 
+                            min_dist_to_ac=10, ignore_experiment=False):
         if subset:
-            polymer_list = subset
+            # in case 'subset' is a set, convert it to list. otherwise it stays the same
+            polymer_list = list(subset)
             if self.experimental_data is not None:
                 experimental = self.experimental_data[polymer_list]    
         elif (self.experimental_data is not None) and (not ignore_experiment):
