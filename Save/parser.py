@@ -87,7 +87,7 @@ class Parser(object):
                 lines = liner(f)
                 chunks = chunk_data(lines)
                 traj = np.array(list(it.chain.from_iterable([el[1] for el in chunks])))
-            except IndexError:
+            except (IndexError, ValueError):
                 raise IndexError('Faulty format found in file %s' % file_path)
         return traj
 

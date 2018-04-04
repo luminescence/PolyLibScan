@@ -33,7 +33,7 @@ def Cartesian_np(rpt):
     Output:
         xyz: numpy array [x, y, z]
 
-    In order to take advantage of serialization, an zeroed
+    In order to take advantage of serialization, a zeroed
     numpy array is added to the input in order to form a 
     ndarray that supports serialization operations.
     The zeroed vector is stripped on output.
