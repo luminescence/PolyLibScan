@@ -12,7 +12,7 @@ class TestEnvironment(ut.TestCase):
 
     def __init__(self, *args, **kwargs):
         super(TestEnvironment, self).__init__(*args, **kwargs)
-        self.cfg_path = local_path.joinpath('data', 'updated_parameters8.yml')
+        self.cfg_path = local_path.joinpath('data', 'parameters.yml')
         self.env = Environment(self.cfg_path.as_posix())
 
     def test_load_atom_types(self):
@@ -22,11 +22,10 @@ class TestEnvironment(ut.TestCase):
         self.assertEqual(self.env.atom_type['BB_bb'].Id, 1)
 
     def test_load_bond_types(self):
-        self.assertEqual(self.env.bond_type['bond1'].name, 'bond1')
-        self.assertEqual(self.env.bond_type['bond1'].Id, 1)
-        self.assertEqual(self.env.bond_type['bond1'].kind, 'harmonic')
-        self.assertEqual(self.env.bond_type['bond1'].parameters['coeffs'][0], 120)
-        self.assertEqual(self.env.bond_type['bond1'].parameters['coeffs'][1], 4.0)
+        self.assertEqual(self.env.bond_type['polymer'].name, 'polymer')
+        self.assertEqual(self.env.bond_type['polymer'].kind, 'harmonic')
+        self.assertEqual(self.env.bond_type['polymer'].parameters['coeffs'][0], 310)
+        self.assertEqual(self.env.bond_type['polymer'].parameters['coeffs'][1], 6.0)
 
     # def test_forcefield_hooks(self):
     #     env = Environment(self.cfg_path.as_posix())

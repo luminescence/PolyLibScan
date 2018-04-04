@@ -12,7 +12,7 @@ class TestProtein_Maker(ut.TestCase):
 
     def __init__(self, *args, **kwargs):
         super(TestProtein_Maker, self).__init__(*args, **kwargs)
-        self.cfg_path = local_path.joinpath('data', 'updated_parameters8.yml')
+        self.cfg_path = local_path.joinpath('data', 'parameters.yml')
         self.env = Environment(self.cfg_path.as_posix())
 
     def test_correct_path(self):
