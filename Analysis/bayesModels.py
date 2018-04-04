@@ -28,7 +28,7 @@ class Project(object):
         loo_predictions = pd.Series(index=data.index, name='predictions')
         loo_score = pd.Series(index=data.index, dtype='bool', name='score')
         loo_probabilities = pd.Series(index=data.index, name='probabilities')
-        #predictions = pd.Series(index=data.index)
+
         for idx in data.index:
             # leave one out
             logReg.fit(data.drop([idx]), classification.drop([idx]))
