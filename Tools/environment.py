@@ -102,7 +102,7 @@ class Environment(object):
 
     def load_globals(self, parameters):
         valid_keys = ['angle_style', 'atom_style', 'bond_style', 
-                      'box_margin', 'affinity_file', 'pair_style']
+                      'box_margin', 'pair_style']
         # Check if all required parameters are present
         for key in valid_keys:
             if key not in parameters.keys():

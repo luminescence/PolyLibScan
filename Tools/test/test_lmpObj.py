@@ -13,7 +13,7 @@ class TestLmpObject(ut.TestCase):
 
     def __init__(self, *args, **kwargs):
         super(TestLmpObject, self).__init__(*args, **kwargs)
-        self.cfg_path = local_path.joinpath('data', 'updated_parameters8.yml')
+        self.cfg_path = local_path.joinpath('data', 'parameters.yml')
         self.env = Environment(self.cfg_path.as_posix())
 
 
@@ -63,20 +63,20 @@ class TestLmpObject(ut.TestCase):
         p_length = np.random.randint(5,100)
         polymer = poly.PolymerCreator(self.env, ['Glu', 'BP', 'CBS'], 
                                       length=p_length, mode='random').create()
-        self.assertEqual(2*p_length, len(polymer.data['particles']))
+        self.assertEqual(p_length, len(polymer.data['particles']))
         # random length | repeating order
         p_length = np.random.randint(5,100)
         polymer = poly.PolymerCreator(self.env, ['Glu', 'BP', 'CBS'], 
                                       length=p_length).create()
-        self.assertEqual(2*p_length, len(polymer.data['particles']))
+        self.assertEqual(p_length, len(polymer.data['particles']))
         # fixed length (each occurring once) | random mode
         polymer = poly.PolymerCreator(self.env, ['Glu', 'BP', 'CBS'], 
                                       mode='random').create()
-        self.assertEqual(6, len(polymer.data['particles']))
+        self.assertEqual(3, len(polymer.data['particles']))
         # fixed length (each occurring once) | ordered composition
         polymer = poly.PolymerCreator(self.env, ['Glu', 'BP', 'CBS'], 
                                       mode='random').create()
-        self.assertEqual(6, len(polymer.data['particles']))
+        self.assertEqual(3, len(polymer.data['particles']))
 
 if __name__ == '__main__':
     ut.main(verbosity=2)
