@@ -10,29 +10,12 @@ class TestControl(ut.TestCase):
     def __init__(self, *args, **kwargs):
         super(TestControl, self).__init__(*args, **kwargs)
         self.Id = 0
-        self.parameter = {'dielectric_par': 1,
-                          'time_steps': 80000,
-                          'timestep': 17,
-                          'stoichiometry': [1,1]}
+        self.parameter = {'stoichiometry': [1,1]}
 
         self.path = {'input': local_path.joinpath('data', 'jobs', 'abcd', 'input').as_posix(),
                      'output': local_path.joinpath('data', 'jobs', 'abcd', 'output').as_posix(),
                      'root': local_path.joinpath('data', 'jobs', 'abcd').as_posix(),
-                     #'script': local_path.joinpath('data', 'static', 'cluster.in').as_posix(),
-                     #'logs': local_path.joinpath('data', 'jobs', 'abcd', 'logs').as_posix(),
-                     'fifo': local_path.joinpath('data', 'fifo_2file.fifo').as_posix(),
                      'local_root': ''}
-        self.fifos =  {'distance_fifo': {
-                            'out': 'distance_as_polymer', 
-                            'path': 'distance.fifo', 
-                            'script': local_path.joinpath('data', 'static', 'fifo_processor.py').as_posix(),
-                            'stepsize': 2000},
-                       'traj_compression': {
-                            'out': 'full_trajectory', 
-                            'path': 'traj.fifo', 
-                            'script': local_path.joinpath('data', 'static', 'fifo_traj_compression.py'),
-                            'stepsize': 2000}
-                            }
 
         with open(local_path.joinpath('data', 'parameters_hp2.yml').as_posix()) as f:
             self.parametrisation = yaml.load(f)
@@ -60,7 +43,8 @@ class TestControl(ut.TestCase):
     def test_list_conversion(self):
         test_list = ['This', 'is', 'my', 'list', 'to', 'test!']
         self.assertEqual(LmpController.convert_python_list_to_lammps_list(test_list), '"This is my list to test!"')
-        self.assertEqual(LmpController.convert_python_list_to_lammps_list(test_list, with_quotes=False), 'This is my list to test!')
+        self.assertEqual(LmpController.convert_python_list_to_lammps_list(test_list, with_quotes=False),
+                         'This is my list to test!')
 
 
 if __name__ == '__main__':

@@ -8,7 +8,7 @@ from PolyLibScan.Analysis.sim_run import AtomFilter
 class LmpController(object):
     """Initialize and control a lammps instance"""
 
-    def __init__(self, Id, parameters, paths, parameterisation, fifos, previous_instance=''):
+    def __init__(self, Id, parameters, paths, physical_model, fifos, previous_instance=''):
         '''
         Control LAMMPS simulation.
 
@@ -30,17 +30,17 @@ class LmpController(object):
         self.Id = Id
         self.parameters = parameters
         self.paths = paths
-        self.parameterisation = parameterisation
+        self.physical_model = physical_model
         self.fifos = fifos
         self.stoichiometry = parameters['stoichiometry']
-        self.pairs = PairList(self.parameterisation['globals'], self.parameterisation['Pairs'])
+        self.pairs = PairList(self.physical_model['globals'], self.physical_model['Pairs'])
 
         self.is_protein_present = (self.stoichiometry[0] > 0)
         self.is_polymer_present = (self.stoichiometry[1] > 0)
 
     def get_lmp_styles(self):
         styles = OrderedDict()
-        globals_ = self.parameterisation['globals']
+        globals_ = self.physical_model['globals']
         available_styles = filter(lambda x: x in globals_, 
             ['atom_style', 'bond_style', 'angle_style', 'dihedral_style'])
         for type_ in available_styles:
@@ -147,13 +147,13 @@ class LmpController(object):
         # one can run 80k steps n-times, though!
         if time_bug_fix:
             max_no_time_steps = 80000
-            full_runs, timesteps_left = divmod(self.parameters['time_steps'], max_no_time_steps)
+            full_runs, timesteps_left = divmod(self.physical_model['MD_parameters']['time_steps'], max_no_time_steps)
 
             for x in range(full_runs):
                 self.instance.run(max_no_time_steps)
             self.instance.run(timesteps_left)
         else:
-            self.instance.run(self.parameters['time_steps'])
+            self.instance.run(self.physical_model['MD_parameters']['time_steps'])
         # write snapshot of end-comformation
         output_file_final_conformation = self.paths['output'] + '/trajectoryE' + '%05d' % self.Id
         self.instance.command('write_dump solid xyz %s.xyz' % output_file_final_conformation)
@@ -211,9 +211,9 @@ class LmpController(object):
 
     def model_specifications(self):
         # specify the model
-        pair_coeffs = ['timestep 	%s' % self.parameters['timestep'],
-                       'dielectric %s' % self.parameters['dielectric_par']]
-        for style in self.pairs.not_single_parameterized():
+        pair_coeffs = ['timestep 	%s' % self.physical_model['MD_parameters']['timestep'],
+                       'dielectric %s' % self.physical_model['MD_parameters']['dielectric_par']]
+        for style in self.pairs.single_parameterized():
             pair_coeffs.append(self.pairs.pair_coef_str(style))
         self.execute_list_of_commands(pair_coeffs)
 

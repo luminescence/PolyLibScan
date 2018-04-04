@@ -21,7 +21,7 @@ class PolymerTypeSims(plotting.PolymerTypeSims, bayes.PolymerTypeSims):
         self.name = self.sims[0].meta['poly_name']
         self.weights = self.sims[0].weights
         if with_pymol:
-            self.pymol = pym.PymolVisPolyType(self)
+            self.pymol = pym.PymolVisPolyType(self, protein_path=self.project.protein_path)
         super(PolymerTypeSims, self).__init__()
 
     def distance_probability():

@@ -1,3 +1,4 @@
+MD_parameters: {dielectric_par: 1, time_steps: 2000, timestep: 17}
 Angles:
   peptide: {coef1: 50.0, coef2: 121.0, kind: harmonic}
   polymer: {coef1: 40.0, coef2: 109.5, kind: harmonic}

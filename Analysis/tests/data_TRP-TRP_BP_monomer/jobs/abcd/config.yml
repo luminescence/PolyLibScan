@@ -1,0 +1,26 @@
+fifo:
+  distance_fifo: {out: distance_as_polymer, path: distance.fifo, stepsize: 2000}
+  traj_compression: {out: full_trajectory, path: traj.fifo, stepsize: 2000}
+lammps_parameter: {time_steps: 4000}
+lammps_path: {config: /home/nfs_data/niklas/projects/TRP-TRP_BP_short_mono/jobs/abcd/config.yml,
+  input: /home/nfs_data/niklas/projects/TRP-TRP_BP_short_mono/jobs/abcd/input, logs: /home/nfs_data/niklas/projects/TRP-TRP_BP_short_mono/jobs/abcd/logs,
+  output: /home/nfs_data/niklas/projects/TRP-TRP_BP_short_mono/jobs/abcd/output, root: /home/nfs_data/niklas/projects/TRP-TRP_BP_short_mono/jobs/abcd}
+sim_parameter:
+  id: abcd
+  local: 1
+  monomers: [BP]
+  pH: 8.0
+  poly_length: 1
+  polymer_name: BP_monomer
+  protein: TRP-TRP
+  protein_name: trypsin
+  sampling_rate: 1
+  stoichiometry: [1, 1]
+  weights: [1]
+sim_path: {active_site: /home/nfs_data/niklas/projects/TRP-TRP_BP_short_mono/static/active_sites.h5,
+  config: /home/nfs_data/niklas/projects/TRP-TRP_BP_short_mono/static/parameters.yml,
+  ic50: /home/nfs_data/niklas/projects/TRP-TRP_BP_short_mono/static/ic50.h5, lmp_script: '',
+  local_root: /data/niklas/, project: /home/nfs_data/niklas/projects/TRP-TRP_BP_short_mono,
+  protein: /home/nfs_data/niklas/projects/TRP-TRP_BP_short_mono/static/TRP-TRP.pdb,
+  protonation_db: /home/nfs_data/niklas/projects/TRP-TRP_BP_short_mono/static/protonation.h5,
+  root: /home/nfs_data/niklas/projects/TRP-TRP_BP_short_mono/jobs/abcd, surface_db: /home/nfs_data/niklas/projects/TRP-TRP_BP_short_mono/static/hydrophobic_parameters.h5}

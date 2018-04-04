@@ -10,7 +10,10 @@ class JobConfig(PolyLibScan.helpers.config.Config2):
         self.read(self.config_path)
 
     def _copy_data(self, data):
-        self.lmp_parameter = data['lammps_parameter']
+        try:
+            self.lmp_parameter = data['lammps_parameter']
+        except:
+            self.lmp_parameter = {}
         self.lmp_path = data['lammps_path']
         self.fifo = data['fifo']
 

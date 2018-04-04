@@ -1,6 +1,7 @@
 import os
 import subprocess as sp
 import tempfile as temp
+from fifo_scripts import fifo_processor, fifo_traj_compression
 
 class BaseFiFo(object):
     '''Generic Fifo class implementing default functionality.
@@ -116,8 +117,10 @@ class FiFo(object):
     @staticmethod
     def create_from_dict(fifo_type, job, fifo_dict):
         if fifo_type == 'distance_fifo':
+            fifo_dict['script'] = fifo_processor.__file__
             return DistanceFifo.from_dict(job, fifo_dict)
         elif fifo_type == 'traj_compression':
+            fifo_dict['script'] = fifo_traj_compression.__file__
             return TrajCompressionFifo.from_dict(job, fifo_dict)
         else:
             raise NotImplementedError('this fifo based postproduction is not yet implemented.')
@@ -160,8 +163,8 @@ class DistanceFifo(BaseFiFo):
         def list_to_formatted_string(input_list):
             return '-'.join(map(str, input_list))
 
-        monomer_id_arg = list_to_formatted_string(self.parent.config.lmp_parameter['monomer_ids'])
-        polymer_sequence_arg = list_to_formatted_string(self.parent.config.lmp_parameter['poly_sequence'])
+        monomer_id_arg = list_to_formatted_string(self.parent.lmp_settings['monomer_ids'])
+        polymer_sequence_arg = list_to_formatted_string(self.parent.lmp_settings['poly_sequence'])
         # separating arguments with " " is necessary to have them individually processed
         all_additional_arguments = '" "'.join([monomer_id_arg, polymer_sequence_arg])
         return all_additional_arguments

@@ -92,9 +92,16 @@ class Parser(object):
         return traj
 
     def version(self, version_info):
-        np_format = [('program', '|S11'), ('version', '|S40')]
-        return np.array(version_info.items(), dtype=np_format)
+        """return version_info as np.array with columnwise minimal dtype"""
+        version_info_array = np.array(version_info.items())
 
+        def len_of_longest_element_per_column(column):
+            column_length = len(max(version_info_array[:, column], key=len))
+            return column_length
+
+        np_format = [('program', '|S%s' % len_of_longest_element_per_column(column=0)),
+                     ('version', '|S%s' % len_of_longest_element_per_column(column=1))]
+        return np.array(version_info.items(), dtype=np_format)
 
     def particle_list(self, path):
         '''Extract particles from list
