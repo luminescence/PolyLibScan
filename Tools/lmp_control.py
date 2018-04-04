@@ -213,7 +213,7 @@ class LmpController(object):
         # specify the model
         pair_coeffs = ['timestep 	%s' % self.parameters['timestep'],
                        'dielectric %s' % self.parameters['dielectric_par']]
-        for style in self.pairs.single_parameterized():
+        for style in self.pairs.not_single_parameterized():
             pair_coeffs.append(self.pairs.pair_coef_str(style))
         self.execute_list_of_commands(pair_coeffs)
 
@@ -284,6 +284,14 @@ class PairList(object):
         if self.has_substyles:
             return [style for style in self.styles['sub'] if self.pairs[style]['single_type_parametrised']]
         elif self.pairs[self.styles['main']]['single_type_parametrised']:
+            return [self.styles['main']]
+        else:
+            return []
+
+    def not_single_parameterized(self):
+        if self.has_substyles:
+            return [style for style in self.styles['sub'] if not self.pairs[style]['single_type_parametrised']]
+        elif not self.pairs[self.styles['main']]['single_type_parametrised']:
             return [self.styles['main']]
         else:
             return []

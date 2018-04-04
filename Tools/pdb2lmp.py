@@ -119,7 +119,7 @@ class ProteinCreator(LmpCreator, protonation_methods_bundled, surface_methods_bu
         if self._with_amino_acids:
             self.change_to_res_based(molecule)
         if self.surface_file:
-            surface_data = self.get_surface_data(self.surface_file, molecule.pdb_id)
+            surface_data = self.get_surface_data(self.surface_file, molecule.pdb_id.upper())
             self.add_surface_energies(molecule, surface_data)
         if self.protonation_file:
             protonation_data = self.get_protonation_data(self.protonation_file, molecule.pdb_id.upper())
@@ -276,10 +276,10 @@ class ProteinCreator(LmpCreator, protonation_methods_bundled, surface_methods_bu
                 if particle1.mol_id == particle2.mol_id and particle2.mol_id == particle3.mol_id:
                     angles.append(Angle(self.env.new_id['angle'], protein.env.angle_type['peptide'], 
                                          [particle1, particle2, particle3]))
-        for particle1,particle2,particle3,particle4 in it.izip(amino_acids[:-3], amino_acids[1:-2], amino_acids[2:-1], amino_acids[3:]):
-                if particle1.mol_id == particle2.mol_id and particle1.mol_id == particle3.mol_id and particle1.mol_id == particle4.mol_id:
-                    dihedrals.append(Dihedral(self.env.new_id['dihedral'], protein.env.dihedral_type['peptide'], 
-                                            [particle1, particle2, particle3, particle4]))
+        # for particle1,particle2,particle3,particle4 in it.izip(amino_acids[:-3], amino_acids[1:-2], amino_acids[2:-1], amino_acids[3:]):
+        #         if particle1.mol_id == particle2.mol_id and particle1.mol_id == particle3.mol_id and particle1.mol_id == particle4.mol_id:
+        #             dihedrals.append(Dihedral(self.env.new_id['dihedral'], protein.env.dihedral_type['peptide'], 
+        #                                     [particle1, particle2, particle3, particle4]))
         
         protein.data['bonds']     += bonds
         protein.data['angles']    +=  angles
