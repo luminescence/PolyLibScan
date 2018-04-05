@@ -58,7 +58,7 @@ class MdaRun(object):
             # amino acids don't have this appendix so we need try/except
             try:
                 monomer, bead = x.split('_')
-            except:
+            except ValueError:
                 monomer = x
                 bead = 'bb'
             # ghost atoms are not in the trajectories so they need to be neglected
@@ -111,7 +111,9 @@ class MdaRun(object):
         for x in input_generator:
             output_list.append(x)
 
-        return pd.Series(output_list)
+        series = pd.Series(output_list)
+        series.index.rename('snapshots', inplace=True)
+        return series
 
     # scientifically meaningful methods
     # start with comp_
@@ -160,7 +162,9 @@ class MdaJob(object):
         for sel_MdaRun in tqdm.tqdm_notebook(self.MdaRuns):
             all_results.append(getattr(sel_MdaRun, func)(*args, **kwargs))
 
-        return pd.DataFrame(all_results).transpose()
+        dataframe = pd.DataFrame(all_results).transpose()
+        dataframe.columns.rename('runs', inplace=True)
+        return dataframe
 
     def available_methods(self):
         """:return a list of all methods for the first MdaRun instance. These can be used with 'func_on_all_runs'"""
@@ -181,13 +185,19 @@ class MdaProject(object):
                 setattr(self, method_name, partial(self.func_on_all_jobs, method_name))
 
     def func_on_all_jobs(self, func, *args, **kwargs):
-        """:return pandas.DataFrame with results of func for all runs"""
+        """:return xarray.DataArray with results of func for all jobs"""
         all_results = []
 
         for sel_MdaJob in tqdm.tqdm_notebook(self.MdaJobs):
             all_results.append(getattr(sel_MdaJob, func)(*args, **kwargs))
 
-        return xr.concat([df.to_xarray() for df in all_results], dim="jobs")
+        dataarray_list = [df.to_xarray().to_array() for df in all_results]
+        dataarray = xr.concat(dataarray_list, dim="jobs")
+        # Unfortunately, 'runs' are called 'variable' Although columns are named properly in DataFrame. Rename it!
+        dataarray = dataarray.rename({'variable': 'runs'})
+        # Add coordinates for readability
+        dataarray.coords["jobs"] = range(len(self.MdaJobs))
+        return dataarray
 
     def available_methods(self):
         """:return a list of all partials for the first MdaJob instance. Note: they were imported with partial in jobs,

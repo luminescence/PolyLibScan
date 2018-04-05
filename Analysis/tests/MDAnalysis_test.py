@@ -1,6 +1,8 @@
 import pathlib2 as pl
 import unittest as ut
 
+import xarray as xr
+
 import PolyLibScan.Analysis as lmp_lys
 from PolyLibScan.Analysis.MDAnalysis_interface import MdaRun, MdaJob, MdaProject
 
@@ -60,6 +62,17 @@ class TestMdaInterface(ut.TestCase):
             if hierarchy_lvl == 2:
                 self.assertEqual(float(run_distance[0][0][2]), float(end_distance[0][0]))
                 self.assertEqual(float(run_distance[0][0][0]), float(start_distance[0][0]))
+
+    def test_naming(self):
+        dataarray = self.mda_project.comp_min_distance_between_selections(self.sel1, self.sel2)
+        self.assertEqual(dataarray.dims, ('jobs', 'runs', 'snapshots'))
+        self.assertEqual(len(dataarray.jobs), 1)
+        self.assertEqual(len(dataarray.runs), 1)
+        self.assertEqual(len(dataarray.snapshots), 3)
+
+    def test_structure(self):
+        dataarray = self.mda_project.comp_min_distance_between_selections(self.sel1, self.sel2)
+        self.assertEqual(type(dataarray), xr.DataArray)
 
 
 if __name__ == '__main__':
