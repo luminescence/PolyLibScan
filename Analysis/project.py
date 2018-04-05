@@ -1,4 +1,3 @@
-import tqdm
 import pathlib2 as pl
 import pandas as pd
 import collections as col
@@ -12,6 +11,7 @@ import poly_type
 import numerics as num_
 import job as job_class
 import PolyLibScan.Database.db as DB
+from PolyLibScan.helpers.jupyter_compatibility import agnostic_tqdm
 
 warnings.filterwarnings("default")
 
@@ -109,7 +109,7 @@ class Project(plotting.Project, bayes.Project):
         # sorting makes sure that the 'poly_id' stay the same during read-ins.
         job_path_list = sorted(path.glob('*'), key=lambda x:x.name)
         corrupted_databases = []
-        for folder in tqdm.tqdm(job_path_list, desc='Reading Jobs'):
+        for folder in agnostic_tqdm(job_path_list, desc='Reading Jobs'):
             if folder.is_dir() and folder.joinpath('jobdata.h5').exists():
                 try:
                     # creating job and setting polymer type id
@@ -274,6 +274,6 @@ class Project(plotting.Project, bayes.Project):
         from all simulations.
         '''
         complete_df = pd.concat([p_type.data_frame() 
-            for p_type in tqdm.tqdm(self.polymer_types.values(), 
+            for p_type in agnostic_tqdm(self.polymer_types.values(),
                                     desc='Creating endstate Dataframe')], axis=1)
         return complete_df
