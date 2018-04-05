@@ -1,9 +1,11 @@
 import pymc as mc
-import tqdm
 import pandas as pd
 import numpy as np
 from sklearn import linear_model, metrics
 from sklearn.preprocessing import StandardScaler
+
+from PolyLibScan.helpers.jupyter_compatibility import agnostic_tqdm
+
 
 class Project(object):
 
@@ -13,7 +15,7 @@ class Project(object):
 
     def bayes_sampling(self, sampling_rate=1000, burn_in=1000):
         self.mcmc = {}
-        for p_type in tqdm.tqdm(self.polymer_types.values(), desc='Sampling Polymer Types:'):
+        for p_type in agnostic_tqdm(self.polymer_types.values(), desc='Sampling Polymer Types:'):
             p_type.mcmc = {}
             p_type.bayes_sample_distance(show_progress=False)
             p_type.bayes_sample_energy(show_progress=False)

@@ -6,8 +6,9 @@ import os
 import MDAnalysis as mda
 import pandas as pd
 from scipy.spatial.distance import cdist
-import tqdm
 import xarray as xr
+
+from PolyLibScan.helpers.jupyter_compatibility import agnostic_tqdm
 
 
 class MdaRun(object):
@@ -77,7 +78,7 @@ class MdaRun(object):
     def stream_trajectory_iterator(self, func, snapshots='all'):
         snapshots_range = self.determine_snapshots_range(snapshots)
 
-        for ts, x in tqdm.tqdm_notebook(enumerate(self.run.trajectory())):
+        for ts, x in agnostic_tqdm(enumerate(self.run.trajectory())):
             if ts in snapshots_range:
                 mda_universe = self.universe_creator(x)
                 yield func(mda_universe)
@@ -157,7 +158,7 @@ class MdaJob(object):
         """:return pandas.DataFrame with results of func for all runs"""
         all_results = []
 
-        for sel_MdaRun in tqdm.tqdm_notebook(self.MdaRuns):
+        for sel_MdaRun in agnostic_tqdm(self.MdaRuns):
             all_results.append(getattr(sel_MdaRun, func)(*args, **kwargs))
 
         return pd.DataFrame(all_results).transpose()
@@ -184,7 +185,7 @@ class MdaProject(object):
         """:return pandas.DataFrame with results of func for all runs"""
         all_results = []
 
-        for sel_MdaJob in tqdm.tqdm_notebook(self.MdaJobs):
+        for sel_MdaJob in agnostic_tqdm(self.MdaJobs):
             all_results.append(getattr(sel_MdaJob, func)(*args, **kwargs))
 
         return xr.concat([df.to_xarray() for df in all_results], dim="jobs")
