@@ -8,7 +8,6 @@ import plotting
 import bayesModels as bayes
 import PolyLibScan.helpers.idGenerator as idGen
 import pymol_visualisation as pym
-import visualize
 import poly_type
 import numerics as num_
 import job as job_class
@@ -35,7 +34,6 @@ class Project(plotting.Project, bayes.Project):
         self._endstate_matrix = None
         self.protein_path = self._init_protein(protein_path)
         self.parameters = self._init_parameters(parameters)
-        self._visualize = visualize.Visualize(self)
         # stores jobs in list (jobs)
         # and dict form (polymer_types); polymer_types stores jobs sorted by polymer type
         self.jobs, self.polymer_types = self.read_jobs(self.path.joinpath('jobs'), with_pymol=with_pymol)

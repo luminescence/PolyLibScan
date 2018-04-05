@@ -28,9 +28,6 @@ class Run(plotting.Run):
         return locals()
     distance = property(**distance())
 
-    def show_trajectory(self):
-        self.job.project._visualize.trajectory(self)
-
     def meta(self):
         return self.job.meta
 
