@@ -21,7 +21,7 @@ class TestControl(ut.TestCase):
             self.parametrisation = yaml.load(f)
 
     def setUp(self):
-        self.controller = LmpController(self.Id, self.parameter, self.path, self.parametrisation, self.fifos)
+        self.controller = LmpController(self.Id, self.parameter, self.path, self.parametrisation, {})
 
     def tearDown(self):
         self.controller.instance.close()
