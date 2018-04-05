@@ -213,7 +213,7 @@ class LmpController(object):
         # specify the model
         pair_coeffs = ['timestep 	%s' % self.physical_model['MD_parameters']['timestep'],
                        'dielectric %s' % self.physical_model['MD_parameters']['dielectric_par']]
-        for style in self.pairs.single_parameterized():
+        for style in self.pairs.not_single_parameterized():
             pair_coeffs.append(self.pairs.pair_coef_str(style))
         self.execute_list_of_commands(pair_coeffs)
 
