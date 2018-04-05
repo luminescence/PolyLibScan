@@ -142,7 +142,7 @@ class DensityContainer(object):
         # create largest box that surrounds all boxes
         box = np.array([boxes[0,:,:].min(axis=1),boxes[1,:,:].max(axis=1)])
         box_size = (box[1] - box[0])
-        epi_map = np.zeros(np.ceil(box_size/float(self.resolution))+1, np.int32)
+        epi_map = np.zeros((np.ceil(box_size/float(self.resolution))+1).astype('int'), np.int32)
         self.box, self.box_size, self.map = box, box_size, epi_map
 
     def _map_path(self, root):
