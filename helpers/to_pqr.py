@@ -48,14 +48,33 @@ class to_pqr(object):
         pose_data['id'] = np.arange(1, mask.sum()+1)
         pose_data['ele'] = map(lambda x:elements[x], self.run.coordinates()['end'][mask]['atom_type'])
         mask = np.in1d(self.job.particle_list['p_id'], self.run.job.particle_ids[molecule])
-        pose_data['res_name'] = self.job.particle_list['name'][mask]
+        res_name = np.array([item.split('_')[0].replace('-', '') for item in self.job.particle_list['name'][mask]])
+        pose_data['res_name'] = res_name
         pose_data['chain'] = self.job.particle_list['chain'][mask]
         pose_data['charge'] = self.job.particle_list['charge'][mask]
         pose_data['res_id'] = self.job.particle_list['res_id'][mask]
         pose_data['iCode'] = self.job.particle_list['iCode'][mask]
-        pose_data['radius'] = np.array([self.job.project.parameters['Atoms'][name.replace('_','')]['bb']['radius'] 
-                                                        for name in pose_data['res_name']])
+        pose_data['radius'] = np.array([self.job.project.parameters['Atoms'][atom_name][atom_bead]['radius'] 
+                                            for atom_name, atom_bead, in map(self.residue_name_resolve, 
+                                                                             self.job.particle_list['name'][mask])])
         return pose_data
+
+    @staticmethod
+    def residue_name_resolve(res_name):
+        parts = res_name.split('_')
+
+        if len(parts) == 2:
+            atom_name, atom_bead = parts
+            if len(atom_name) > 3:
+                atom_bead = 'bb'
+            return atom_name, atom_bead
+        if len(parts) == 1:
+            atom_name = parts[0]
+            if atom_name == 'NTA-Gl':
+                atom_name += 'u'
+            elif atom_name == 'CBS-Bo':
+                atom_name += 'c'
+            return atom_name, 'bb'
 
     def pqr(self, molecule='polymer', state='end'):
         '''Create generator of data for polymer-pdb via the pymol_polymer.tpl
@@ -68,4 +87,4 @@ class to_pqr(object):
             np_help.copy_fields(pose_data, self.run.coordinates()[state][mask], ['x','y', 'z'])
             return pose_data
         else:
-            raise AttributeError("state must have value of 'start', 'end' or 'full'.")
+            raise AttributeError("state must have value of 'start', 'end'.")

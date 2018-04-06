@@ -1,0 +1,537 @@
+Angles:
+  peptide:
+    coef1: 50.0
+    coef2: 121.0
+    kind: harmonic
+  polymer: # CT-CT-CT    40.0      109.50 ; amber:parm96
+    coef1: 40.0
+    coef2: 109.5
+    kind: harmonic
+Atoms:
+  ALA:
+    bb:
+      charge: 0
+      hydrophobicity: 0.31
+      mass: 89.0
+      radius: 2.0
+  ARG:
+    bb:
+      charge: 1
+      hydrophobicity: -0.94
+      mass: 174.0
+      radius: 2.0
+  ASN:
+    bb:
+      charge: 0
+      hydrophobicity: -0.75
+      mass: 132.0
+      radius: 2.0
+  ASP:
+    bb:
+      charge: -1
+      hydrophobicity: -0.23
+      mass: 133.0
+      radius: 2.0
+  Ani:
+    sc:
+      charge: 0
+      hydrophobicity: 1.0
+      mass: 250.3
+      radius: 1.70
+  BA:
+    sc:
+      charge: 1
+      hydrophobicity: 2.5725
+      mass: 180.22
+      radius: 1.70
+  BB:
+    bb:
+      charge: 0.0
+      hydrophobicity: 0.0
+      mass: 100.0
+      radius: 2.0
+  BB_ghost:
+    bb:
+      charge: 0.0
+      hydrophobicity: 0.0
+      interacting: false
+      mass: 1500.0
+      radius: 1.0
+  BP:
+    sc:
+      charge: -2
+      hydrophobicity: 2.51
+      mass: 351.23
+      radius: 1.70
+  Bor:
+    sc:
+      charge: 0
+      hydrophobicity: -0.52
+      mass: 238.09
+      radius: 1.70
+  C5-BP:
+    sc:
+      charge: -2
+      hydrophobicity: 3.19
+      mass: 450.36
+      radius: 1.70
+  C6-BP:
+    sc:
+      charge: -2
+      hydrophobicity: 3.5811
+      mass: 464.388
+      radius: 1.70
+  C6-CyH:
+    sc:
+      charge: 0
+      hydrophobicity: 3.29
+      mass: 270.41
+      radius: 1.70
+  C6-Sp:
+    sc:
+      charge: -1
+      hydrophobicity: 1.2904
+      mass: 174.22
+      radius: 1.70
+  CA:
+    bb:
+      charge: 2.0
+      hydrophobicity: -1.0
+      mass: 40.0
+      radius: 2.31
+  CBS:
+    sc:
+      charge: 1
+      hydrophobicity: 0.82
+      mass: 283.31
+      radius: 1.70
+  CBS-Boc:
+    sc:
+      charge: 0
+      hydrophobicity: 2.0794
+      mass: 383.42
+      radius: 1.70
+  CYS:
+    bb:
+      charge: 0
+      hydrophobicity: 0.41
+      mass: 121.0
+      radius: 2.0
+  Dan:
+    sc:
+      charge: 0
+      hydrophobicity: 3.3148
+      mass: 337.44
+      radius: 1.70
+  Dod:
+    sc:
+      charge: 0
+      hydrophobicity: 4.57
+      mass: 229.40
+      radius: 1.70
+  ED:
+    sc:
+      charge: 1
+      hydrophobicity: 0.52
+      mass: 105.16
+      radius: 1.70
+  GLN:
+    bb:
+      charge: 0
+      hydrophobicity: -0.48
+      mass: 147.0
+      radius: 2.0
+  GLU:
+    bb:
+      charge: -1
+      hydrophobicity: -0.24
+      mass: 147.0
+      radius: 2.0
+  GLY:
+    bb:
+      charge: 0
+      hydrophobicity: 0.0
+      mass: 75.0
+      radius: 2.0
+  Glu:
+    sc:
+      charge: 0
+      hydrophobicity: -2.71
+      mass: 223.22
+      radius: 1.70
+  HIS:
+    bb:
+      charge: 0
+      hydrophobicity: 0.01
+      mass: 155.0
+      radius: 2.0
+  ILE:
+    bb:
+      charge: 0
+      hydrophobicity: 0.95
+      mass: 131.0
+      radius: 2.0
+  Iso:
+    sc:
+      charge: 0
+      hydrophobicity: 0.0262
+      mass: 119.16
+      radius: 1.70
+  LEU:
+    bb:
+      charge: 0
+      hydrophobicity: 0.95
+      mass: 131.0
+      radius: 2.0
+  LYS:
+    bb:
+      charge: 1
+      hydrophobicity: -0.95
+      mass: 146.0
+      radius: 2.0
+  MET:
+    bb:
+      charge: 0
+      hydrophobicity: 0.67
+      mass: 149.0
+      radius: 2.0
+  NA:
+    bb:
+      charge: 1.0
+      hydrophobicity: -1.0
+      mass: 23.0
+      radius: 2.27
+  NTA:
+    sc:
+      charge: -2 # pK1 = 3.03, pK2 = 3.07, pK3 = 10.70 at 20 deg C | https://pubchem.ncbi.nlm.nih.gov/compound/nitrilotriacetic_acid#section=LogP
+      hydrophobicity: -0.26
+      mass: 303.28
+      radius: 1.70
+  NTA-Glu:
+    sc:
+      charge: -2 # pK1 = 3.03, pK2 = 3.07, pK3 = 10.70 at 20 deg C | https://pubchem.ncbi.nlm.nih.gov/compound/nitrilotriacetic_acid#section=LogP
+      hydrophobicity: -1.1429
+      mass: 346.31
+      radius: 1.70
+  PHE:
+    bb:
+      charge: 0
+      hydrophobicity: 0.95
+      mass: 165.0
+      radius: 2.0
+  PRO:
+    bb:
+      charge: 0
+      hydrophobicity: 0.74
+      mass: 115.0
+      radius: 2.0
+  SER:
+    bb:
+      charge: 0
+      hydrophobicity: -0.55
+      mass: 105.0
+      radius: 2.0
+  THR:
+    bb:
+      charge: 0
+      hydrophobicity: -0.29
+      mass: 119.0
+      radius: 2.0
+  TRP:
+    bb:
+      charge: 0
+      hydrophobicity: 0.95
+      mass: 204.0
+      radius: 2.0
+  TYR:
+    bb:
+      charge: 0
+      hydrophobicity: 0.83
+      mass: 181.0
+      radius: 2.0
+  VAL:
+    bb:
+      charge: 0
+      hydrophobicity: 0.85
+      mass: 117.0
+      radius: 2.0
+  ZN:
+    bb:
+      charge: 2.0
+      hydrophobicity: -1.0
+      mass: 65.4
+      radius: 1.4
+  mono:
+    bb:
+      charge: 0
+      hydrophobicity: 0.7614
+      mass: 69.0819
+      radius: 3.20334456884
+    ct:
+      charge: 0
+      hydrophobicity: 1.0   # no direct data found, but CH2 building-block of octanol
+      mass: 14.01           # sp3 aliphatic C (parm94.dat)
+      radius: 1.70          # Bondi (1964) Table XIII: Ethane
+Bonds:
+  ghost:
+    coef1: 1
+    coef2: 0.0
+    kind: harmonic
+  peptide:
+    coef1: 337
+    coef2: 3.7
+    kind: harmonic
+  polymer:
+    coef1: 310
+    coef2: 6.0
+    kind: harmonic
+Dihedrals:
+  peptide: # must be parameterized properly!
+    coef1: 0.1
+    coef2: 1
+    coef3: 3
+    kind: harmonic
+  polymer: # X -CT-CT-X    9    1.40          0.0             3.         JCC,7,(1986),230 ; amber
+    coef1: 0.155 # energy  1.4/9
+    coef2: 1     # left- or right-handed
+    coef3: 3     # periodicity
+    kind: harmonic
+Monomers:
+  Ani:
+    Positions:
+      A:
+        - 0.0
+        - 0.0
+        - 0.0
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Particles:
+      A: Ani_sc
+  BA:
+    Positions:
+      A:
+        - 0.0
+        - 0.0
+        - 0.0
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Particles:
+      A: BA_sc
+  BP:
+    Positions:
+      A:
+        - 0.0
+        - 0.0
+        - 0.0
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Particles:
+      A: BP_sc
+  Bor:
+    Positions:
+      A:
+        - 0.0
+        - 0.0
+        - 0.0
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Particles:
+      A: Bor_sc
+  C5-BP:
+    Positions:
+      A:
+        - 0.0
+        - 0.0
+        - 0.0
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Particles:
+      A: C5-BP_sc
+  C6-BP:
+    Positions:
+      A:
+        - 0.0
+        - 0.0
+        - 0.0
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Particles:
+      A: C6-BP_sc
+  C6-CyH:
+    Positions:
+      A:
+        - 0.0
+        - 0.0
+        - 0.0
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Particles:
+      A: C6-CyH_sc
+  C6-Sp:
+    Positions:
+      A:
+        - 0.0
+        - 0.0
+        - 0.0
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Particles:
+      A: C6-Sp_sc
+  CBS:
+    Positions:
+      A:
+        - 0.0
+        - 0.0
+        - 0.0
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Particles:
+      A: CBS_sc
+  CBS-Boc:
+    Positions:
+      A:
+        - 0.0
+        - 0.0
+        - 0.0
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Particles:
+      A: CBS-Boc_sc
+  Dan:
+    Positions:
+      A:
+        - 0.0
+        - 0.0
+        - 0.0
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Particles:
+      A: Dan_sc
+  Dod:
+    Positions:
+      A:
+        - 0.0
+        - 0.0
+        - 0.0
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Particles:
+      A: Dod_sc
+  ED:
+    Positions:
+      A:
+        - 0.0
+        - 0.0
+        - 0.0
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Particles:
+      A: ED_sc
+  Glu:
+    Positions:
+      A:
+        - 0.0
+        - 0.0
+        - 0.0
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Particles:
+      A: Glu_sc
+  Iso:
+    Positions:
+      A:
+        - 0.0
+        - 0.0
+        - 0.0
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Particles:
+      A: Iso_sc
+  NTA:
+    Positions:
+      A:
+        - 0.0
+        - 0.0
+        - 0.0
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Particles:
+      A: NTA_sc
+  NTA-Glu:
+    Positions:
+      A:
+        - 0.0
+        - 0.0
+        - 0.0
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Particles:
+      A: NTA-Glu_sc
+Polymers:
+  TwoBeadBackbone:
+    offset:
+      - 4.0
+      - 0.0
+      - 0.0
+    Bonds:
+      - - polymer
+        - A
+        - A
+    Angles:
+      - - polymer
+        - - A
+        - - A
+        - - A
+    Dihedrals:
+      - - polymer
+        - - A
+        - - A
+        - - A
+        - - A
+Pairs:
+  coulomb: 
+    kappa: 0.55
+    cutoff: 25
+    kind: coul/debye
+    repulsive_only: 0
+    single_type_parametrised: false
+  lj: 
+    coef1: 0.05
+    coef2: 4.0
+    cutoff: 8.0
+    kind: lj96/cut
+    repulsive_only: 1
+    single_type_parametrised: true
+  hydrophobic: 
+    coef1: -1.0
+    cutoff: 6.0
+    kind: soft
+    repulsive_only: 0
+    single_type_parametrised: true
+globals: 
+  atom_style: full
+  bond_style: harmonic
+  angle_style: harmonic
+  dihedral_style: harmonic
+  pair_style: hybrid/overlay
+  pair_substyle1: lj
+  pair_substyle2: coulomb
+  pair_substyle3: hydrophobic
+  box_margin: 50

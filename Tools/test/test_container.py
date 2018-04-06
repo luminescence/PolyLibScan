@@ -44,3 +44,6 @@ class TestContainer(ut.TestCase):
         obj1.name = 'defined_type'
         self.c.define_type('test_define', obj1)
         self.assertEqual(id(self.c['test_define']), id(obj1))
+
+if __name__ == '__main__':
+    ut.main(verbosity=2)

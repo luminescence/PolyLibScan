@@ -1,10 +1,12 @@
 import tempfile as temp
 # import moviepy.editor as mpy
 import time
-import tqdm
 import os
 from xmlrpclib import ServerProxy
 import pathlib2 as pl
+
+from PolyLibScan.helpers.jupyter_compatibility import agnostic_tqdm
+
 
 def render_contact_picture(out_path, pdb_name, pymol_handle, gif=False):
     '''Creates a series of slightly rotated pictures with pymol and 
@@ -19,7 +21,7 @@ def render_contact_picture(out_path, pdb_name, pymol_handle, gif=False):
     if gif:
         file_list = []
         folder = temp.mkdtemp()
-        for i in tqdm.tqdm(range(120)):
+        for i in agnostic_tqdm(range(120)):
             filename = '%s/pymolRotation%03d.png'% (folder, i)
             pymol_handle.do("cmd.png('%s', width=800, ray=1)" % filename )
             time.sleep(0.5)

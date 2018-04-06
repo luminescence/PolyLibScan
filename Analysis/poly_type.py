@@ -1,5 +1,4 @@
 import numpy as np
-import tqdm
 import pandas as pd
 import plotting
 import bayesModels as bayes
@@ -7,6 +6,9 @@ import concurrent.futures as concurrent
 import collections as col
 import pymol_visualisation as pym
 import numerics
+
+from PolyLibScan.helpers.jupyter_compatibility import agnostic_tqdm
+
 
 class PolymerTypeSims(plotting.PolymerTypeSims, bayes.PolymerTypeSims):
     '''Stores all simulation runs of one polymer type.
@@ -58,7 +60,7 @@ class PolymerTypeSims(plotting.PolymerTypeSims, bayes.PolymerTypeSims):
     def _calc_distance_distribution(self, sims, thread_num=2):
         dist_v = np.zeros(2000, dtype=[('count', np.int), ('energy', np.float)])
         with concurrent.ThreadPoolExecutor(max_workers=thread_num) as executor:
-            for job in tqdm.tqdm(sims, desc='Calculating distance distribution of Simulation'):
+            for job in agnostic_tqdm(sims, desc='Calculating distance distribution of Simulation'):
                 job_count = job.distance_frequency['frequency']
                 dist_v['count'][:len(job_count)] += job_count
                 dist_v['energy'][:len(job_count)] += job.energy_distance_distribution['energy']
@@ -143,14 +145,30 @@ class PolymerTypeSims(plotting.PolymerTypeSims, bayes.PolymerTypeSims):
         '''
         ChargeAverage = col.namedtuple('ChargeAverage', 'monomer, sequence')
 
-        per_monomer = sum((self.monomer_charge_for_all_beads(name) * weight
+        per_monomer = sum((self.monomer_property_for_all_beads(name, 'charge') * weight
                            for name,weight in self.weights.items())) / sum(self.weights.values())
         sequence = sum((sim.charge for sim in self.sims))/len(self.sims)
 
         return ChargeAverage(monomer=per_monomer, sequence=sequence)
 
-    def monomer_charge_for_all_beads(self, name):
+    def hydrophobic_average(self):
+        '''Return the average charges of the polymer type.
+        "monomer" gives the average charge per monomer.
+        "sequence" returns the average charge from the generates sequences
+        '''
+        HPAverage = col.namedtuple('HydrophobicAverage', 'monomer, sequence')
+
+        hydrophobic_values = (self.monomer_property_for_all_beads(name, 'hydrophobicity') * weight
+                                        for name,weight in self.weights.items())
+        per_monomer = sum(filter(lambda x:x>0,hydrophobic_values)) / sum(self.weights.values())
+        sequence = sum((sim.hydrophobicity for sim in self.sims))/len(self.sims)
+
+        return HPAverage(monomer=per_monomer, sequence=sequence)        
+
+    def monomer_property_for_all_beads(self, name, property_):
+        '''Sum up all the charges from all beads of a monomer. 
+        '''
         monomer_charge = 0
         for beads in self.project.parameters['Atoms'][name].keys():
-            monomer_charge += self.project.parameters['Atoms'][name][beads]['charge']
+            monomer_charge += self.project.parameters['Atoms'][name][beads][property_]
         return monomer_charge

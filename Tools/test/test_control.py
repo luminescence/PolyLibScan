@@ -21,7 +21,7 @@ class TestControl(ut.TestCase):
             self.parametrisation = yaml.load(f)
 
     def setUp(self):
-        self.controller = LmpController(self.Id, self.parameter, self.path, self.parametrisation, fifos={})
+        self.controller = LmpController(self.Id, self.parameter, self.path, self.parametrisation, {})
 
     def tearDown(self):
         self.controller.instance.close()
@@ -45,3 +45,7 @@ class TestControl(ut.TestCase):
         self.assertEqual(LmpController.convert_python_list_to_lammps_list(test_list), '"This is my list to test!"')
         self.assertEqual(LmpController.convert_python_list_to_lammps_list(test_list, with_quotes=False),
                          'This is my list to test!')
+
+
+if __name__ == '__main__':
+    ut.main(verbosity=2)

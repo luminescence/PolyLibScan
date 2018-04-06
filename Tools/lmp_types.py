@@ -1,12 +1,37 @@
 import numpy as np
 
+class PolymerType(object):
+    """docstring for MonomerType"""
+    def __init__(self, name, parameters):
+        super(PolymerType, self).__init__()
+        self.Id = None
+        self.name = name
+        self.offset = parameters['offset']
+        self.bonds = parameters['Bonds']
+        self.angles = parameters['Angles']
+        self.dihedrals = parameters['Dihedrals']
+
+    def __eq__(self, other):
+        if self.name == other.name and self.Id == other.Id:
+            return True
+        else:
+            return False
+
+    def __ne__(self, other):
+        if self.name != other.name or self.Id != other.Id:
+            return True
+        else:
+            return False
+
+
 class MonomerType(object):
     """docstring for MonomerType"""
     def __init__(self, name, parameters):
         super(MonomerType, self).__init__()
         self.Id = None
         self.name = name
-        self.particles = parameters['Part']
+        self.particles = parameters['Particles']
+        self.positions = parameters['Positions']
         self.bonds = parameters['Bonds']
         self.angles = parameters['Angles']
         self.dihedrals = parameters['Dihedrals']
@@ -198,7 +223,7 @@ class BondType(ArchType):
         super(BondType, self).__init__(name, kind, coeffs)
         
     def __repr__(self):
-    	repr_str  = 'Bond Type | Name: {} - Bond-Id: {:> 3d} - Kind: {} \nCoefficients: ' 
+    	repr_str  = 'Bond Type | Name: {} - Id: {:> 3d} - Kind: {} \nCoefficients: ' 
         repr_str += '{:> 2f} '*len(self.parameters['coeffs'])
         return  repr_str.format(self.name, self.Id, self.kind, *self.parameters['coeffs'])
 
@@ -208,7 +233,7 @@ class AngleType(ArchType):
         super(AngleType, self).__init__(name, kind, coeffs)
 
     def __repr__(self):
-        repr_str  = 'Angle Type | Name: {} - Bond-Id: {:> 3d} - Kind: {} \nCoefficients: ' 
+        repr_str  = 'Angle Type | Name: {} - Id: {:> 3d} - Kind: {} \nCoefficients: ' 
         repr_str += '{:> 2f} '*len(self.parameters['coeffs'])
         return  repr_str.format(self.name, self.Id, self.kind, *self.parameters['coeffs'])
 
@@ -217,9 +242,11 @@ class DihedralType(ArchType):
     
     def __init__(self, name, kind, coeffs):
         super(DihedralType, self).__init__(name, kind, coeffs)
+        self.parameters['coeffs'][1] = int(self.parameters['coeffs'][1])
+        self.parameters['coeffs'][2] = int(self.parameters['coeffs'][2])
 
     def __repr__(self):
-        repr_str  = 'Dihedral Type | Name: {} - Bond-Id: {:> 3d} - Kind: {} \nCoefficients: ' 
+        repr_str  = 'Dihedral Type | Name: {} - Id: {:> 3d} - Kind: {} \nCoefficients: ' 
         repr_str += '{:> 2f} '*len(self.parameters['coeffs'])
         return  repr_str.format(self.name, self.Id, self.kind, *self.parameters['coeffs'])
 

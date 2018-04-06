@@ -28,9 +28,6 @@ class Run(plotting.Run):
         return locals()
     distance = property(**distance())
 
-    def show_trajectory(self):
-        self.job.project._visualize.trajectory(self)
-
     def meta(self):
         return self.job.meta
 
@@ -50,18 +47,11 @@ class Run(plotting.Run):
     def trajectory(self, molecule='full'):
         particle_order = self.job.trajectory_order
         ids = self.job.particle_ids
-        if molecule == 'protein':
-            type_filter = AtomFilter(particle_order, sequence=self.job.sequence,
-                                                  monomer_id=ids['protein'], molecule=molecule)
-        elif molecule == 'polymer':
-            type_filter = AtomFilter(particle_order, sequence=self.job.sequence,
-                                                  monomer_id=ids['polymer'], molecule=molecule)
-        elif molecule == 'full':
-            all_ids = np.concatenate((ids['protein'], ids['polymer']))
-            type_filter = AtomFilter(particle_order, sequence=self.job.sequence,
-                                                  monomer_id=all_ids, molecule=molecule)
-        else:
-            raise AttributeError("molecule must be 'protein', 'polymer' or 'full'.")
+        ids['full'] = np.concatenate((ids['protein'], ids['polymer']))
+        type_filter = AtomFilter(particle_order,
+                                 sequence=self.job.sequence,
+                                 monomer_id=ids[molecule],
+                                 molecule=molecule)
         traj_iterator = self.job._parse.trajectory_load(self.Id)
 
         monomer_coords = it.ifilter(type_filter.filter_function, traj_iterator)

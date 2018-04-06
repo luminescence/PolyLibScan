@@ -1,17 +1,23 @@
 from matplotlib.artist import setp
 import matplotlib.patches as mpatches
+import matplotlib.lines as mlines
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import numba as nb
 import pymc as mc
 import numerics as num_
+try:
+    import adjustText as at
+    adjust_text_enabled = True
+except ImportError:
+    adjust_text_enabled = False
 
 class Project(object):
 
     def scatter_plot(self, subset=None, with_errors=False, with_labels=False, with_crossvalidation=False, 
-                           confidence_interval=0.95, ax=None, save_path=None, min_dist_to_ac=10,
-                           ignore_experiment=False):
+                           confidence_interval=0.95, ax=None, save_path=None, min_dist_to_ac=10, property_='charge',
+                           ignore_experiment=False, label_only_misclassified=False):
         '''create a scatter plot with the probability
         of binding (x-axis) and the mean strength of binding 
         at the active site.
@@ -37,7 +43,9 @@ class Project(object):
         results = self._scatter_data(subset=subset, 
                                      with_errors=with_errors, 
                                      with_labels=with_labels, 
+                                     label_only_misclassified=label_only_misclassified,
                                      with_crossvalidation=with_crossvalidation, 
+                                     property_=property_,
                                      confidence_interval=confidence_interval, 
                                      min_dist_to_ac=min_dist_to_ac,
                                      ignore_experiment=ignore_experiment)
@@ -48,43 +56,74 @@ class Project(object):
             error = 0.0
 
         if self.experimental_data is not None:
-            results.plot(kind='scatter', x='dist_mean', y='energy_mean', alpha=0.7,
-                         ax=ax, c=results.dropna()['color_by_inhibition'], s=100)
+            c_min = results['property'].min()
+            c_max = results['property'].max()
+            cm = plt.cm.get_cmap('bwr_r')
+            non_inhib = results[results.color_by_inhibition=='r']
+
+            legend_items = []
+            if property_:
+                ax.scatter(non_inhib['dist_mean'], non_inhib['energy_mean'], edgecolor='k', c=non_inhib['property'],
+                       vmin=c_min, vmax=c_max, s=100, marker='o', cmap=cm)
+                inhibitors = results[results.color_by_inhibition=='b']
+                plot = ax.scatter(inhibitors['dist_mean'], inhibitors['energy_mean'], edgecolor='k', c=inhibitors['property'],
+                           vmin=c_min, vmax=c_max, s=100, marker='s', cmap=cm)
+                ax.figure.colorbar(plot)
+                cbar = ax.figure.axes[1]
+                cbar.axes.get_yaxis().labelpad = 20
+                cbar.axes.set_ylabel(property_, rotation=270, fontsize=25)
+                legend_items.append(mlines.Line2D([], [], markeredgecolor='k', color='w', marker='s', linestyle='None', markersize=10,
+                                             label='inhibiting'))
+                legend_items.append(mlines.Line2D([], [], markeredgecolor='k', color='w', marker='o', linestyle='None', markersize=10,
+                                             label='not inhibiting'))
+            else:
+                results.plot(kind='scatter', x='dist_mean', y='energy_mean', alpha=0.7, 
+                         ax=ax, c=results.dropna()['color_by_inhibition'], s=100) 
+                legend_items = [mpatches.Patch(color='red', label='not inhibiting')] 
+                legend_items.append(mpatches.Patch(color='blue', label='inhibiting')) 
+
             if with_errors:
                 ax.errorbar(results['dist_mean'] ,results['energy_mean'],
                             xerr=[results['dist_min_error'], results['dist_max_error']], 
                             yerr=[results['energy_min_error'], results['energy_max_error']], 
                             capsize=6, fmt=' ', color='grey', zorder=-1)
-            legend_items = [mpatches.Patch(color='red', label='not inhibiting')]
-            legend_items.append(mpatches.Patch(color='blue', label='inhibiting'))
-
             if with_crossvalidation:
                 classification = results['color_by_inhibition'].apply(lambda x:x=='b')
                 roc_auc_score = self._roc_auc(classification, results['probabilities'])
                 kappa = self._kappa(classification, results['model_predictions'])
-                # plotting black dot on false predictions
+                # plotting black x on false predictions
                 results[~results['true_predictions']].plot(kind='scatter', x='dist_mean', 
-                                                   y='energy_mean', ax=ax, c='black', s=40)
-                legend_items.append(mpatches.Patch(color='black', label='ROC-AUC: %.2f' % roc_auc_score))
-                legend_items.append(mpatches.Patch(color='black', label='kappa  : %.2f' % kappa))
+                                                   y='energy_mean', ax=ax, marker='x', c='lightgreen', s=35, linewidth=2)
+                legend_items.append(mlines.Line2D([], [], markeredgecolor='lightgreen', color='w', marker='x', 
+                                                         linewidth=3, linestyle='None', 
+                                                         markeredgewidth=3, markersize=10, label='misclassified'))
+                legend_items.append(mpatches.Patch(color='white', label='ROC-AUC: %.2f' % roc_auc_score))
+                legend_items.append(mpatches.Patch(color='white', label='kappa  : %.2f' % kappa))
+
             ax.legend(handles=legend_items, fontsize=20, loc='best')
         else:
             results.plot(kind='scatter', x='dist_mean', y='energy_mean', alpha=0.7, 
                          ax=ax, s=100)
         if with_labels:
-            self._annotate(ax, results, 'dist_mean', 'energy_mean')
-        ax.tick_params(axis='both', which='major', labelsize=15)
+            self._annotate(ax, results, 'dist_mean', 'energy_mean', only_misclassified=label_only_misclassified)
+        ax.tick_params(axis='both', which='major', labelsize=18)
         ax.set_ylabel('Energy', size=25)
-        ax.set_xlabel(r'Binding probability within $%.2f\AA$ to active site' % round(min_dist_to_ac,1), size=25)
+        ax.set_xlabel(r'Binding probability within $%d\AA$ to interface' % round(min_dist_to_ac,1), size=25)
         ax.set_xlim([-0.2*results['dist_mean'].max(), 1.2*results['dist_mean'].max()+error])
         if save_path:
             plt.savefig(save_path)
 
-    def _annotate(self, ax, df, x_name, y_name):
-        for key, val in df.iterrows():
-            ax.annotate(key, (val[x_name], val[y_name]),
-                xytext=(5,-10), textcoords='offset points',
-                family='sans-serif', fontsize=12, color='darkslategrey')
+    def _annotate(self, ax, df, x_name, y_name, only_misclassified=False):
+        if only_misclassified and 'true_predictions' in df.columns:
+            data = df[~df['true_predictions']]
+        else:
+            data =  df
+        texts = [ax.text(val[x_name], val[y_name], key, fontsize=14) 
+                                    for key, val in data.iterrows()]
+        if adjust_text_enabled:
+            at.adjust_text(texts, arrowprops=dict(arrowstyle='->', color='black'), 
+                                  expand_points=(1.2, 1.75),
+                                  force_points=0.5)
 
     def histogramm(self, min_dist_to_ac=5, ax=None, save_path=None):
         if not ax:
@@ -122,7 +161,7 @@ class Project(object):
         energy_matrix = energy_matrix.rename(columns=col_substitutes)
         shared_columns = list(set(energy_matrix.columns) & set(experimental.index))
         p = energy_matrix.loc[:, shared_columns].boxplot(ax=ax, return_type='dict')
-        ax.set_xticks(rotation=90, size=18)
+        # ax.set_xticks(rotation=90, size=18)
         setp(p['whiskers'], linewidth=2)
         setp([item for i,item in enumerate(p['whiskers']) if experimental[shared_columns].isnull()[i/2]], color='red')
         setp([item for i,item in enumerate(p['boxes']) if experimental[shared_columns].isnull()[i]], color='red')

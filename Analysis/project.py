@@ -1,4 +1,3 @@
-import tqdm
 import pathlib2 as pl
 import pandas as pd
 import collections as col
@@ -8,12 +7,13 @@ import plotting
 import bayesModels as bayes
 import PolyLibScan.helpers.idGenerator as idGen
 import pymol_visualisation as pym
-import visualize
 import poly_type
 import numerics as num_
 import job as job_class
+import PolyLibScan.Database.db as DB
+from PolyLibScan.helpers.jupyter_compatibility import agnostic_tqdm
 
-warnings.filterwarnings("ignore")
+warnings.filterwarnings("default")
 
 class Project(plotting.Project, bayes.Project):
     '''
@@ -34,7 +34,6 @@ class Project(plotting.Project, bayes.Project):
         self._endstate_matrix = None
         self.protein_path = self._init_protein(protein_path)
         self.parameters = self._init_parameters(parameters)
-        self._visualize = visualize.Visualize(self)
         # stores jobs in list (jobs)
         # and dict form (polymer_types); polymer_types stores jobs sorted by polymer type
         self.jobs, self.polymer_types = self.read_jobs(self.path.joinpath('jobs'), with_pymol=with_pymol)
@@ -109,15 +108,22 @@ class Project(plotting.Project, bayes.Project):
 
         # sorting makes sure that the 'poly_id' stay the same during read-ins.
         job_path_list = sorted(path.glob('*'), key=lambda x:x.name)
-        for folder in tqdm.tqdm(job_path_list, desc='Reading Jobs'):
+        corrupted_databases = []
+        for folder in agnostic_tqdm(job_path_list, desc='Reading Jobs'):
             if folder.is_dir() and folder.joinpath('jobdata.h5').exists():
-                # creating job and setting polymer type id
-                job = job_class.Job(self, folder.joinpath('jobdata.h5').as_posix(), with_pymol=with_pymol)
-                poly_id = self._id_gen[job.meta['poly_name']]
-                job.Id = poly_id
-                # storing job in the two containers
-                jobs.append(job)
-                sims_by_type[job.meta['poly_name']].append(job)
+                try:
+                    # creating job and setting polymer type id
+                    job = job_class.Job(self, folder.joinpath('jobdata.h5').as_posix(), with_pymol=with_pymol)
+                    poly_id = self._id_gen[job.meta['poly_name']]
+                    job.Id = poly_id
+                    # storing job in the two containers
+                    jobs.append(job)
+                    sims_by_type[job.meta['poly_name']].append(job)
+                except DB.tb.NoSuchNodeError:
+                    corrupted_databases.append(folder.name)
+        if corrupted_databases:
+            warnings.warn('Corrupted databases found in jobs %s' % corrupted_databases)
+
         polymer_types = {name: poly_type.PolymerTypeSims(self, sims, with_pymol=with_pymol) 
                               for name, sims in sims_by_type.items()}
         return jobs, polymer_types
@@ -192,10 +198,12 @@ class Project(plotting.Project, bayes.Project):
         return locals()
     parameters = property(**parameters())
 
-    def _scatter_data(self, subset=None, with_errors=False, with_labels=False, with_crossvalidation=False, 
-                           confidence_interval=0.95, min_dist_to_ac=10, ignore_experiment=False):
+    def _scatter_data(self, subset=None, with_errors=False, with_labels=False, label_only_misclassified=False, 
+                            with_crossvalidation=False, property_=None, confidence_interval=0.95, 
+                            min_dist_to_ac=10, ignore_experiment=False):
         if subset:
-            polymer_list = subset
+            # in case 'subset' is a set, convert it to list. otherwise it stays the same
+            polymer_list = list(subset)
             if self.experimental_data is not None:
                 experimental = self.experimental_data[polymer_list]    
         elif (self.experimental_data is not None) and (not ignore_experiment):
@@ -210,6 +218,7 @@ class Project(plotting.Project, bayes.Project):
         
         distance_matrix = full_distance_matrix[full_distance_matrix<min_dist_to_ac]
         energy_matrix = full_energy_matrix[full_distance_matrix<min_dist_to_ac]
+
 
         if with_errors:
             df1 = num_.distance_with_error(distance_matrix)
@@ -233,6 +242,17 @@ class Project(plotting.Project, bayes.Project):
             results['true_predictions'] = true_predictions
             results['model_predictions'] = model_predictions
             results['probabilities'] = probabilities
+        if not property_:
+            results['property'] = 'k'
+        elif property_ == 'charge':
+            results['property'] = pd.Series(data={name: pt.charge_average().sequence 
+                                                for name,pt in self.polymer_types.iteritems()})
+        elif property_ == 'hydrophobicity':
+            results['property'] = pd.Series(data={name: pt.hydrophobic_average().sequence 
+                                                for name,pt in self.polymer_types.iteritems()})
+        else:
+            raise AttributeError("only 'charge' and 'hydrophobicity' supported as properties.")
+
         return results
 
 
@@ -254,6 +274,6 @@ class Project(plotting.Project, bayes.Project):
         from all simulations.
         '''
         complete_df = pd.concat([p_type.data_frame() 
-            for p_type in tqdm.tqdm(self.polymer_types.values(), 
+            for p_type in agnostic_tqdm(self.polymer_types.values(),
                                     desc='Creating endstate Dataframe')], axis=1)
         return complete_df

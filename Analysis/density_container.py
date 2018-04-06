@@ -1,9 +1,10 @@
 import numpy as np
-import tqdm
 import itertools as it
 import epitopsy.DXFile as dx
 import numerics as numerics
 from PolyLibScan.Analysis.sim_run import AtomFilter
+
+from PolyLibScan.helpers.jupyter_compatibility import agnostic_tqdm
 
 
 class DensityContainer(object):
@@ -142,7 +143,7 @@ class DensityContainer(object):
         # create largest box that surrounds all boxes
         box = np.array([boxes[0,:,:].min(axis=1),boxes[1,:,:].max(axis=1)])
         box_size = (box[1] - box[0])
-        epi_map = np.zeros(np.ceil(box_size/float(self.resolution))+1, np.int32)
+        epi_map = np.zeros((np.ceil(box_size/float(self.resolution))+1).astype('int'), np.int32)
         self.box, self.box_size, self.map = box, box_size, epi_map
 
     def _map_path(self, root):
@@ -196,8 +197,8 @@ class DensityContainer(object):
         '''
         self._create_empty_map()
         number_of_runs = len(self.sims) * len(self.sims[0])
-        for sim in tqdm.tqdm_notebook(self.sims, leave=False, desc='Sim:'):
-            for run in tqdm.tqdm_notebook(sim, leave=False, desc='Adding Run'):
+        for sim in agnostic_tqdm(self.sims, leave=False, desc='Sim:'):
+            for run in agnostic_tqdm(sim, leave=False, desc='Adding Run'):
                 self._add_run_to_epitopsy_map(sim, run.Id, self.monomer_id)
         self._create_normalized(norm_type=norm)
         return self.box, self.normed_map

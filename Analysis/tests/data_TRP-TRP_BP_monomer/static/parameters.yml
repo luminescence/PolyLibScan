@@ -1,0 +1,315 @@
+MD_parameters: {dielectric_par: 1, time_steps: 2000, timestep: 17}
+Angles:
+  peptide: {coef1: 50.0, coef2: 121.0, kind: harmonic}
+  polymer: {coef1: 40.0, coef2: 109.5, kind: harmonic}
+Atoms:
+  ALA: 
+    bb: {position: [0.0, 0.0, 0.0], charge: 0, hydrophobicity: 0.31, mass: 89.0, radius: 2.0}
+  ARG: 
+    bb: {position: [0.0, 0.0, 0.0], charge: 1, hydrophobicity: -0.94, mass: 174.0, radius: 2.0}
+  ASN: 
+    bb: {position: [0.0, 0.0, 0.0], charge: 0, hydrophobicity: -0.75, mass: 132.0, radius: 2.0}
+  ASP: 
+    bb: {position: [0.0, 0.0, 0.0], charge: -1, hydrophobicity: -0.23, mass: 133.0, radius: 2.0}
+  Ani: 
+    bb: {position: [0.0, 0.0, 0.0], charge: 0, hydrophobicity: 1.0, mass: 274.0, radius: 3.0}
+  BA: 
+    bb: {position: [0.0, 0.0, 0.0], charge: 1, hydrophobicity: 0.41, mass: 204.0, radius: 3.0}
+  BP: 
+    bb: {position: [0.0, 0.0, 0.0], charge: -2, hydrophobicity: 1.0, mass: 375.0, radius: 3.0}
+  Bor: 
+    bb: {position: [0.0, 0.0, 0.0], charge: 0, hydrophobicity: -0.07, mass: 262.0, radius: 3.0}
+  C5-BP: 
+    bb: {position: [0.0, 0.0, 0.0], charge: -2, hydrophobicity: 1.0, mass: 474.0, radius: 3.0}
+  C6-BP: 
+    bb: {position: [0.0, 0.0, 0.0], charge: -2, hydrophobicity: 1.0, mass: 488.0, radius: 3.0}
+  C6-CyH: 
+    bb: {position: [0.0, 0.0, 0.0], charge: 0, hydrophobicity: 1.0, mass: 294.0, radius: 3.0}
+  C6-Sp: 
+    bb: {position: [0.0, 0.0, 0.0], charge: -1, hydrophobicity: 0.36, mass: 198.0, radius: 3.0}
+  BB: 
+    bb: {position: [0.0, 0.0, 0.0], charge: 0, hydrophobicity: 0.0, mass: 100.0, radius: 2.0}
+  BB_ghost: 
+    bb: {position: [0.0, 0.0, 0.0], charge: 0, hydrophobicity: 0.0, interacting: false, mass: 1500.0, radius: 1.0}
+  CBS: 
+    bb: {position: [0.0, 0.0, 0.0], charge: 1, hydrophobicity: -0.71, mass: 307.0, radius: 3.0}
+  CBS-Boc: 
+    bb: {position: [0.0, 0.0, 0.0], charge: 0, hydrophobicity: 0.98, mass: 406.0, radius: 3.0}
+  CYS: 
+    bb: {position: [0.0, 0.0, 0.0], charge: 0, hydrophobicity: 0.41, mass: 121.0, radius: 2.0}
+  Dan: 
+    bb: {position: [0.0, 0.0, 0.0], charge: 0, hydrophobicity: 1.0, mass: 361.0, radius: 3.0}
+  Dod: 
+    bb: {position: [0.0, 0.0, 0.0], charge: 0, hydrophobicity: 1.0, mass: 253.0, radius: 3.0}
+  ED: 
+    bb: {position: [0.0, 0.0, 0.0], charge: 1, hydrophobicity: -0.6, mass: 129.0, radius: 3.0}
+  GLN: 
+    bb: {position: [0.0, 0.0, 0.0], charge: 0, hydrophobicity: -0.48, mass: 147.0, radius: 2.0}
+  GLU: 
+    bb: {position: [0.0, 0.0, 0.0], charge: -1, hydrophobicity: -0.24, mass: 147.0, radius: 2.0}
+  GLY: 
+    bb: {position: [0.0, 0.0, 0.0], charge: 0, hydrophobicity: 0.0, mass: 75.0, radius: 2.0}
+  Glu: 
+    bb: {position: [0.0, 0.0, 0.0], charge: 0, hydrophobicity: -0.98, mass: 247.0, radius: 3.0}
+  HIS: 
+    bb: {position: [0.0, 0.0, 0.0], charge: 0, hydrophobicity: 0.01, mass: 155.0, radius: 2.0}
+  ILE: 
+    bb: {position: [0.0, 0.0, 0.0], charge: 0, hydrophobicity: 0.95, mass: 131.0, radius: 2.0}
+  Iso: 
+    bb: {position: [0.0, 0.0, 0.0], charge: 0, hydrophobicity: 0.42, mass: 143.0, radius: 3.0}
+  LEU: 
+    bb: {position: [0.0, 0.0, 0.0], charge: 0, hydrophobicity: 0.95, mass: 131.0, radius: 2.0}
+  LYS: 
+    bb: {position: [0.0, 0.0, 0.0], charge: 1, hydrophobicity: -0.95, mass: 146.0, radius: 2.0}
+  MET: 
+    bb: {position: [0.0, 0.0, 0.0], charge: 0, hydrophobicity: 0.67, mass: 149.0, radius: 2.0}
+  NTA: 
+    bb: {position: [0.0, 0.0, 0.0], charge: -2, hydrophobicity: -1.0, mass: 327.0, radius: 3.0}
+  NTA-Glu: 
+    bb: {position: [0.0, 0.0, 0.0], charge: -2, hydrophobicity: -1.0, mass: 370.0, radius: 3.0}
+  PHE: 
+    bb: {position: [0.0, 0.0, 0.0], charge: 0, hydrophobicity: 0.95, mass: 165.0, radius: 2.0}
+  PRO: 
+    bb: {position: [0.0, 0.0, 0.0], charge: 0, hydrophobicity: 0.74, mass: 115.0, radius: 2.0}
+  SER: 
+    bb: {position: [0.0, 0.0, 0.0], charge: 0, hydrophobicity: -0.55, mass: 105.0, radius: 2.0}
+  THR: 
+    bb: {position: [0.0, 0.0, 0.0], charge: 0, hydrophobicity: -0.29, mass: 119.0, radius: 2.0}
+  TRP: 
+    bb: {position: [0.0, 0.0, 0.0], charge: 0, hydrophobicity: 0.95, mass: 204.0, radius: 2.0}
+  TYR: 
+    bb: {position: [0.0, 0.0, 0.0], charge: 0, hydrophobicity: 0.83, mass: 181.0, radius: 2.0}
+  VAL: 
+    bb: {position: [0.0, 0.0, 0.0], charge: 0, hydrophobicity: 0.85, mass: 117.0, radius: 2.0}
+  CA: 
+    bb: {position: [0.0, 0.0, 0.0], charge: 2, hydrophobicity: -1.0, mass: 40.0, radius: 2.31}
+  NA: 
+    bb: {position: [0.0, 0.0, 0.0], charge: 1, hydrophobicity: -1.0, mass: 23.0, radius: 2.27}
+  ZN: 
+    bb: {position: [0.0, 0.0, 0.0], charge: 2, hydrophobicity: -1.0, mass: 65.4, radius: 1.4}
+Monomers:
+  Ani:
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Part: [Ani_bb]
+  BA:
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Part: [BA_bb]
+  BP:
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Part: [BP_bb]
+  Bor:
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Part: [Bor_bb]
+  C5-BP:
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Part: [C5-BP_bb]
+  C6-BP:
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Part: [C6-BP_bb]
+  C6-CyH:
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Part: [C6-CyH_bb]
+  C6-Sp:
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Part: [C6-Sp_bb]
+  CBS:
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Part: [CBS_bb]
+  CBS-Boc:
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Part: [CBS-Boc_bb]
+  Dan:
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Part: [Dan_bb]
+  Dod:
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Part: [Dod_bb]
+  ED:
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Part: [ED_bb]
+  Glu:
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Part: [Glu_bb]
+  Iso:
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Part: [Iso_bb]
+  NTA:
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Part: [NTA_bb]
+  NTA-Glu:
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Part: [NTA-Glu_bb]
+  ALA:
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Part: [ALA_bb]
+  ARG:
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Part: [ARG_bb]
+  ASN:
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Part: [ASN_bb]
+  ASP:
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Part: [ASP_bb]
+  BB:
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Part: [BB_bb]
+  BB_ghost:
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Part: [BB_ghost_bb]
+  CA:
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Part: [CA_bb]
+  CYS:
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Part: [CYS_bb]
+  GLN:
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Part: [GLN_bb]
+  GLU:
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Part: [GLU_bb]
+  GLY:
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Part: [GLY_bb]
+  HIS:
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Part: [HIS_bb]
+  ILE:
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Part: [ILE_bb]
+  LEU:
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Part: [LEU_bb]
+  LYS:
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Part: [LYS_bb]
+  MET:
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Part: [MET_bb]
+  NA:
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Part: [NA_bb]
+  PHE:
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Part: [PHE_bb]
+  PRO:
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Part: [PRO_bb]
+  SER:
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Part: [SER_bb]
+  THR:
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Part: [THR_bb]
+  TRP:
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Part: [TRP_bb]
+  TYR:
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Part: [TYR_bb]
+  VAL:
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Part: [VAL_bb]
+  ZN:
+    Angles: []
+    Bonds: []
+    Dihedrals: []
+    Part: [ZN_bb]
+Bonds:
+  bond1: {coef1: 120, coef2: 4.0, kind: harmonic}
+  ghost: {coef1: 1, coef2: 0.0, kind: harmonic}
+  peptide: {coef1: 337, coef2: 3.7, kind: harmonic}
+  polymer: {coef1: 310, coef2: 6, kind: harmonic}
+Dihedrals:
+  peptide: {coef1: 0.1, coef2: 0.5, coef3: 1.5, coef4: 120, kind: harmonic}
+Pairs:
+  coulomb: {kappa: 0.55, cutoff: 25, kind: coul/debye, repulsive_only: 0,
+    single_type_parametrised: false}
+  lj: {coef1: 1.0, coef2: 4.0, cutoff: 8.0, kind: lj/cut, repulsive_only: 1, single_type_parametrised: true}
+  hydrophobic: {coef1: -0.5, cutoff: 6.0, kind: soft, repulsive_only: 0, single_type_parametrised: true}
+globals: {affinity_file: ../data/affinties.h5, angle_style: harmonic, atom_style: hybrid,
+  atom_substyle1: angle, atom_substyle2: charge, bond_style: harmonic, box_margin: 50,
+  pair_style: hybrid/overlay, pair_substyle1: lj, pair_substyle2: coulomb, pair_substyle3: hydrophobic}

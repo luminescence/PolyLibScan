@@ -1,8 +1,11 @@
 import pymc as mc
-import tqdm
 import pandas as pd
 import numpy as np
 from sklearn import linear_model, metrics
+from sklearn.preprocessing import StandardScaler
+
+from PolyLibScan.helpers.jupyter_compatibility import agnostic_tqdm
+
 
 class Project(object):
 
@@ -12,26 +15,30 @@ class Project(object):
 
     def bayes_sampling(self, sampling_rate=1000, burn_in=1000):
         self.mcmc = {}
-        for p_type in tqdm.tqdm(self.polymer_types.values(), desc='Sampling Polymer Types:'):
+        for p_type in agnostic_tqdm(self.polymer_types.values(), desc='Sampling Polymer Types:'):
             p_type.mcmc = {}
             p_type.bayes_sample_distance(show_progress=False)
             p_type.bayes_sample_energy(show_progress=False)
 
     @staticmethod
     def _cross_validate(input_data, classification):
-        logReg = linear_model.LogisticRegression(max_iter=200, tol=1e-5)
-        loo_predictions = pd.Series(index=input_data.index, name='predictions')
-        loo_score = pd.Series(index=input_data.index, dtype='bool', name='score')
-        loo_probabilities = pd.Series(index=input_data.index, name='probabilities')
-        #predictions = pd.Series(index=input_data.index)
-        for idx in input_data.index:
+        # Normalize the data
+        X = StandardScaler().fit_transform(input_data)
+        data = pd.DataFrame(index=input_data.index, columns=input_data.columns, data=X)
+
+        logReg = linear_model.LogisticRegression(max_iter=500, tol=1e-6)
+        loo_predictions = pd.Series(index=data.index, name='predictions')
+        loo_score = pd.Series(index=data.index, dtype='bool', name='score')
+        loo_probabilities = pd.Series(index=data.index, name='probabilities')
+
+        for idx in data.index:
             # leave one out
-            logReg.fit(input_data.drop([idx]), classification.drop([idx]))
-            loo_predictions[idx] = logReg.predict([input_data.loc[idx]])
+            logReg.fit(data.drop([idx]), classification.drop([idx]))
+            loo_predictions[idx] = logReg.predict([data.loc[idx]])
             loo_score[idx] = (loo_predictions[idx] == classification.loc[idx])
             # check at what index the true-class resides
             true_index = np.argwhere(logReg.classes_)[0][0]
-            loo_probabilities[idx] = logReg.predict_proba([input_data.loc[idx]])[0][true_index]
+            loo_probabilities[idx] = logReg.predict_proba([data.loc[idx]])[0][true_index]
         return loo_score, loo_predictions, loo_probabilities
     
     @staticmethod

@@ -76,8 +76,9 @@ class Parser(object):
             items = line.split()
             try:
                 dist_data[i] = (int(items[0]), float(items[1]))
-            except IndexError:
-                raise IndexError('list index out of range in file %s, line %d' % (file_path, i))
+            except (IndexError, ValueError):
+                raise IndexError('Something is wrong in file %s, line %d: %s' % (
+                                    file_path, i, line))
         return dist_data
 
     def trajectory(self, file_path):
@@ -86,7 +87,7 @@ class Parser(object):
                 lines = liner(f)
                 chunks = chunk_data(lines)
                 traj = np.array(list(it.chain.from_iterable([el[1] for el in chunks])))
-            except IndexError:
+            except (IndexError, ValueError):
                 raise IndexError('Faulty format found in file %s' % file_path)
         return traj
 

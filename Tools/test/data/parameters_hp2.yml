@@ -177,4 +177,4 @@ Pairs:
   #hydrophobic: {coef1: -0.5, cutoff: 6.0, kind: soft, repulsive_only: 0, single_type_parametrised: true}
 globals: {angle_style: harmonic, atom_style: hybrid,
   atom_substyle1: angle, atom_substyle2: charge, bond_style: harmonic, box_margin: 50,
-  pair_style: hybrid, add_surface_hp_energy: false}
+  pair_style: hybrid, pair_substyle1: coulomb, pair_substyle2: lj, add_surface_hp_energy: false}

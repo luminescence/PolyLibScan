@@ -11,6 +11,7 @@ class LmpWriter(object):
         self.template = jga.Template(open(template_path).read())
         self.env = environment
         self.env.coefficient_string = self.transfer_coeff_str(self.env)
+        self.env.dihedral_coefficient_string = self.transfer_dihedral_coef_str(self.env)
         self.env.particle_str = self.transfer_particle_str(self.env)
         self.env.calc_box(add_margin=True)
         self.entryList = {'bond': ['bond', 'angle', 'full', 'molecular'],
@@ -148,6 +149,11 @@ class LmpWriter(object):
             return bond_template.format(style_type.Id, *style_type.parameters['coeffs'])
         return coefficient_string
 
+    def transfer_dihedral_coef_str(self,molecule):
+        def dihedral_coefficient_string(style_type):
+            bond_template = '{:> 3d} '+ '{:> 6.2f}{:>3d}{:>3d}'
+            return bond_template.format(style_type.Id, *style_type.parameters['coeffs'])
+        return dihedral_coefficient_string
 
     def transfer_particle_str(self, molecule):
         #sub_styles = filter(lambda x:'substyle' in x, molecule.globals.keys())
@@ -162,6 +168,9 @@ class LmpWriter(object):
             elif molecule.globals['atom_style'] == 'angle':
                 return '{:> 7d}{:> 4d}{:> 4d}{:> 10.3f}{:> 10.3f}{:> 10.3f}'.format(
                     particle.Id, particle.mol_id, particle.type_.Id, *particle.position)
+            elif molecule.globals['atom_style'] == 'full':
+                return '{:> 7d}{:> 4d}{:> 4d}{:> 6.2f}{:> 10.3f}{:> 10.3f}{:> 10.3f}'.format(
+                    particle.Id, particle.mol_id, particle.type_.Id, particle.charge, *particle.position)
             elif molecule.globals['atom_style'] == 'hybrid':
                 if molecule.globals['atom_substyle1'] == 'angle' and molecule.globals['atom_substyle2'] == 'charge':
                     return '{:> 7d}{:> 4d}{:> 10.3f}{:> 10.3f}{:> 10.3f}{:> 4d}{:> 6.2f}'.format(
@@ -177,5 +186,5 @@ class LmpWriter(object):
                     raise Exception('Something is wrong here... style: %s, substyle1: %s, substyle2: %s'%(
                         molecule.globals['atom_style'], molecule.globals['atom_substyle1'], molecule.globals['atom_substyle2']))
             else:
-                raise Exception('Only the "atomic", "bond" and "angle" styles is supported for now. Edit your config file accordingly.')
+                raise Exception('Atom_style %s selected but only the "atomic", "bond" and "angle" styles is supported for now. Edit your config file accordingly.'% molecule.globals['atom_style'])
         return particle_str

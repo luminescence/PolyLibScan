@@ -29,6 +29,9 @@ class Environment(object):
             self.atom_type.register(field)
         self.load_atom_types(config['Atoms'])
         
+        self.polymer_type = container.Container('polymer')
+        self.load_polymer_types(config['Polymers'])
+
         self.monomer_type = container.Container('monomer')
         self.load_monomer_types(config['Monomers'])
 
@@ -68,6 +71,10 @@ class Environment(object):
         for name, pair_parameters in config.items():
             self.pair_type[name] = PairType.from_dict(pair_parameters, name=name)
 
+    def load_polymer_types(self, config):
+        for name, values in config.items():
+            self.polymer_type.define_type(name, PolymerType(name, values))
+
     def load_monomer_types(self, config):
         for name, values in config.items():
             self.monomer_type.define_type(name, MonomerType(name, values))
@@ -95,7 +102,7 @@ class Environment(object):
 
     def load_globals(self, parameters):
         valid_keys = ['angle_style', 'atom_style', 'bond_style', 
-                      'box_margin', 'affinity_file', 'pair_style']
+                      'box_margin', 'pair_style']
         # Check if all required parameters are present
         for key in valid_keys:
             if key not in parameters.keys():

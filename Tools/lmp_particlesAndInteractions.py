@@ -37,7 +37,9 @@ class Particle(LmpObj):
         if particle_already_had_type_:
             allowed_type_changes = ['BB_bb', new_type.name, new_type.name.split('|')[0]]
             if self.type_.name not in allowed_type_changes:
-                warnings.warn('Trying to change type, this would require redoing the protonation and checking the charge! Implement it!')
+                warnings.warn('Trying to change type %s to %s in %s, this would require redoing the protonation and checking the charge! Implement it!' % (
+                    self.type_.name, new_type, self)
+                    )
 
         self._type_ = new_type
 
@@ -76,7 +78,7 @@ class Bond(Interaction):
             raise Exception('Bonds must have 2 members')
 
     def __repr__(self):
-        return 'Bond | Id: %d - %s' % (self.Id, self.type_)
+        return 'Bond | Id: %d - Type: %s' % (self.Id, self.type_.name)
 
 
 class Angle(Interaction):

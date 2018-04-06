@@ -9,14 +9,17 @@ import sets
 
 class PolymerCreator(LmpCreator):
     
-    def __init__(self, environment, pattern, weights=None, 
+    def __init__(self, environment, pattern, poly_type=None, weights=None, 
                  auto_repulsion=False, mode='random', length=None):
         super(PolymerCreator, self).__init__(environment)
         
         self.mol_type = 'polymer'
         self.pattern = pattern
         self.length = length
-
+        if poly_type is None:
+            # take first
+            poly_type = self.env.polymer_type._defined_types.keys()[0]
+        self.type = self.env.polymer_type[poly_type]
 
         # Mode initialized
         self._mode = None
@@ -42,15 +45,15 @@ class PolymerCreator(LmpCreator):
     ### MANDATORY CREATE FUNCTIONS
     def _create_config(self, molecule):
         molecule.mol_type = self.mol_type
+        molecule.type = self.type
 
     # _create_types() is implemented in parent class
     
     def _create_particles_and_interactions(self, molecule):
         molecule.data['monomers'] = self.create_polymer(molecule)
-        molecule.data['particles'] = self.create_particles(molecule)
-        molecule.data['bonds'] = self.create_polymer_bonds(molecule)
-        molecule.data['angles'] = self.create_polymer_angles(molecule)
-        molecule.data['dihedrals'] = self.create_polymer_dihedrals(molecule)
+        self.create_polymer_bonds(molecule)
+        self.create_polymer_angles(molecule)
+        self.create_polymer_dihedrals(molecule)
 
     def _create_custom(self, molecule):
         if self.auto_repulsion:
@@ -96,13 +99,6 @@ class PolymerCreator(LmpCreator):
         is reached
         '''
         raise NotImplementedError('Something clearly went wrong. Set mode to "cycle" or "random"')
-
-    def create_particles(self, molecule):
-        particles = set([])
-        for mono in molecule.data['monomers']:
-            for particle, value in mono.particles.items():
-                 particles.add(value)
-        return sorted(list(particles), key=lambda x:x.Id)
     
     def create_polymer(self, molecule):
         polymer = []
@@ -114,7 +110,7 @@ class PolymerCreator(LmpCreator):
         if len(polymer) == 0:
             coords = np.array([0.0, 0.0, 0.0])
         else:
-            coords = polymer[-1].position + np.array([4.0, 0.0, 0.0])
+            coords = polymer[-1].position + np.array(self.type.offset)
         return Mono.Monomer(coords, element, self.env.monomer_type[element] ,self.env, lmpObj)
 
     @staticmethod
@@ -135,63 +131,58 @@ class PolymerCreator(LmpCreator):
         for current_mono,next_mono in zip(monomers[0:-1], monomers[1:]):
             current_mono.bind_with(next_mono)
 
-        ordered_unique_bonds = self.unique_ordered_DOF(monomers, 'bonds')
-        return ordered_unique_bonds
-
     def create_polymer_angles(self, molecule):
-        monomers = molecule.data['monomers']
-        if len(monomers) >= 2:
-            monomers[0].angle_with(monomers[1])
-            monomers[-1].angle_with(monomers[-2])
-        if len(monomers) >= 3:
-            for previous_element, current_element, next_element in zip(
-                                                    monomers[:-2], 
-                                                    monomers[1:-1], 
-                                                    monomers[2:]):
-                current_element.angle_with(next_element)
-                current_element.bb_angle_with(previous_element, next_element)
+        '''Create angles between monomers in the polymer.
 
-        ordered_unique_angles = self.unique_ordered_DOF(monomers, 'angles')
-        return ordered_unique_angles
+        There are three possible types of angles between a monomer and its neighbors.
+        We enumerate them with 1,2,3 where 1 is the monomer to the left,
+                                           2 is the central monomer and 
+                                           3 is the monomer to the right:
+            - between a monomer and the monomer to the left (1-2)
+            - between a monomer and the monomer to the right (2-3)
+            - between a monomer and the monomers to the left and right (1-2-3)
+
+        Angles involving two monomers are subsumed into one iteration and 
+        angles involving three monomers have its own loop
+        '''
+        monomers = molecule.data['monomers']
+        # 2-Partner loop
+        angle_info = filter(lambda x: len(x)==3, molecule.type.angles)
+        for current_element,next_element in zip(
+                                                monomers[0:-1], 
+                                                monomers[1:]):
+            current_element.angles_with_one(next_element, angle_info)
+        # 1-2-3 Angles
+        angle_info = filter(lambda x: len(x)==4, molecule.type.angles)
+        for previous_element, current_element, next_element in zip(
+                                                monomers[0:-2], 
+                                                monomers[1:-1], 
+                                                monomers[2:]):
+            current_element.angles_with_two(previous_element, next_element, angle_info)
 
     def create_polymer_dihedrals(self, molecule):
         monomers = molecule.data['monomers']
-        if len(monomers) >= 2:
-            molecule.data['monomers'][-1].dihedral_with(molecule.data['monomers'][-2])
-        if len(monomers) >= 3:
-            molecule.data['monomers'][-2].dihedral_with(molecule.data['monomers'][-3])
-        if len(monomers) >= 4:
-            for previous_element, current_element, next_element, after_next_element in zip(
-                molecule.data['monomers'][:-3], 
-                molecule.data['monomers'][1:-2],
-                molecule.data['monomers'][2:-1], 
-                molecule.data['monomers'][3:]):
-                current_element.dihedral_with(previous_element)
-                current_element.bb_dihedral_with(previous_element, next_element, after_next_element)
-
-        ordered_unique_dihedrals = self.unique_ordered_DOF(monomers, 'dihedrals')
-        return ordered_unique_dihedrals
-
-    def add_auto_repulsion(self, lmpObj, repulsion_value=None):
-        '''Make all monomers repulse each other.
-
-        Input:
-            lmpObj: Polymer object
-            repulsion_value: [float]
-
-        Output:
-            None
-        '''
-        if repulsion_value:
-            epsilon = repulsion_value
-        else:
-            epsilon = self.repulsion_value
-        # get Id List
-        monos = list(set([p.type_ for p in lmpObj.data['particles']]))
-        repulsionList = sorted(monos, key=lambda x:x.Id, reverse=True)
-        for i, type1 in enumerate(repulsionList):
-            for j, type2 in enumerate(repulsionList[i:]):
-                self.env.ff['affinity'][(type1,type2)].epsilon = epsilon
+        # 1-2 Dihedrals
+        parameters = filter(lambda x: len(x)==3, molecule.type.dihedrals)
+        for current_element,next_element in zip(
+                                                monomers[0:-1], 
+                                                monomers[1:]):
+            current_element.dihedral_with_two(next_element, parameters)
+        # 1-2-3 Dihedrals
+        parameters = filter(lambda x: len(x)==4, molecule.type.dihedrals)
+        for current_element,next_element,next_next in zip(
+                                                monomers[0:-2], 
+                                                monomers[1:-1], 
+                                                monomers[2:]):
+            current_element.dihedral_with_three(next_element, next_next, parameters)
+        # 1-2-3-4 Dihedrals
+        parameters = filter(lambda x: len(x)==5, molecule.type.dihedrals)
+        for current_element, next_element,next_next,next_next_next in zip(
+                                                monomers[0:-3], 
+                                                monomers[1:-2], 
+                                                monomers[2:-1], 
+                                                monomers[3:]):
+            current_element.dihedral_with_four(next_element, next_next, next_next_next, parameters)
 
     # PROPERTIES
     def mode():
