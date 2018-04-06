@@ -4,7 +4,7 @@ import pathlib2 as pl
 import time
 
 import PolyLibScan.Tools.fifo as fifo
-from PolyLibScan.Tools.fifo_scripts import fifo_traj_compression
+from PolyLibScan.Tools.fifo_scripts import fifo_traj_compression, fifo_processor
 
 import unittest as ut
 
@@ -103,6 +103,60 @@ class TestCompressionFiFo(ut.TestCase):
 				original_content.append(line)
 
 		self.assertEqual(compressed_content, original_content)
+
+class TestDistanceFiFo(ut.TestCase):
+
+	def __init__(self, *args, **kwargs):
+		super(TestDistanceFiFo, self).__init__(*args, **kwargs)
+
+		polymer_sequence = [23, 23, 24, 24, 24,
+							23, 24, 24, 24, 24,
+							24, 23, 24, 24, 24,
+							24, 24, 24, 25, 24]
+		monomer_ids = list(set(polymer_sequence))
+
+		# dummy needed because distance_fifo.parent.lmp_settings will be checked
+		class DummyParent(object):
+			def __init__(self):
+				self.lmp_settings = {'monomer_ids': monomer_ids,
+									 'poly_sequence': polymer_sequence}
+
+		self.distance_fifo = fifo.DistanceFifo(DummyParent(),
+											   local_path.joinpath('data','example_snapshot.xyz').as_posix(),
+											   fifo_processor.__file__,
+											   local_path.joinpath('fifo.out').as_posix(),
+											   2000)
+
+	def test(self):
+		output = 'output.txt'
+		# note that the subprocess takes a moment
+		self.distance_fifo._start(output)
+
+		# therefore, wait until output exists
+		def subprocess_finished():
+			try:
+				filesize = os.path.getsize(output)
+				if filesize > 0:
+					return True
+				else: 
+					return False
+			except OSError:
+				return False
+
+		while not subprocess_finished():
+			time.sleep(0.1)
+
+		original_content = []
+		with open(output, 'r') as org_file:
+			for line in org_file:
+				original_content.append(line)
+
+		# remove output file
+		os.remove(output)
+
+		closest_contact = float(original_content[0].split()[-1])
+
+		self.assertAlmostEqual(closest_contact, 30.4, places=1) # can be confirmed with pymol
 
 
 if __name__ == '__main__':
