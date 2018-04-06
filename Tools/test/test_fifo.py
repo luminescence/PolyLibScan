@@ -1,6 +1,10 @@
+import gzip
 import os
 import pathlib2 as pl
+import time
+
 import PolyLibScan.Tools.fifo as fifo
+from PolyLibScan.Tools.fifo_scripts import fifo_traj_compression
 
 import unittest as ut
 
@@ -63,6 +67,43 @@ class TestFiFo(ut.TestCase):
 		# create file with having no path previously
 		self.test_fifo.fifo_path = new_path
 		self.assertTrue(self.test_fifo._fifo_exists())
+
+
+class TestCompressionFiFo(ut.TestCase):
+
+	def __init__(self, *args, **kwargs):
+		super(TestCompressionFiFo, self).__init__(*args, **kwargs)
+		self.compression_fifo = fifo.TrajCompressionFifo({},
+														 local_path.joinpath('data', 'example_snapshot.xyz').as_posix(),
+														 fifo_traj_compression.__file__,
+														 local_path.joinpath('fifo.out').as_posix(),
+														 2000)
+
+	def test(self):
+		output = 'snapshot.xyz.gz'
+
+		# note that the subprocess takes a moment
+		self.compression_fifo._start(output)
+
+		# therefore, wait until output exists
+		while not pl.Path(output).exists():
+			time.sleep(0.1)
+
+		compressed_content = []
+		with gzip.open(output, 'r') as gz_file:
+			for line in gz_file:
+				compressed_content.append(line)
+
+		# remove output file
+		os.remove(output)
+
+		original_content = []
+		with open(self.compression_fifo.fifo_path, 'r') as org_file:
+			for line in org_file:
+				original_content.append(line)
+
+		self.assertEqual(compressed_content, original_content)
+
 
 if __name__ == '__main__':
     ut.main(verbosity=2)
