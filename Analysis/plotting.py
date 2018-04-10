@@ -82,15 +82,14 @@ class Project(object):
                 kappa = self._kappa(classification, results['model_predictions'])
                 # plotting black dot on false predictions
                 results[~results['true_predictions']].plot(kind='scatter', x='dist_mean', 
-                                                   y='energy_mean', ax=ax, marker='x', c='k', s=30)
-                # legend_items.append(mlines.Line2D([], [], edgecolors='k', color='w', marker='x', linestyle='None',
-                #            label='not inhibiting'))
-                legend_items.append(mlines.Line2D([], [], markeredgecolor='k', color='w', marker='x', linestyle='None', markersize=10,
-                                                 label='misclassified'))
-                legend_items.append(mpatches.Patch(color='white', label='ROC-AUC: %.2f' % roc_auc_score))
-                legend_items.append(mpatches.Patch(color='white', label='kappa  : %.2f' % kappa))
+                                                   y='energy_mean', ax=ax, marker='x', c='lightgreen', s=35, linewidth=2)
+                legend_items.append(mlines.Line2D([], [], markeredgecolor='lightgreen', color='w', marker='x', 
+                                                         linewidth=3, linestyle='None', 
+                                                         markeredgewidth=3, markersize=10, label='misclassified'))
+                legend_items.append(mpatches.Patch(color='white', label='{:<9s} {:>4.2f}'.format('ROC-AUC:', roc_auc_score) ))
+                legend_items.append(mpatches.Patch(color='white', label='{:<9s} {:>4.2f}'.format('kappa:', kappa) ))
 
-            ax.legend(handles=legend_items, fontsize=20, loc='best')
+            ax.legend(handles=legend_items, loc='best', prop={'size': 20, 'family': 'monospace'})
         else:
             results.plot(kind='scatter', x='dist_mean', y='energy_mean', alpha=0.7, 
                          ax=ax, s=100)

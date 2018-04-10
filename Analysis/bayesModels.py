@@ -42,6 +42,10 @@ class Project(object):
     def _kappa(true_classification, model_classification):
         return metrics.cohen_kappa_score(true_classification, model_classification)
 
+    @staticmethod
+    def _matthews(true_classification, model_classification):
+        return metrics.matthews_corrcoef(true_classification, model_classification)
+
 
 class PolymerTypeSims(object):
 
