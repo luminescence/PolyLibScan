@@ -97,10 +97,10 @@ class Project(object):
                 legend_items.append(mlines.Line2D([], [], markeredgecolor='lightgreen', color='w', marker='x', 
                                                          linewidth=3, linestyle='None', 
                                                          markeredgewidth=3, markersize=10, label='misclassified'))
-                legend_items.append(mpatches.Patch(color='white', label='ROC-AUC: %.2f' % roc_auc_score))
-                legend_items.append(mpatches.Patch(color='white', label='kappa  : %.2f' % kappa))
+                legend_items.append(mpatches.Patch(color='white', label='{:<9s} {:>4.2f}'.format('ROC-AUC:', roc_auc_score) ))
+                legend_items.append(mpatches.Patch(color='white', label='{:<9s} {:>4.2f}'.format('kappa:', kappa) ))
 
-            ax.legend(handles=legend_items, fontsize=20, loc='best')
+            ax.legend(handles=legend_items, loc='best', prop={'size': 20, 'family': 'monospace'})
         else:
             results.plot(kind='scatter', x='dist_mean', y='energy_mean', alpha=0.7, 
                          ax=ax, s=100)
