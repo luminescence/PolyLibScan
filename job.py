@@ -141,7 +141,7 @@ class Job(object):
                                p.residue.id[0] , p.residue.id[1], p.residue.id[2],
                                p.charge)
         self.particle_list = particle_dat
-        particle_dat.tofile(path)
+        np.save(path, particle_dat)
 
     def terminate_fifos(self):
         for name, fifo in self.fifo.items():

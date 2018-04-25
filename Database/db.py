@@ -4,7 +4,7 @@ import pathlib2 as pl
 class JobDataBase(object):
     def __init__(self, path, mode='a'):
         super(JobDataBase, self).__init__()
-        self.db = Database(path, mode='a')
+        self.db = Database(path, mode=mode)
 
     def close(self):
         self.db.close()
