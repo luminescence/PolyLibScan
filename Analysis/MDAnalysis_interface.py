@@ -104,15 +104,19 @@ class MdaRun(object):
         snapshots_range = [no_snapshots + x if x < 0 else x for x in snapshots_range]
         return snapshots_range
 
-    @staticmethod
-    def generator_to_series(input_generator):
+    def generator_to_series(self, input_generator, snapshots):
         """store everything from generator (in our case trajectory) in pd.Series"""
         output_list = []
         for x in input_generator:
             output_list.append(x)
 
         series = pd.Series(output_list)
+        snapshots_as_indeces = self.determine_snapshots_range(snapshots)
+        snapshots_as_indeces = sorted(snapshots_as_indeces)
+        series.index = snapshots_as_indeces
+
         series.index.rename('snapshots', inplace=True)
+
         return series
 
     # scientifically meaningful methods
@@ -124,7 +128,7 @@ class MdaRun(object):
             return mda_universe.select_atoms('all').radius_of_gyration()
 
         return self.generator_to_series(self.temporarily_provide_xyz(
-            self.stream_trajectory_iterator(rg_from_universe, snapshots=snapshots)))
+            self.stream_trajectory_iterator(rg_from_universe, snapshots=snapshots)), snapshots=snapshots)
 
     def comp_min_distance_between_selections(self, sel1, sel2, snapshots='all'):
         """wrap function for universe"""
@@ -139,7 +143,7 @@ class MdaRun(object):
             return min_dist
 
         return self.generator_to_series(self.temporarily_provide_xyz(
-            self.stream_trajectory_iterator(min_dist_from_universe, snapshots=snapshots)))
+            self.stream_trajectory_iterator(min_dist_from_universe, snapshots=snapshots)), snapshots=snapshots)
 
 
 class MdaJob(object):
