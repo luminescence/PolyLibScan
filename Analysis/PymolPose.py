@@ -57,17 +57,17 @@ class PymolPose(object):
     def traj_data(self, run, state, mask):
         return run.coordinates()[state][mask]
 
-    def add_polymers(self, state='end'):
-        polymer_pdb_path, name = self._create_pdb(molecule='polymer', state=state)
-        self.pymol_handle.load(polymer_pdb_path)
+    def add_CG_pose(self, molecule, state='end'):
+        pdb_path, name = self._create_pdb(molecule=molecule, state=state)
+        self.pymol_handle.load(pdb_path)
         self.pymol_handle.show_as('sphere', name)
         self.pymol_handle.do('cmd.set("sphere_scale", 2.0, "all")')
 
+    def add_polymers(self, state='end'):
+        self.add_CG_pose(molecule='polymer', state=state)
+
     def add_protein(self, state='end'):
-        protein_pdb_path, name = self._create_pdb(molecule='protein', state=state)
-        self.pymol_handle.load(protein_pdb_path)
-        self.pymol_handle.show_as('sphere', name)
-        self.pymol_handle.do('cmd.set("sphere_scale", 2.0, "all")')
+        self.add_CG_pose(molecule='protein', state=state)
 
     def _create_pdb(self, molecule='polymer', state='end'):
         gen = self.pdb_data(molecule=molecule, state=state)
