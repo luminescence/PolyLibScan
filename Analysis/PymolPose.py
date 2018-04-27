@@ -69,19 +69,21 @@ class PymolPose(object):
         sim = self.pymol.sim
         radii = MdaRun.get_particle_parameters(sim, parameter='radius')
         type_filter = AtomFilter(sim.trajectory_order, sim.sequence, sim.particle_ids[molecule], molecule=molecule)
-        # only modify vdw radii for beads of the correct molecule
-        list_indeces = np.where(type_filter.mask)[0]
-        vdw_radii_for_beads = [radii[i] for i in list_indeces]
+        # only modify vdw radii for beads of the correct molecule,
+        # indeces would not fit for the second molecule (usually polymer) if this was not done
+        molecule_indeces = np.where(type_filter.mask)[0]
+        vdw_radii_for_beads = [radii[i] for i in molecule_indeces]
 
         # altering vdw radii individually for all beads takes very long; bundle all beads with the same vdw radius
         possible_vdw_radii = set(vdw_radii_for_beads)
 
         for radius in possible_vdw_radii:
-            indeces = np.where(np.array(vdw_radii_for_beads) == radius)[0]
+            radius_indeces = np.where(np.array(vdw_radii_for_beads) == radius)[0]
+            radius_index_strings = ['index ' + str(index + 1) for index in radius_indeces] # Pymol counts from 1 not 0
+            radius_merged_indeces_string = ' or '.join(radius_index_strings)
+            radius_selection = '%s and (%s)' % (selection_name, radius_merged_indeces_string)
 
-            index_strings = ['index ' + str(index + 1) for index in indeces] # Pymol counts from 1 not 0
-            merged_indeces_string = ' or '.join(index_strings)
-            self.pymol_handle.do('alter %s and (%s), vdw=%s' % (selection_name, merged_indeces_string, radius))
+            self.pymol_handle.do('alter %s, vdw=%s' % (radius_selection, radius))
 
         self.pymol_handle.do('rebuild')
 
