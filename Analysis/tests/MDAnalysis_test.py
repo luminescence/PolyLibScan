@@ -38,6 +38,14 @@ class TestMdaInterface(ut.TestCase):
                                                                                   self.sel2)
         self.assertEqual(len(distance_BP_trypsin_A), 3)  # three snapshots: 0, 2000 and 4000 time steps
 
+    def test_indexation(self):
+        """check that the index of the pd.Series is correct"""
+        distance_BP_trypsin_A_end = self.mda_run.comp_min_distance_between_selections(self.sel1,
+                                                                                      self.sel2,
+                                                                                      snapshots=-1)
+
+        self.assertTrue((distance_BP_trypsin_A_end.index == 2).all())
+
     def test_project_job_run(self):
         run_distance = self.mda_run.comp_min_distance_between_selections(self.sel1, self.sel2)
         job_distance = self.mda_job.comp_min_distance_between_selections(self.sel1, self.sel2)
