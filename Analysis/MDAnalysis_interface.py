@@ -44,33 +44,10 @@ class MdaRun(object):
             snapshot_df.to_csv(file_handle, header=False, sep=' ')
 
     def assign_masses_in_universe(self, mda_universe):
-        weights = self.get_particle_parameters(self.job, parameter='mass')
+        masses = self.job.get_particle_parameters(parameter='mass')
 
         atom_group = mda_universe.select_atoms('all')
-        atom_group.masses = weights
-
-    @staticmethod
-    def get_particle_parameters(job, parameter):
-        """return a list of the requested parameter for all particles in the system.
-        This is a static method so it can be utilized in PymolPose"""
-        particle_types = job._parse.db._load_table('/meta', 'particle_list')['name']
-        atom_possibilities = job.project.parameters['Atoms']
-        monomer_types = []  # amino acids, BP, BA, ...
-        bead_types = []  # bb or sc
-        for x in particle_types:
-            # some monomers have NAME_bb, refering to the back bone bead
-            # amino acids don't have this appendix so we need try/except
-            try:
-                monomer, bead = x.split('_')
-            except ValueError:
-                monomer = x
-                bead = 'bb'
-            # ghost atoms are not in the trajectories so they need to be neglected
-            if monomer != 'ghost':
-                monomer_types.append(monomer)
-                bead_types.append(bead)
-        particle_parameter = [atom_possibilities[mono][pos][parameter] for mono, pos in zip(monomer_types, bead_types)]
-        return particle_parameter
+        atom_group.masses = masses
 
     def universe_creator(self, snapshot):
         no_particles = len(self.job.trajectory_order)

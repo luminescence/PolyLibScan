@@ -4,7 +4,6 @@ import jinja2 as ji
 import PolyLibScan.helpers.numpy_helpers as np_help
 import itertools as it
 
-from PolyLibScan.Analysis.MDAnalysis_interface import MdaRun
 from PolyLibScan.Analysis.sim_run import AtomFilter
 
 def _get_pdb_template(name):
@@ -67,7 +66,7 @@ class PymolPose(object):
     def set_CG_radii(self, molecule, selection_name):
         """assign the correct vdw radii to all visualized beads"""
         sim = self.pymol.sim
-        radii = MdaRun.get_particle_parameters(sim, parameter='radius')
+        radii = sim.get_particle_parameters(parameter='radius')
         type_filter = AtomFilter(sim.trajectory_order, sim.sequence, sim.particle_ids[molecule], molecule=molecule)
         # only modify vdw radii for beads of the correct molecule,
         # indeces would not fit for the second molecule (usually polymer) if this was not done
