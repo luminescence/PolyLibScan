@@ -97,6 +97,17 @@ class MdaRun(object):
 
         return series
 
+    def return_universe(self, snapshots='all'):
+        """return universe for development purposes"""
+
+        self.snapshots_range = self.determine_snapshots_range(snapshots)
+
+        def universe(mda_universe):
+            return mda_universe
+
+        return self.generator_to_series(self.temporarily_provide_xyz(
+            self.stream_trajectory_iterator(universe)))
+
     # scientifically meaningful methods
     # start with comp_
 
