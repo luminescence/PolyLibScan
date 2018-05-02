@@ -82,6 +82,12 @@ class TestMdaInterface(ut.TestCase):
         dataarray = self.mda_project.comp_min_distance_between_selections(self.sel1, self.sel2)
         self.assertEqual(type(dataarray), xr.DataArray)
 
+    def test_molecule_selection(self):
+        selection_string = self.mda_run.molecule_selection_string(selection='protein')
+        id_strings = selection_string.split(' or ')
+
+        self.assertEqual(len(id_strings), self.trypsin_bead_length * 2)
+
 
 if __name__ == '__main__':
     ut.main(verbosity=2)

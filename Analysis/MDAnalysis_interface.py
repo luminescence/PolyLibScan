@@ -9,6 +9,7 @@ from scipy.spatial.distance import cdist
 import xarray as xr
 
 from PolyLibScan.helpers.jupyter_compatibility import agnostic_tqdm
+from PolyLibScan.Analysis.sim_run import AtomFilter
 
 
 class MdaRun(object):
@@ -108,16 +109,36 @@ class MdaRun(object):
         return self.generator_to_series(self.temporarily_provide_xyz(
             self.stream_trajectory_iterator(universe)))
 
+    def molecule_selection_string(self, selection='all'):
+        """return selection string for MDAnalysis"""
+
+        if selection in ('all', 'full'):
+            return 'all'
+        elif selection in ('polymer', 'protein'):
+            molecule = selection
+            type_filter = AtomFilter(self.job.trajectory_order, self.job.sequence, self.job.particle_ids[molecule], molecule=molecule)
+
+            particle_ids = np.where(type_filter.mask)
+            particle_ids = particle_ids[0] + 1 #    MDAnalysis counts from 1 not 0
+
+            id_strings = ['bynum ' + str(x) for x in particle_ids]
+
+            selection_string = ' or '.join(id_strings)
+
+            return selection_string
+        else:
+            raise ValueError('Cannot interpret selection %s' % selection)
+
     # scientifically meaningful methods
     # start with comp_
 
-    def comp_radius_of_gyration(self, snapshots='all'):
+    def comp_radius_of_gyration(self, selection='all', snapshots='all'):
         """wrap function for universe"""
 
         self.snapshots_range = self.determine_snapshots_range(snapshots)
 
         def rg_from_universe(mda_universe):
-            return mda_universe.select_atoms('all').radius_of_gyration()
+            return mda_universe.select_atoms(selection).radius_of_gyration()
 
         return self.generator_to_series(self.temporarily_provide_xyz(
             self.stream_trajectory_iterator(rg_from_universe)))
