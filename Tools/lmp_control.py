@@ -234,7 +234,9 @@ class LmpController(object):
         self.group_declaration()
         # modify neighbor list
         if self.is_protein_present:
-            self.instance.command('neigh_modify exclude group ghost_protein all')
+            ghost_commands = ['fix ghost_freeze ghost_protein setforce 0.0 0.0 0.0',
+                              'neigh_modify exclude group ghost_protein all']
+            self.execute_list_of_commands(ghost_commands)
         self.minimization()
         # equilibrate
         temperature_start = 100.0
