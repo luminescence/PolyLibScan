@@ -14,6 +14,9 @@ class TestProtein_Maker(ut.TestCase):
         super(TestProtein_Maker, self).__init__(*args, **kwargs)
         self.cfg_path = local_path.joinpath('data', 'parameters.yml')
         self.env = Environment(self.cfg_path.as_posix())
+        self.cathepsin_d_chainA_rescount = 97
+        self.cathepsin_d_chainB_rescount = 241
+        self.cathepsin_d_rescount = self.cathepsin_d_chainA_rescount + self.cathepsin_d_chainB_rescount
 
     def test_correct_path(self):
         self.assertTrue(self.cfg_path.exists())
@@ -27,7 +30,7 @@ class TestProtein_Maker(ut.TestCase):
     def test_Create_default_Protein(self):
         protein = ProteinCreator(self.env, local_path.joinpath('data/1LYA.pdb').as_posix()).create()
         self.isProtein(protein)
-        self.assertEqual(len(protein.data['particles']), 2*(338))
+        self.assertEqual(len(protein.data['particles']), 2 * (self.cathepsin_d_rescount))
 
     def test_Create_Protein_with_Ions(self):
         '''compared to the default protein creation, there are 28 new atoms 
@@ -36,7 +39,7 @@ class TestProtein_Maker(ut.TestCase):
         protein = ProteinCreator(self.env, local_path.joinpath('data/1LYA.pdb').as_posix(), with_ions=True,
                                  use_amino_acids=False).create()
         self.isProtein(protein)
-        self.assertEqual(len(protein.data['particles']), 2*(338+28))
+        self.assertEqual(len(protein.data['particles']), 2 * (self.cathepsin_d_rescount + 28))
 
     def test_ghost_option_non_valid(self):
         p_creator = ProteinCreator(self.env, local_path.joinpath('data/1LYA.pdb').as_posix(), 
@@ -51,12 +54,12 @@ class TestProtein_Maker(ut.TestCase):
         protein = ProteinCreator(self.env, local_path.joinpath('data/1LYA.pdb').as_posix(), 
                                 with_ghosts=True).create()
         self.isProtein(protein)     
-        self.assertEqual(len(protein.data['particles']), 2*(338))
+        self.assertEqual(len(protein.data['particles']), 2 * (self.cathepsin_d_rescount))
 
         protein = ProteinCreator(self.env, local_path.joinpath('data/1LYA.pdb').as_posix(), 
                                     with_ghosts=False).create()
         self.isProtein(protein)
-        self.assertEqual(len(protein.data['particles']), 338)
+        self.assertEqual(len(protein.data['particles']), self.cathepsin_d_rescount)
 
     def test_move_with_ghosts(self):
         pass
@@ -111,9 +114,12 @@ class TestProtein_Maker(ut.TestCase):
         protein = ProteinCreator(self.env, local_path.joinpath('data/1LYA.pdb').as_posix(), 
                                   add_protein_binding=True, with_ghosts=False).create()
         self.isProtein(protein)
-        self.assertEqual(len(protein.data['bonds']), 338-1)
-        self.assertEqual(len(protein.data['angles']), 338-2)
-        self.assertEqual(len(protein.data['dihedrals']), 338-3)
+        self.assertEqual(len(protein.data['bonds']), (self.cathepsin_d_chainA_rescount - 1 +
+                                                      self.cathepsin_d_chainB_rescount - 1))
+        self.assertEqual(len(protein.data['angles']), (self.cathepsin_d_chainA_rescount - 2 +
+                                                       self.cathepsin_d_chainB_rescount - 2))
+        self.assertEqual(len(protein.data['dihedrals']), (self.cathepsin_d_chainA_rescount - 3 +
+                                                          self.cathepsin_d_chainB_rescount - 3))
 
     def test_Without_add_protein_properties(self):
         protein = ProteinCreator(self.env, local_path.joinpath('data/1LYA.pdb').as_posix(), 

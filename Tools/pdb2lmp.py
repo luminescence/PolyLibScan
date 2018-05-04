@@ -147,8 +147,8 @@ class ProteinCreator(LmpCreator, protonation_methods_bundled, surface_methods_bu
             particle_data_gen = self._extract_Calphas()
         elif self.cg_lvl == 'geometric_center':
             particle_data_gen = self._extract_resi_centered()
-	elif self.cg_lvl == 'bb+sc':
-	    particle_data_gen = self._extract_bb_sc()
+        elif self.cg_lvl == 'bb+sc':
+            particle_data_gen = self._extract_bb_sc()
         else:
             raise ValueError('%s-option is not implemented yet.' % self.cg_lvl)
         particles = self._add_particles_to_molecule(lmp_obj, particle_data_gen)
@@ -206,20 +206,20 @@ class ProteinCreator(LmpCreator, protonation_methods_bundled, surface_methods_bu
 
     def _extract_bb_sc(self):
         '''Extract position of backbone and sidechain
-	and create generate particle-information 
-	of yield backbone and geometrically centered 
-	sidechain''' 
-	residues = self.pdb_structure.get_residues()
-	
-	for resi in residues:
+        and create generate particle-information
+        of yield backbone and geometrically centered
+        sidechain'''
+        residues = self.pdb_structure.get_residues()
+
+        for resi in residues:
             atoms = resi.child_dict
             c_alpha = atoms['CA']
             yield c_alpha.coord.copy(), resi.resname, resi.parent.id , resi.id
 
-	    side_chain = [atom for name,atom in atoms.items() if not name in ['CA','N', 'C', 'O']] 
-	    if not len(side_chain) == 0:
- 	        sc_center = np.array([atom.coord for atom in side_chain]).mean(axis=0)
-	        raise NotImplemented('sidechain particle needs unique signiture, but has same as bb.')
+            side_chain = [atom for name,atom in atoms.items() if not name in ['CA','N', 'C', 'O']]
+            if not len(side_chain) == 0:
+                sc_center = np.array([atom.coord for atom in side_chain]).mean(axis=0)
+                raise NotImplemented('sidechain particle needs unique signiture, but has same as bb.')
                 yield sc_center, resi.resname, resi.parent.id, resi.id
 
     def _extract_Calphas(self):
@@ -269,15 +269,15 @@ class ProteinCreator(LmpCreator, protonation_methods_bundled, surface_methods_bu
         amino_acids = filter(filter_non_aa, protein.data['particles'])
 
         for particle1,particle2 in it.izip(amino_acids[:-1], amino_acids[1:]):
-                if particle1.mol_id == particle2.mol_id:
+                if particle1.residue.chain == particle2.residue.chain:
                     bonds.append(Bond(self.env.new_id['bond'], protein.env.bond_type['peptide'], 
                                  [particle1, particle2]))
         for particle1,particle2,particle3 in it.izip(amino_acids[:-2], amino_acids[1:-1], amino_acids[2:]):
-                if particle1.mol_id == particle2.mol_id and particle2.mol_id == particle3.mol_id:
+                if particle1.residue.chain == particle2.residue.chain and particle2.residue.chain == particle3.residue.chain:
                     angles.append(Angle(self.env.new_id['angle'], protein.env.angle_type['peptide'], 
                                          [particle1, particle2, particle3]))
         for particle1,particle2,particle3,particle4 in it.izip(amino_acids[:-3], amino_acids[1:-2], amino_acids[2:-1], amino_acids[3:]):
-                if particle1.mol_id == particle2.mol_id and particle1.mol_id == particle3.mol_id and particle1.mol_id == particle4.mol_id:
+                if particle1.residue.chain == particle2.residue.chain and particle1.residue.chain == particle3.residue.chain and particle1.residue.chain == particle4.residue.chain:
                     dihedrals.append(Dihedral(self.env.new_id['dihedral'], protein.env.dihedral_type['peptide'], 
                                             [particle1, particle2, particle3, particle4]))
         
