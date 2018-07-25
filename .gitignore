@@ -65,3 +65,4 @@ Database/db_test.h5
 
 # LAMMPS
 log.lammps
+example/\.ipynb_checkpoints/

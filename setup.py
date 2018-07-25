@@ -1,13 +1,15 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(name='PolyLibScan',
       version='0.1',
-      description='A toolkit to model polymer-protein interaction.',
+      description='A toolkit for modelling polymer-protein interaction.',
       url='https://github.com/BioinformaticsBiophysicsUDE/PolyLibScan',
       author='Ludwig Ohl, Niklas Toetsch',
       author_email='Ludwig.Ohl@uni-due.de, Niklas.Toetsch@uni-due.de',
       license='MIT',
-      packages=['PolyLibScan'],
+      packages=find_packages(),
+      include_package_data=True,
+      platforms=['posix'],
       install_requires=[
       	'numba==0.30.1+0.g8c1033f.dirty',
 		'mock==2.0.0',
@@ -25,5 +27,5 @@ setup(name='PolyLibScan',
 		'futures==3.2.0',
 		'pymc==2.3.6',
 		'scikit_learn==0.19.2',
-		'PyYAML==3.13']
+		'PyYAML==3.13'],
       zip_safe=False)

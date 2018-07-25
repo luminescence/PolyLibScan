@@ -1,0 +1,3 @@
+include PolyLibScan/Analysis/*.tpl
+include PolyLibScan/parameters/clogP.h5
+include PolyLibScan/Tools/*.tpl

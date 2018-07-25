@@ -12,7 +12,7 @@ class Test_database(ut.TestCase):
 
     def __init__(self, *args, **kwargs):
         super(Test_database, self).__init__(*args, **kwargs)
-        self.data_folder = local_path.parent
+        self.data_folder = local_path.joinpath('data')
         self.db_file_name = self.data_folder.joinpath('db_test.h5')
 
     def test_open(self):
