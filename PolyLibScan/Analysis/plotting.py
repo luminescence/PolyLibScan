@@ -92,8 +92,9 @@ class Project(object):
                 roc_auc_score = self._roc_auc(classification, results['probabilities'])
                 kappa = self._kappa(classification, results['model_predictions'])
                 # plotting black x on false predictions
-                results[~results['true_predictions']].plot(kind='scatter', x='dist_mean', 
-                                                   y='energy_mean', ax=ax, marker='x', c='lightgreen', s=35, linewidth=2)
+                if np.any(~results['true_predictions']):
+                    results[~results['true_predictions']].plot(kind='scatter', x='dist_mean', 
+                                                       y='energy_mean', ax=ax, marker='x', c='lightgreen', s=35, linewidth=2)
                 legend_items.append(mlines.Line2D([], [], markeredgecolor='lightgreen', color='w', marker='x', 
                                                          linewidth=3, linestyle='None', 
                                                          markeredgewidth=3, markersize=10, label='misclassified'))

@@ -15,6 +15,24 @@ from Tools import lmp_control
 
 __git_hash__ = _git.get_git_hash(__file__)
 
+def run_with_config(config):
+	logging.info('Starting Job..')
+
+	j = PolyLibScan.Job(config)
+
+	j.setup_env()
+	logging.info('Finished setting up environment.')
+
+	j.run()
+	time.sleep(5)
+	logging.info('Finished simulations. Starting to clean up.')
+	j.setup_job_save()
+	j.save()
+	logging.info('Finished saving to DB.')
+	j.clean_up()
+	logging.info('Finished cleaning up.')
+	logging.info('Finished LAMMPS Job.')
+
 class Job(object):
 
     def __init__(self, config_path):
@@ -26,7 +44,7 @@ class Job(object):
                 setup_config = yaml.load(f)
             self.config.sim_parameter['poly_sequence'] = setup_config['sim_parameter']['poly_sequence']
         self.username = getpass.getuser()
-        if self.config.sim_parameter['local'] == 1:
+        if self.config.sim_parameter['local'] is True:
             self._switch_to_local()
         else:
             new_paths = self.create_folders(self.config.lmp_path['root'])
@@ -66,8 +84,8 @@ class Job(object):
             ph=self.config.sim_parameter['pH']
         )
 
-        number_of_proteins = self.config.sim_parameter['stoichiometry'][0]
-        number_of_polymers = self.config.sim_parameter['stoichiometry'][1]
+        number_of_proteins = self.config.sim_parameter['stoichiometry']['protein']
+        number_of_polymers = self.config.sim_parameter['stoichiometry']['polymer']
 
         # protein
         if number_of_proteins == 0:
@@ -234,7 +252,7 @@ class Job(object):
 
     def create_sim_list(self):
         list_path = os.path.join(self.config.sim_path['root'], 'sim.list')
-        if self.config.sim_parameter['local'] == 1: 
+        if self.config.sim_parameter['local'] is True: 
             data_folder = self.config.lmp_path['local_root'] 
         else: 
             data_folder = self.config.lmp_path['root']

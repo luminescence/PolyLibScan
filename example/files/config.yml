@@ -1,0 +1,31 @@
+fifo:
+  distance_fifo:
+    out: distance_as_polymer
+    path: distance.fifo
+    stepsize: 2000
+  traj_compression:
+    out: full_trajectory
+    path: traj.fifo
+    stepsize: 2000
+lammps_parameter:
+  dielectric_par: 1
+  output_interval: 2000
+  time_steps: 20000
+  timestep: 10
+lammps_path:
+  fifo: /tmp/tmpRnvuAf
+  input: ../jobs/abcd/input
+  local_root: ../jobs/abcd
+  logs: ../jobs/abcd/logs
+  output: ../jobs/abcd/output
+  root: ../jobs/abcd
+sim_parameter:
+  local: True
+  pH: 4.0
+  poly_length: 30
+  protein: 1LYA
+  protein_name: CathepsinD
+  sampling_rate: 20
+  stoichiometry:
+    protein: 1
+    polymer: 1
