@@ -96,21 +96,28 @@ def Four_Fractions(vector):
     return binding_fractions
 
 
-def distance_with_error(distance_matrix):
+def distance_with_error(distance_matrix, method='four_fractions', confidence_level=0.90):
     results = np.zeros(distance_matrix.columns.shape[0], dtype=[('poly_name', '|S20'),
                                                                 ('dist_mean', np.float),
                                                                 ('dist_min_error', np.float),
                                                                 ('dist_max_error', np.float)])
     for i, poly_name in enumerate(distance_matrix.columns):
-        sub_results = Four_Fractions(distance_matrix[poly_name])
-        stats = mean_and_error(sub_results)
+        if method == 'four_fractions':
+            sub_results = Four_Fractions(distance_matrix[poly_name])
+            stats = mean_and_error(sub_results)
+        if method == 'bootstrap':
+            mean_ = distance_matrix[poly_name].mean()
+            mean_bs, lower_boundary, upper_boundary = bstrap.confidence_interval(bstrap.Bootstrap(distance_matrix[poly_name]), confidence_level)
+            error_min = mean_ - lower_boundary
+            error_max = upper_boundary - mean_
+            stats = (mean_, error_min, error_max)
         results[i] = tuple([poly_name]) + stats
     return pd.DataFrame(index=results['poly_name'], data=results[['dist_mean',
                                                                  'dist_min_error',
                                                                  'dist_max_error']])
 
 
-def energy_with_error(energy_matrix, confidence_level=0.95):
+def energy_with_error(energy_matrix, confidence_level=0.90):
     results = np.zeros(energy_matrix.columns.shape[0], dtype=[('poly_name', '|S20'),
                                                                 ('energy_mean', np.float),
                                                                 ('energy_min_error', np.float),

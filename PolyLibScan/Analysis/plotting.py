@@ -17,7 +17,7 @@ class Project(object):
 
     def scatter_plot(self, subset=None, with_errors=False, with_labels=False, with_crossvalidation=False, 
                            confidence_interval=0.95, ax=None, save_path=None, min_dist_to_ac=10, property_='charge',
-                           ignore_experiment=False, label_only_misclassified=False):
+                           ignore_experiment=False, label_only_misclassified=False, error_method='bootstrap'):
         '''create a scatter plot with the probability
         of binding (x-axis) and the mean strength of binding 
         at the active site.

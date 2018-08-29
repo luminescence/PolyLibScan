@@ -200,7 +200,7 @@ class Project(plotting.Project, bayes.Project):
 
     def _scatter_data(self, subset=None, with_errors=False, with_labels=False, label_only_misclassified=False, 
                             with_crossvalidation=False, property_=None, confidence_interval=0.95, 
-                            min_dist_to_ac=10, ignore_experiment=False):
+                            min_dist_to_ac=10, ignore_experiment=False, error_method='bootstrap'):
         if subset:
             # in case 'subset' is a set, convert it to list. otherwise it stays the same
             polymer_list = list(subset)
@@ -221,8 +221,8 @@ class Project(plotting.Project, bayes.Project):
 
 
         if with_errors:
-            df1 = num_.distance_with_error(distance_matrix)
-            df2 = num_.energy_with_error(energy_matrix, confidence_interval)
+            df1 = num_.distance_with_error(distance_matrix, method=error_method, confidence_interval=confidence_interval)
+            df2 = num_.energy_with_error(energy_matrix, confidence_interval=confidence_interval)
             results = pd.concat([df1, df2], axis=1)
         else:
             results = pd.DataFrame(index=distance_matrix.columns)
