@@ -48,7 +48,8 @@ class Project(object):
                                      property_=property_,
                                      confidence_interval=confidence_interval, 
                                      min_dist_to_ac=min_dist_to_ac,
-                                     ignore_experiment=ignore_experiment)
+                                     ignore_experiment=ignore_experiment,
+                                     error_method=error_method)
 
         if with_errors:
             error = results['dist_max_error'].max()
