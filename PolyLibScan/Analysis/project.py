@@ -221,8 +221,8 @@ class Project(plotting.Project, bayes.Project):
 
 
         if with_errors:
-            df1 = num_.distance_with_error(distance_matrix, method=error_method, confidence_interval=confidence_interval)
-            df2 = num_.energy_with_error(energy_matrix, confidence_interval=confidence_interval)
+            df1 = num_.distance_with_error(distance_matrix, method=error_method, confidence_level=confidence_interval)
+            df2 = num_.energy_with_error(energy_matrix, confidence_level=confidence_interval)
             results = pd.concat([df1, df2], axis=1)
         else:
             results = pd.DataFrame(index=distance_matrix.columns)
