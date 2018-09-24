@@ -71,6 +71,20 @@ def Binding_ratio(distance_vector):
     return float(np.sum(~np.isnan(distance_vector)))/distance_vector.shape[0]
 
 
+def vec_binding_ratios(vectors):
+    m,n = vectors.shape
+    ratios = np.zeros(m)
+    for i in np.arange(m):
+        ratios[i] = Binding_ratio(vectors[i,:])
+    return ratios
+
+def vec_mean(vectors):
+    m,n = vectors.shape
+    means = np.zeros(m)
+    for i in np.arange(m):
+        means[i] = np.nanmean(vectors[i,:])
+    return means
+
 def mean_and_error(values):
     mean = values.mean()
     min_error = mean - values.min()
@@ -96,7 +110,7 @@ def Four_Fractions(vector):
     return binding_fractions
 
 
-def distance_with_error(distance_matrix, method='four_fractions', confidence_level=0.90):
+def distance_with_error(distance_matrix, method='four_fractions', confidence_level=0.90, iterations=100):
     results = np.zeros(distance_matrix.columns.shape[0], dtype=[('poly_name', '|S20'),
                                                                 ('dist_mean', np.float),
                                                                 ('dist_min_error', np.float),
@@ -106,8 +120,10 @@ def distance_with_error(distance_matrix, method='four_fractions', confidence_lev
             sub_results = Four_Fractions(distance_matrix[poly_name])
             stats = mean_and_error(sub_results)
         if method == 'bootstrap':
-            mean_ = distance_matrix[poly_name].mean()
-            mean_bs, lower_boundary, upper_boundary = bstrap.confidence_interval(bstrap.Bootstrap(distance_matrix[poly_name]), confidence_level)
+            mean_ = Binding_ratio(distance_matrix[poly_name])
+            bootstraps = bstrap.Bootstrap(distance_matrix[poly_name], iterations=iterations)
+            fractions = vec_binding_ratios(bootstraps)
+            mean_bs, lower_boundary, upper_boundary = bstrap.confidence_interval(fractions, confidence_level)
             error_min = mean_ - lower_boundary
             error_max = upper_boundary - mean_
             stats = (mean_, error_min, error_max)
@@ -117,14 +133,16 @@ def distance_with_error(distance_matrix, method='four_fractions', confidence_lev
                                                                  'dist_max_error']])
 
 
-def energy_with_error(energy_matrix, confidence_level=0.90):
+def energy_with_error(energy_matrix, confidence_level=0.90, iterations=100):
     results = np.zeros(energy_matrix.columns.shape[0], dtype=[('poly_name', '|S20'),
                                                                 ('energy_mean', np.float),
                                                                 ('energy_min_error', np.float),
                                                                 ('energy_max_error', np.float)])
     for i, poly_name in enumerate(energy_matrix.columns):
         mean_ = energy_matrix[poly_name].mean()
-        mean_bs, lower_boundary, upper_boundary = bstrap.confidence_interval(bstrap.Bootstrap(energy_matrix[poly_name].dropna()), confidence_level)
+        bootstraps = bstrap.Bootstrap(energy_matrix[poly_name], iterations=iterations)
+        means = vec_mean(bootstraps)
+        mean_bs, lower_boundary, upper_boundary = bstrap.confidence_interval(means, confidence_level)
         error_min = mean_ - lower_boundary
         error_max = upper_boundary - mean_
         results[i] = tuple([poly_name, mean_, error_min, error_max])
