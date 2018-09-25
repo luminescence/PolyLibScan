@@ -2,7 +2,7 @@ import numpy as np
 
 def confidence_interval(bootstrap_data, confidence_level):
     # make sure confidence_level has sane value
-    if 0.0 < confidence_level < 1.0:
+    if not 0.0 < confidence_level < 1.0:
         raise ValueError('confidence_level must be in [0,1]')
     non_zero_data = bootstrap_data[~np.isnan(bootstrap_data)]
     data_length = non_zero_data.shape[0]
