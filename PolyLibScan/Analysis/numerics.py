@@ -79,9 +79,13 @@ def vec_binding_ratios(vectors):
     return ratios
 
 def vec_mean(vectors):
-    m,n = vectors.shape
-    means = np.zeros(m)
-    for i in np.arange(m):
+    '''Takes a M x N numpy array and calculates the 
+    mean for each row. Each mean is calculated with 
+    nanmean, which disregards NaN values.
+    '''
+    M,N = vectors.shape
+    means = np.zeros(M)
+    for i in np.arange(M):
         means[i] = np.nanmean(vectors[i,:])
     return means
 
@@ -93,6 +97,8 @@ def mean_and_error(values):
 
 
 def Four_Fractions(vector):
+    '''Subdivide a vector into four equally large subsets.
+    '''
     # guard against too little data
     if vector.shape[0] == 0:
         return np.array(4*[np.nan])
@@ -107,7 +113,7 @@ def Four_Fractions(vector):
     return sub_sample
 
 
-def distance_with_error(distance_matrix, method='four_fractions', confidence_level=0.90, iterations=100):
+def distance_with_error(distance_matrix, method='four_fractions', confidence_level=0.90, iterations=600):
     results = np.zeros(distance_matrix.columns.shape[0], dtype=[('poly_name', '|S20'),
                                                                 ('dist_mean', np.float),
                                                                 ('dist_min_error', np.float),
@@ -131,7 +137,7 @@ def distance_with_error(distance_matrix, method='four_fractions', confidence_lev
                                                                  'dist_max_error']])
 
 
-def energy_with_error(energy_matrix, confidence_level=0.90, iterations=100):
+def energy_with_error(energy_matrix, confidence_level=0.90, iterations=600):
     results = np.zeros(energy_matrix.columns.shape[0], dtype=[('poly_name', '|S20'),
                                                                 ('energy_mean', np.float),
                                                                 ('energy_min_error', np.float),
