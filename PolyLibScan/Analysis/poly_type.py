@@ -107,10 +107,10 @@ class PolymerTypeSims(plotting.PolymerTypeSims, bayes.PolymerTypeSims):
         for child in children:
             child.poly_type = self
 
-    def data_frame(self):
+    def data_frame(self, timestep=None):
         sub_frames = np.empty(len(self.sims), dtype=object)
         for i, job in enumerate(self.sims):
-            sub_frames[i] = job.to_dataFrame()
+            sub_frames[i] = job.to_dataFrame(timestep=timestep)
             job._parse.close()
         data_frame = pd.concat(sub_frames)
         col_index = pd.MultiIndex.from_product([[self.name], data_frame.columns], 

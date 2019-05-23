@@ -213,15 +213,41 @@ class Job(bayes.Job):
         results['energy'] = energy_mean
         return results
 
-    def to_dataFrame(self):
+    def to_dataFrame(self, timestep=None):
         if self._parse.db.is_open():
             self._parse.open()
-        data = pd.DataFrame(self._parse.end_states)
-        data = data.set_index('ID')
+        if timestep is None:
+            data = pd.DataFrame(self._parse.end_states)
+            data = data.set_index('ID')
+            self._parse.close()
+        else:
+            data = self.create_state_df_on(timestep)
         data.set_index([[self.Id for i in xrange(data.shape[0])], data.index], inplace=True)
         data.index.names = ['PolymerId', 'RunId']
-        self._parse.close()
         return data
+
+    def create_state_df_on(self, timestep):
+        values = np.zeros(len(self),
+                          dtype=[('Energy', np.float), 
+                                 ('TotalEnergy', np.float),
+                                 ('Distance', np.float)])
+        # binding energy
+        for i,run in enumerate(self):
+            b_ene = run.binding_energy()
+            values['Energy'][i] = b_ene[[b_ene[:,1]== timestep]][0,0]
+        # total_energy
+        for i,run in enumerate(self):
+            total_ene = run.total_energy()
+            values['TotalEnergy'][i] = total_ene[[total_ene[:,1]== timestep]][0,0]
+        # distance
+        for i,run in enumerate(self):
+            dist = run.distance_time_series()
+            values['Distance'][i] = dist[[dist['time_step']== timestep]]['distance']
+        data = pd.DataFrame(values)
+        return data
+
+    def gen_intermediate_state(self):
+        pass
 
     def _calc_protein_box(self, margin=20):
         """calculate the minimal box of the protein coordinates, add margin

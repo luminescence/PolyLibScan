@@ -200,7 +200,7 @@ class Project(plotting.Project, bayes.Project):
 
     def _scatter_data(self, subset=None, with_errors=False, with_labels=False, label_only_misclassified=False, 
                             with_crossvalidation=False, property_=None, confidence_interval=0.95, 
-                            min_dist_to_ac=10, ignore_experiment=False, error_method='bootstrap'):
+                            min_dist_to_ac=10, ignore_experiment=False, error_method='bootstrap', timestep=None):
         if subset:
             # in case 'subset' is a set, convert it to list. otherwise it stays the same
             polymer_list = list(subset)
@@ -213,9 +213,13 @@ class Project(plotting.Project, bayes.Project):
         else:
             polymer_list = self.endstate_matrix.columns.levels[0]
             
-        full_distance_matrix = self.endstate_matrix.swaplevel(0,1, axis=1)['Distance'][polymer_list]
-        full_energy_matrix = self.endstate_matrix.swaplevel(0,1, axis=1)['Energy'][polymer_list]
-        
+        if timestep is None:
+            full_distance_matrix = self.endstate_matrix.swaplevel(0,1, axis=1)['Distance'][polymer_list]
+            full_energy_matrix = self.endstate_matrix.swaplevel(0,1, axis=1)['Energy'][polymer_list]
+        else:
+            state_matrix = self.get_distance_matrix(timestep)
+            full_distance_matrix = state_matrix.swaplevel(0,1, axis=1)['Distance'][polymer_list]
+            full_energy_matrix = state_matrix.swaplevel(0,1, axis=1)['Energy'][polymer_list]
         distance_matrix = full_distance_matrix[full_distance_matrix<min_dist_to_ac]
         energy_matrix = full_energy_matrix[full_distance_matrix<min_dist_to_ac]
 
@@ -269,11 +273,11 @@ class Project(plotting.Project, bayes.Project):
         return locals()
     endstate_matrix = property(**endstate_matrix())
 
-    def get_distance_matrix(self):
+    def get_distance_matrix(self, timestep=None):
         '''construct dataframe with energy and binding distance
         from all simulations.
         '''
-        complete_df = pd.concat([p_type.data_frame() 
+        complete_df = pd.concat([p_type.data_frame(timestep)
             for p_type in agnostic_tqdm(self.polymer_types.values(),
                                     desc='Creating endstate Dataframe')], axis=1)
         return complete_df
