@@ -107,9 +107,9 @@ def Four_Fractions(vector):
     else:
         divisor = int(np.floor(vector.shape[0]/4))
     v = np.random.permutation(vector)
-    sub_sample = np.zeros(4, divisor)
+    sub_sample = np.zeros((4, divisor))
     for i in xrange(4):
-        sub_sample = v[i*divisor:(i+1)*divisor]
+        sub_sample[i] = v[i*divisor:(i+1)*divisor]
     return sub_sample
 
 
@@ -121,7 +121,7 @@ def distance_with_error(distance_matrix, method='four_fractions', confidence_lev
     for i, poly_name in enumerate(distance_matrix.columns):
         if method == 'four_fractions':
             fractions = Four_Fractions(distance_matrix[poly_name])
-            binding_fractions = map(Binding_ratio, fractions)
+            binding_fractions = np.array(map(Binding_ratio, fractions))
             stats = mean_and_error(binding_fractions)
         if method == 'bootstrap':
             mean_ = Binding_ratio(distance_matrix[poly_name])
